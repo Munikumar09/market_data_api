@@ -32,7 +32,7 @@ class HistoricalStockPriceInfo(BaseModel):
 
 class SmartAPIStockPriceInfo(StockPriceInfo):
     """
-    SmartAPIStockPriceInfo model represents the stock price information of a stock from a Angel Broking Smart API.
+    SmartAPIStockPriceInfo model represents the stock price information of a stock.
     """
 
     symbol_token: str

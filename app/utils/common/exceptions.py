@@ -27,8 +27,8 @@ class CredentialsException(HTTPException):
 
 class IntervalNotFoundException(HTTPException):
     """
-    IntervalNotFoundException is raised when the candlestick interval is not found in the intervals provided by the SmartApi.
-    Refer this link: https://smartapi.angelbroking.com/docs/Historical and given examples for more information.
+    IntervalNotFoundException is raised when the given candlestick interval
+    is not a valid enum member of the class CandlestickInterval.
     """
 
     def __init__(self, interval: str):

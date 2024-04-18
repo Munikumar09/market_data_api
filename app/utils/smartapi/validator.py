@@ -7,17 +7,16 @@ from typing import Tuple
 from app.utils.common.exceptions import (
     AllDaysHolidayException,
     DataUnavailableException,
-    IntervalNotFoundException,
     InvalidDateRangeBoundsException,
     InvalidDateTimeFormatException,
     InvalidTradingHoursException,
     SymbolNotFoundException,
 )
 from app.utils.common.types.financial_types import Exchange
+from app.utils.common.types.reques_types import CandlestickInterval
 from app.utils.file_utils import get_symbols, load_json_data, read_text_data
 from app.utils.smartapi.constants import (
     BSE_SYMBOLS_PATH,
-    CANDLESTICK_INTERVALS,
     DATA_STARTING_DATES_PATH,
     NSE_HOLIDAYS_PATH,
     NSE_SYMBOLS_PATH,
@@ -61,39 +60,6 @@ def validate_symbol_and_get_token(
         raise SymbolNotFoundException(stock_symbol.split("-")[0])
 
     return all_symbols_data[stock_symbol], stock_symbol
-
-
-def validate_interval(interval: str) -> str:
-    """
-    Validates candlestick interval.
-
-    Parameters:
-    -----------
-    interval: `str`
-        The candlestick interval to be validated.
-
-    Exceptions:
-    -----------
-    IntervalNotFoundException:
-        If the interval is either in wrong format or not valid within the intervals provided by SmartApi.
-
-    Return:
-    -------
-    str
-        The validated candlestick interval.
-    """
-    possible_intervals = CANDLESTICK_INTERVALS.keys()
-    original_interval = interval
-    interval = interval.upper()
-    if interval in possible_intervals:
-        return interval
-    interval = interval.replace(" ", "_")
-    if interval in possible_intervals:
-        return interval
-    interval = interval.replace("-", "_")
-    if interval in possible_intervals:
-        return interval
-    raise IntervalNotFoundException(original_interval)
 
 
 def validate_datetime(date_time: str) -> datetime:
@@ -192,7 +158,7 @@ def check_data_availability(end_date: datetime, stock_symbol: str):
 
 
 def validate_date_range(
-    from_date: str, to_date: str, interval: str, stock_symbol: str
+    from_date: str, to_date: str, interval: CandlestickInterval, stock_symbol: str
 ) -> Tuple[str, str]:
     """
     Validate given dates and their range.
@@ -232,10 +198,10 @@ def validate_date_range(
         raise InvalidTradingHoursException()
     # check date range should not exceed specific days per request based on given interval.
     total_days = (end_date - start_date).days
-    if total_days >= 0 and total_days <= CANDLESTICK_INTERVALS[interval]:
+    if total_days >= 0 and total_days <= interval.value:
         return start_date.strftime("%Y-%m-%d %H:%M"), end_date.strftime(
             "%Y-%m-%d %H:%M"
         )
     raise InvalidDateRangeBoundsException(
-        from_date, to_date, CANDLESTICK_INTERVALS[interval], interval
+        from_date, to_date, interval.value, interval.name
     )

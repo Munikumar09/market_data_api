@@ -5,13 +5,12 @@ from fastapi import APIRouter, Path, Query
 
 from app.schemas.stock_model import HistoricalStockPriceInfo
 from app.utils.common.types.financial_types import Exchange
-from app.utils.common.types.reques_types import RequestType
+from app.utils.common.types.reques_types import CandlestickInterval, RequestType
 from app.utils.smartapi.connection import get_endpoint_connection
 from app.utils.smartapi.data_processor import process_smart_api_historical_stock_data
 from app.utils.smartapi.urls import CANDLE_DATA_URL
 from app.utils.smartapi.validator import (
     validate_date_range,
-    validate_interval,
     validate_symbol_and_get_token,
 )
 
@@ -79,14 +78,14 @@ async def historical_stock_data(
     stock_token, stock_symbol = validate_symbol_and_get_token(
         stock_exchange=Exchange.NSE, stock_symbol=stock_symbol
     )
-    interval = validate_interval(interval)
+    valid_interval = CandlestickInterval.validate_interval(interval)
     start_date, end_date = validate_date_range(
-        start_date, end_date, interval, stock_symbol.split("-")[0]
+        start_date, end_date, valid_interval, stock_symbol.split("-")[0]
     )
     payload = {
         "exchange": Exchange.NSE.value,
         "tradingsymbol": stock_symbol,
-        "interval": interval,
+        "interval": valid_interval.name,
         "fromdate": start_date,
         "todate": end_date,
         "symboltoken": stock_token,
@@ -105,6 +104,6 @@ async def historical_stock_data(
         (
             json.loads(data.decode("utf-8"))["data"],
             stock_symbol,
-            interval,
+            valid_interval.name,
         )
     )
