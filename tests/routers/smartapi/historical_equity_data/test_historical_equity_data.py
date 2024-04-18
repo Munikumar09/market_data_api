@@ -1,3 +1,4 @@
+import time
 from typing import Any
 
 from fastapi import HTTPException
@@ -67,6 +68,7 @@ def validate_input_stock_data(input_stock_data: dict[str, Any]):
 
     else:
         validate_exception(endpoint_url, input_stock_data)
+    time.sleep(1)
 
 
 def test_historical_stock_data_with_different_stock_symbols(
