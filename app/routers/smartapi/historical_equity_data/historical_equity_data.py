@@ -102,5 +102,9 @@ async def historical_stock_data(
     data = res.read()
 
     return process_smart_api_historical_stock_data(
-        json.loads(data.decode("utf-8"))["data"]
+        (
+            json.loads(data.decode("utf-8"))["data"],
+            stock_symbol,
+            interval,
+        )
     )
