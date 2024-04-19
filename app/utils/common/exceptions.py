@@ -25,6 +25,18 @@ class CredentialsException(HTTPException):
         )
 
 
+class UnkownException(HTTPException):
+    """
+    UnkownException is raised when an unknown exception occurs.
+    This class can be used to raise exceptions that are not handled by the application.
+    """
+
+    def __init__(self, error_message: str, status_code: int):
+        super().__init__(
+            status_code=status_code,
+            detail=error_message,
+        )
+        
 class IntervalNotFoundException(HTTPException):
     """
     IntervalNotFoundException is raised when the given candlestick interval
@@ -117,3 +129,4 @@ class DataUnavailableException(HTTPException):
         if start_date is None:
             return f"No data available for this stock {stock_symbol}"
         return f"Data for the provided dates is unavailable; please use a date range starting from the {start_date} date onwards."
+
