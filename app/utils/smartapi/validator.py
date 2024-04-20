@@ -1,5 +1,4 @@
 # pylint: disable=chained-comparison
-import re
 from bisect import bisect_left
 from datetime import datetime, time, timedelta
 from typing import Tuple
@@ -8,12 +7,12 @@ from app.utils.common.exceptions import (
     AllDaysHolidayException,
     DataUnavailableException,
     InvalidDateRangeBoundsException,
-    InvalidDateTimeFormatException,
     InvalidTradingHoursException,
     SymbolNotFoundException,
 )
 from app.utils.common.types.financial_types import Exchange
 from app.utils.common.types.reques_types import CandlestickInterval
+from app.utils.date_utils import validate_datetime_format
 from app.utils.file_utils import get_symbols, load_json_data, read_text_data
 from app.utils.smartapi.constants import (
     BSE_SYMBOLS_PATH,
@@ -62,65 +61,25 @@ def validate_symbol_and_get_token(
     return all_symbols_data[stock_symbol], stock_symbol
 
 
-def validate_datetime(date_time: str) -> datetime:
-    """
-    Validates given string is a valid datetime or not.
-
-    Parameters:
-    -----------
-    date_time: `str`
-        date and time to be validated.
-
-    Exceptions:
-    -----------
-    InvalidDateTimeFormatException:
-        If the date and time is in wrong format.
-    Return:
-    -------
-    datetime
-        validated given date and time and returns valid datetime object.
-    """
-    date_separator = "/" if len(date_time.split("/")) > 1 else "-"
-    if re.search("[a-zA-Z]+", date_time):
-        month_format_codes = ["b", "B"]
-    else:
-        month_format_codes = ["m", "-m"]
-    day_format_codes = ["d", "-d"]
-    hour_format_codes = ["H", "-H"]
-    minute_format_codes = ["M", "-M"]
-    for month_format_code in month_format_codes:
-        for day_format_code in day_format_codes:
-            for hour_format_code in hour_format_codes:
-                for minute_format_code in minute_format_codes:
-                    try:
-                        datetime_format = (
-                            f"%Y{date_separator}%{month_format_code}{date_separator}"
-                            f"%{day_format_code} %{hour_format_code}:%{minute_format_code}"
-                        )
-                        datetime_obj = datetime.strptime(date_time, datetime_format)
-                        return datetime_obj
-
-                    except ValueError:
-                        continue
-    raise InvalidDateTimeFormatException(date_time)
-
-
 def check_market_open_between_dates(start_date: datetime, end_date: datetime):
     """Checks whether the stock market is open between the given dates.
 
     Parameters:
     -----------
-    start_date: `datetime`
+    start_date: ``datetime``
         Start date.
-    end_date: `datetime`
+    end_date: ``datetime``
         End date.
 
     Exceptions:
     -----------
-    AllDaysHolidayException:
+    ``AllDaysHolidayException``
         Raised when all days in the given date range are market holidays.
     """
+    # Read the holidays data into list
     holidays_data = read_text_data(NSE_HOLIDAYS_PATH)
+    # Check for any market open day between given dates.
+    # If you find any open day then definitely the data is not empty otherwise raise an error.
     current_date = start_date
     while current_date <= end_date:
         index = bisect_left(holidays_data, current_date.strftime("%Y-%m-%d"))
@@ -141,16 +100,18 @@ def check_data_availability(end_date: datetime, stock_symbol: str):
 
     Parameters:
     -----------
-    end_date: `datetime`
+    end_date: ``datetime``
         End date
-    stock_symbol: `str`
+    stock_symbol: ``str``
         Symbol of the stock.
 
     Exceptions:
     -----------
-    DataUnavailableException:
+    ``DataUnavailableException``
         Raised when the data is unavailable for the requested dates from the SmartAPI.
     """
+    # If end date is less than the date from where the data availability starts, then
+    # no data can be retrieved; therefore, an error should be raised.
     data_starting_dates = load_json_data(DATA_STARTING_DATES_PATH)
     starting_date = data_starting_dates.get(stock_symbol)
     if starting_date is None or end_date < datetime.strptime(starting_date, "%Y-%m-%d"):
@@ -165,16 +126,16 @@ def validate_date_range(
 
     Parameters:
     -----------
-    from_date: `str`
+    from_date: ``str``
         Start date and time to be validated.
-    to_date: `str`
+    to_date: ``str``
         End date and time to be validated.
-    interval: `str`
+    interval: ``str``
         candlestick interval.
 
     Exceptions:
     -----------
-    InvalidDateRangeBoundsException:
+    ``InvalidDateRangeBoundsException``
         If the specified date range is invalid for given interval.
 
     InvalidTradingHoursException:
@@ -185,17 +146,23 @@ def validate_date_range(
     Tuple[str, str]
         validated start and end dates.
     """
-    start_date = validate_datetime(from_date)
-    end_date = validate_datetime(to_date)
+    start_date = validate_datetime_format(from_date)
+    end_date = validate_datetime_format(to_date)
+
+    # check data is available or not between given dates.
     check_data_availability(end_date, stock_symbol)
+
+    # check given dates range are market holidays or not.
     check_market_open_between_dates(start_date, end_date)
+
+    # check given timings are market active trading hours.
     start_time = time(9, 15)
     end_time = time(15, 29)
-    # check given timings are market active trading hours.
     if (start_date.time() < start_time or start_date.time() > end_time) and (
         end_date.time() < start_time or end_date.time() > end_time
     ):
         raise InvalidTradingHoursException()
+
     # check date range should not exceed specific days per request based on given interval.
     total_days = (end_date - start_date).days
     if total_days >= 0 and total_days <= interval.value:

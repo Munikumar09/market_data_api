@@ -13,9 +13,9 @@ def filter_strike_prices_with_expiry_date(
 
     Parameters:
     -----------
-    records: `list`
+    records: ``list``
         List contain the strike prices information.
-    expiry_date: `str`
+    expiry_date: ``str``
         Expiry date in "dd-MM-yyyy".
 
     Return:
@@ -35,18 +35,18 @@ def filter_strike_prices_with_expiry_date(
 
 def get_option(option: dict[str, Any]) -> dict[str, float]:
     """
-    Filter the option data required to initialize `Option` model class,
+    Filter the option data required to initialize ``Option`` model class,
     from the given "CE" or "PE" data.
 
     Parameters:
     -----------
-    option: `dict[str, Any]`
+    option: ``dict[str, Any]``
         dictionary of either "PE" or "CE" data
 
     Return:
     -------
     dict[str, float]:
-        dictionary contain the option data that is required to initialize `Option` model class.
+        dictionary contain the option data that is required to initialize ``Option`` model class.
     """
     return {
         "ltp": option["lastPrice"],
@@ -65,9 +65,9 @@ def filter_option_chain(
 
     Parameters:
     -----------
-    strike_prices: `list[dict[str, Any]]`
+    strike_prices: ``list[dict[str, Any]]``
         List of strike prices data of an derivative.
-    expiry_date: `str`
+    expiry_date: ``str``
         Expiry date in "dd-MM-yyyy".
 
     Return:

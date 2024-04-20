@@ -15,7 +15,7 @@ def validate_and_format_stock_symbol(stock_symbol: str) -> str:
 
     Parameters:
     -----------
-    stock_symbol: `str`
+    stock_symbol: ``str``
         stock symbol to be validated
             eg: "TCS", "INFY", etc.
 
@@ -49,7 +49,7 @@ def validate_index_symbol(index_symbol: Annotated[str, Path()]) -> str:
 
     Parameters:
     -----------
-    index_symbol: `Annotated[str, Path()]`
+    index_symbol: ``Annotated[str, Path()]``
         index symbol to be validated
             eg: "NIFTY 50","NIFTY 100", etc.
 
@@ -60,7 +60,7 @@ def validate_index_symbol(index_symbol: Annotated[str, Path()]) -> str:
 
     Return:
     -------
-    `str`
+    ``str``
         Url path to the index symbol endpoint.
     """
     symbols: dict[str, str] = get_symbols(NSE_INDEX_SYMBOLS)
@@ -85,10 +85,10 @@ def validate_derivative_symbol_with_type(
 
     Parameters:
     -----------
-    derivative_symbol: `str`
+    derivative_symbol: ``str``
         Derivative symbol to be validated.
          eg: "NIFTY", "ABB", etc.
-    derivative_type: `str`
+    derivative_type: ``str``
         Derivative type should be either index of stock.
 
     Raises:
@@ -123,11 +123,11 @@ def validate_derivative_symbol_with_type(
 
 def get_date_format(date: str) -> str:
     """
-    Gives the format of given date eg, if date is `09/09/2023` then format is `%d/%m/%Y`.
+    Gives the format of given date eg, if date is ``09/09/2023`` then format is ``%d/%m/%Y``.
 
     Parameters:
     -----------
-    date: `str`
+    date: ``str``
         Date to get the format.
 
     Return:
@@ -146,7 +146,7 @@ def validate_and_reformat_date(data: str) -> Tuple[str, bool]:
 
     Parameters:
     -----------
-    date: `str`
+    date: ``str``
         expiry date to be validated.
 
     Return:

@@ -10,7 +10,7 @@ def resolve_path(file_path: str | Path) -> Path:
 
     Parameters:
     -----------
-    file_path: `str | Path`
+    file_path: ``str | Path``
         File path to be resolved.
 
     Raises:
@@ -39,7 +39,7 @@ def load_json_data(file_path: str | Path) -> Any:
 
     Parameters:
     -----------
-    file_path: `str | Path`
+    file_path: ``str | Path``
         Path to the json file.
 
     Return:
@@ -59,7 +59,7 @@ def read_text_data(file_path: str | Path) -> Any:
 
     Parameters:
     -----------
-    file_path: `str | Path`
+    file_path: ``str | Path``
         Path to the text file.
 
     Return:
@@ -82,7 +82,7 @@ def get_symbols(symbol_file: str) -> Any:
 
     Parameters:
     -----------
-    symbol_file: `str`
+    symbol_file: ``str``
         Path to the symbols file.
 
     Return:
@@ -92,3 +92,17 @@ def get_symbols(symbol_file: str) -> Any:
     """
     stock_symbols_data = load_json_data(symbol_file)
     return stock_symbols_data
+
+
+def write_to_json_file(file_path: str | Path, data: dict):
+    """
+    Write data into the given json file path.
+
+    Parameters:
+    -----------
+    file_path: ``str | Path``
+        Destination file path to write data.
+    """
+    with open(file_path, "w", encoding="utf-8") as fp:
+        json.dump(data, fp, indent=4)
+    print(f"Data successfully written into the file {file_path}")

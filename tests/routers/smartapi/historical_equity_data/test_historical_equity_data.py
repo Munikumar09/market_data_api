@@ -1,46 +1,21 @@
 import time
 from typing import Any
 
-from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
-from app.routers.smartapi.historical_equity_data.historical_equity_data import router
+from app.routers.smartapi.smartapi.smartapi import router
 from app.schemas.stock_model import HistoricalStockPriceInfo
+from tests.utils.common.exception_validators import validate_exception
 
 client = TestClient(router)
 
 
-def validate_exception(endpoint_url: str, expected_error: dict[str, Any]):
-    """
-    Test function to validate exception.
+def validate_endpoint_io(input_stock_data: dict[str, Any]):
+    """Validates data received from the historical stock data endpoint.
 
-    This function checks if the expected exception is valid or not
-    for the request with given endpoint_url.
+    The function takes input and expected output; it invokes the historical stock data endpoint
+    with the input and then compares the endpoint's result to the provided output.
 
-    Parameters:
-    -----------
-    endpoint_url: `str`
-        URL to request data from historical_stock_data endpoint.
-    expected_error: `dict[str, Any]`
-        Expected exception for the request with given endpoint_url.
-    """
-    try:
-        # Make a GET request to the endpoint URL
-        client.get(endpoint_url)
-    except HTTPException as http_exc:
-        # Check if the status code of the exception matches the expected error status code
-        assert http_exc.status_code == expected_error["status_code"]
-        # Check if the detail message of the exception matches the expected error detail
-        assert http_exc.detail == expected_error["error"]
-
-
-def validate_input_stock_data(input_stock_data: dict[str, Any]):
-    """Verifies whether the given input stock data is valid or raises an exception.
-
-    Parameters:
-    -----------
-    input_stock_data: `dict`
-        Details of the stock to be validated.
     """
     endpoint_url = (
         f"/smart-api/equity/history/{input_stock_data['input_stock_symbol']}?interval={input_stock_data['input_interval']}"
@@ -67,8 +42,8 @@ def validate_input_stock_data(input_stock_data: dict[str, Any]):
         assert isinstance(smart_api_stock_price_info, HistoricalStockPriceInfo)
 
     else:
-        validate_exception(endpoint_url, input_stock_data)
-    time.sleep(1)
+        validate_exception(endpoint_url, input_stock_data, client)
+    time.sleep(0.5)
 
 
 def test_historical_stock_data_with_different_stock_symbols(
@@ -79,12 +54,12 @@ def test_historical_stock_data_with_different_stock_symbols(
 
     Parameters:
     -----------
-    stock_symbol_io: `list[dict[str, Any]]`
+    stock_symbol_io: ``list[dict[str, Any]]``
         Input stock data with different stock symbols.
     """
 
     for stock_symbol_data in stock_symbol_io:
-        validate_input_stock_data(stock_symbol_data)
+        validate_endpoint_io(stock_symbol_data)
 
 
 def test_historical_stock_data_with_different_intervals(
@@ -95,11 +70,11 @@ def test_historical_stock_data_with_different_intervals(
 
     Parameters:
     -----------
-    candlestick_interval_io: `list[dict[str, Any]]`
+    candlestick_interval_io: ``list[dict[str, Any]]``
         Input stock data with different candlestick intervals.
     """
     for interval_data in candlestick_interval_io:
-        validate_input_stock_data(interval_data)
+        validate_endpoint_io(interval_data)
 
 
 def test_historical_stock_data_with_datetime_formats(
@@ -110,11 +85,11 @@ def test_historical_stock_data_with_datetime_formats(
 
     Parameters:
     -----------
-    different_datetime_formats_io: `list[dict[str, Any]]`
+    different_datetime_formats_io: ``list[dict[str, Any]]``
         Input stock data with different datetime formats.
     """
     for datetime_format_data in different_datetime_formats_io:
-        validate_input_stock_data(datetime_format_data)
+        validate_endpoint_io(datetime_format_data)
 
 
 def test_historical_stock_data_on_holidays(holiday_dates_io: list[dict[str, Any]]):
@@ -122,11 +97,11 @@ def test_historical_stock_data_on_holidays(holiday_dates_io: list[dict[str, Any]
 
     Parameters:
     -----------
-    holiday_dates_io: `list[dict[str, Any]]`
+    holiday_dates_io: ``list[dict[str, Any]]``
         Input stock data on market holidays.
     """
     for holiday_date_data in holiday_dates_io:
-        validate_input_stock_data(holiday_date_data)
+        validate_endpoint_io(holiday_date_data)
 
 
 def test_historical_stock_data_on_data_unavailable_dates(
@@ -136,11 +111,11 @@ def test_historical_stock_data_on_data_unavailable_dates(
 
     Parameters:
     -----------
-    data_unavailable_dates_io: `list[dict[str, Any]]`
+    data_unavailable_dates_io: ``list[dict[str, Any]]``
         Input stock data on data unavailable time periods.
     """
     for data_unavailable_date_data in data_unavailable_dates_io:
-        validate_input_stock_data(data_unavailable_date_data)
+        validate_endpoint_io(data_unavailable_date_data)
 
 
 def test_historical_stock_data_invalid_trading_time(
@@ -150,10 +125,10 @@ def test_historical_stock_data_invalid_trading_time(
 
     Parameters:
     -----------
-    invalid_trading_time_io: `dict[str, Any]`
+    invalid_trading_time_io: ``dict[str, Any]``
         Input stock data with invalid trading time.
     """
-    validate_input_stock_data(invalid_trading_time_io)
+    validate_endpoint_io(invalid_trading_time_io)
 
 
 def test_historical_stock_data_invalid_date_range(date_range_io: dict[str, Any]):
@@ -162,7 +137,7 @@ def test_historical_stock_data_invalid_date_range(date_range_io: dict[str, Any])
 
     Parameters:
     -----------
-    date_range_io: `dict[str, Any]`
+    date_range_io: ``dict[str, Any]``
         Input stock data with invalid date range.
     """
-    validate_input_stock_data(date_range_io)
+    validate_endpoint_io(date_range_io)

@@ -36,7 +36,8 @@ class UnkownException(HTTPException):
             status_code=status_code,
             detail=error_message,
         )
-        
+
+
 class IntervalNotFoundException(HTTPException):
     """
     IntervalNotFoundException is raised when the given candlestick interval
@@ -116,17 +117,16 @@ class DataUnavailableException(HTTPException):
 
         Parameters:
         -----------
-        stock_symbol: `str`
+        stock_symbol: ``str``
             The symbol of the stock.
-        start_date: `str`
+        start_date: ``str``
             The date from where available of data starts.
 
         Return:
         -------
-        `str`
+        ``str``
             Message related the exception.
         """
         if start_date is None:
             return f"No data available for this stock {stock_symbol}"
         return f"Data for the provided dates is unavailable; please use a date range starting from the {start_date} date onwards."
-

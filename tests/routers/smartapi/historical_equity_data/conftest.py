@@ -11,7 +11,7 @@ def stock_symbol_io() -> list[dict[str, Any]]:
 
     Return:
     -------
-    `List[dict]`
+    ``List[dict]``
           List of inputs and respective outputs
     """
     return [
@@ -21,8 +21,6 @@ def stock_symbol_io() -> list[dict[str, Any]]:
             "input_from_date": "2023-10-11 09:15",
             "input_to_date": "2023-10-11 15:29",
             "status_code": 200,
-            # "symbol_token": "11536",
-            # "symbol": "TCS-EQ",
         },
         {
             "input_stock_symbol": "SCT",
@@ -38,8 +36,6 @@ def stock_symbol_io() -> list[dict[str, Any]]:
             "input_from_date": "2023-ocTOber-9 9:15",
             "input_to_date": "2023-10-9 10:5",
             "status_code": 200,
-            # "symbol_token": "1594",
-            # "symbol": "INFY-EQ",
         },
         {
             "input_stock_symbol": "",
@@ -59,7 +55,7 @@ def candlestick_interval_io() -> list[dict[str, Any]]:
 
     Return:
     -------
-    `List[dict]`
+    ``List[dict]``
           List of inputs and respective outputs
     """
     return [
@@ -69,8 +65,6 @@ def candlestick_interval_io() -> list[dict[str, Any]]:
             "input_from_date": "2023-10-5 12:0",
             "input_to_date": "2023-10-05 12:20",
             "status_code": 200,
-            # "symbol_token": "11536",
-            # "symbol": "TCS-EQ",
         },
         {
             "input_stock_symbol": "ACC",
@@ -94,8 +88,6 @@ def candlestick_interval_io() -> list[dict[str, Any]]:
             "input_from_date": "2023-october-5 14:0",
             "input_to_date": "2023-10-05 15:20",
             "status_code": 200,
-            # "symbol_token": "11536",
-            # "symbol": "TCS-EQ",
         },
         {
             "input_stock_symbol": "BPCL",
@@ -115,7 +107,7 @@ def different_datetime_formats_io() -> list[dict[str, Any]]:
 
     Return:
     -------
-    `List[dict]`
+    ``List[dict]``
           List of inputs and respective outputs
     """
     return [
@@ -133,8 +125,6 @@ def different_datetime_formats_io() -> list[dict[str, Any]]:
             "input_from_date": "2023/october/9 15:15",
             "input_to_date": "2023-OCT-9 16:29",
             "status_code": 200,
-            # "symbol_token": "11536",
-            # "symbol": "TCS-EQ",
         },
         {
             "input_stock_symbol": "dabur",
@@ -166,8 +156,6 @@ def different_datetime_formats_io() -> list[dict[str, Any]]:
             "input_from_date": "2023/10/9 15:15",
             "input_to_date": "2023-OCT-9 16:29",
             "status_code": 200,
-            # "symbol_token": "11536",
-            # "symbol": "TCS-EQ",
         },
         {
             "input_stock_symbol": "SBIN",
@@ -187,7 +175,7 @@ def holiday_dates_io() -> list[dict[str, Any]]:
 
     Return:
     -------
-    `List[dict]`
+    ``List[dict]``
           List of inputs and respective outputs
     """
     return [
@@ -217,7 +205,7 @@ def data_unavailable_dates_io() -> list[dict[str, Any]]:
 
     Return:
     -------
-    `List[dict]`
+    ``List[dict]``
           List of inputs and respective outputs
     """
     return [
@@ -247,7 +235,7 @@ def invalid_trading_time_io() -> dict[str, Any]:
 
     Return:
     -------
-    `dict[str,Any]`
+    ``dict[str,Any]``
 
     """
     return {
@@ -267,7 +255,7 @@ def date_range_io() -> dict[str, Any]:
 
     Return:
     -------
-    `dict[str,Any]`
+    ``dict[str,Any]``
 
     """
     return {

@@ -10,7 +10,7 @@ def filter_nifty_stocks(stocks_data: list[dict[str, Any]]) -> list[StockPriceInf
 
     Parameters:
     -----------
-    stocks_data: `list[dict[str,Any]]`
+    stocks_data: ``list[dict[str,Any]]``
         Json parsed response of s stock from the Nse api
 
     Return:
@@ -45,10 +45,10 @@ def filter_single_stock(symbol: str, stock_data: dict[str, Any]) -> StockPriceIn
 
     Parameters:
     -----------
-    symbol: `str`
+    symbol: ``str``
         Nse stock symbol, can be obtained from the nse official website.
             eg: "SBIN","TCS" etc.
-    raw_stock_data: `dict[str,Any]`
+    raw_stock_data: ``dict[str,Any]``
         Json parsed response of s stock from the Nse api
 
     Return:
@@ -76,7 +76,7 @@ def filter_single_index(index_data: dict[str, Any]) -> StockPriceInfo:
 
     Parameters:
     -----------
-    index_data: `dict[str,Any]`
+    index_data: ``dict[str,Any]``
         Json parsed response of s stock from the Nse api
 
     Return:

@@ -17,12 +17,12 @@ def get_option_chain(
 
     Parameters:
     -----------
-    expiry_date: `str`
+    expiry_date: ``str``
         Option expiry date in "dd-MM-yyyy" format.
             eg: 28-Sep-2023
-    derivative_symbol: `str`
+    derivative_symbol: ``str``
         derivative symbol to get the option chain.
-    derivative_type: `str`
+    derivative_type: ``str``
         The derivative type that is either "stock" or "index"
 
     Raises:
