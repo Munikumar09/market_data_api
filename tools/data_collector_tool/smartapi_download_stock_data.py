@@ -1,3 +1,4 @@
+# pylint: disable=too-many-locals
 import os
 from datetime import datetime, timedelta
 
@@ -22,9 +23,7 @@ def download_stock_data(interval: str):
     stocks_symbols = df["Symbol"].tolist()
     start_date = datetime(2016, 1, 1)
     end_date = datetime(2024, 3, 1)
-    for i, stock_symbol in enumerate(tqdm(stocks_symbols)):
-        if i > 4:
-            break
+    for stock_symbol in tqdm(stocks_symbols):
         dir_path = f"/home/munikumar/Desktop/market_data_api/app/data/historical_data/stocks/{stock_symbol}"
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
@@ -47,7 +46,7 @@ def download_stock_data(interval: str):
                 response = requests.get(stocks_url, timeout=(60, 60))
                 if response.status_code == 200:
                     data = response.json()
-                    if data is not None:
+                    if data:
                         df = pd.DataFrame(data)
                         dataframe_to_json_files(df, dir_path, valid_interval)
             except Exception as e:

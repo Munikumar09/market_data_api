@@ -6,7 +6,6 @@ import pandas as pd
 import requests
 
 from app.utils.common.types.reques_types import CandlestickInterval
-
 from app.utils.file_utils import load_json_data, write_to_json_file
 
 
