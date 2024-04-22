@@ -14,11 +14,11 @@ def last_date_of_weekday(year: int, month: int, weekday: int):
 
     Parameters
     ----------
-    year : int
+    year : ``int``
     The year as a four-digit number, such as 2023.
-    month : int
+    month : ``int``
     The month as a number from 1 to 12, where 1 is January and 12 is December.
-    weekday : int
+    weekday : ``int``
     The weekday as a number from 0 to 6, where 0 is Monday and 6 is Sunday.
 
     Returns
@@ -99,7 +99,7 @@ def get_date(weekday: str, monthly: bool = False):
     >>> get_date("sunday")
     '08-Oct-2023'
 
-    ``if today= "wed" and 25-Oct-2023``
+    `if today= "wed" and 25-Oct-2023`
     >>> get_date("wed", monthly=True)
     '25-Oct-2023'
 
@@ -161,7 +161,7 @@ def get_expiry_dates(
     symbol: ``str``
         The symbol that represents stock or index to which expiry dates are required.
     symbol_type: ``SymbolType``
-        The type of symbol it is, means either ``equity`` or ``derivative``
+        The type of symbol it is, means either `equity` or `derivative`
 
     Returns:
     --------

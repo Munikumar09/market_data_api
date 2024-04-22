@@ -22,7 +22,7 @@ def get_nifty_index_stocks(url: str, max_tries: int = 1000) -> list[StockPriceIn
         Url for fetching the nse index stocks data.
     max_tries: ``int`` (defaults = 1000)
         Maximum number of times the request has to send to get response.
-        Requests are made until either get the status code ``200`` or exceed max_tries.
+        Requests are made until either get the status code `200` or exceed max_tries.
 
     Return:
     -------
@@ -49,18 +49,18 @@ def get_stock_url(stock_symbol: str) -> str:
 
     Parameters:
     -----------
-    stock_symbol: ````str````
+    stock_symbol: ``str``
         Nse stock symbol, can be obtained from the nse official website.
                 eg: "SBIN","TCS" etc.
 
     Raises:
     ------
-    ````ValueError````
+    ``ValueError``
         If the given stock symbol was not registered symbol in NSE
 
     Returns:
     --------
-    stock_url: ````str````
+    stock_url: ``str``
         stock url to the stock information
     """
 
@@ -107,13 +107,13 @@ def get_stock_listing_date(stock_symbol: str) -> str:
 
     Parameters:
     -----------
-    stock_symbol: ````str````
+    stock_symbol: ``str``
         Nse index symbol, can be obtained from the nse official website
             eg: "NIFTY 50","NIFTY NEXT 50" etc.
 
     Returns:
     --------
-    listing_date: ````str````
+    listing_date: ``str``
         Listing date of the given stock symbol.
 
     """

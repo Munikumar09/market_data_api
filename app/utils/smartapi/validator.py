@@ -80,8 +80,8 @@ def check_market_open_between_dates(start_date: datetime, end_date: datetime):
     holidays_data = read_text_data(NSE_HOLIDAYS_PATH)
     # Check for any market open day between given dates.
     # If you find any open day then definitely the data is not empty otherwise raise an error.
-    current_date = start_date
-    while current_date <= end_date:
+    for n in range((end_date - start_date).days + 1):
+        current_date = start_date + timedelta(days=n)
         index = bisect_left(holidays_data, current_date.strftime("%Y-%m-%d"))
         if (
             current_date.weekday() < 5

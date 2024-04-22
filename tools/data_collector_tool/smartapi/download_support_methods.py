@@ -1,6 +1,6 @@
-import os
 import time
 from datetime import datetime, timedelta
+from pathlib import Path
 
 import pandas as pd
 import requests
@@ -20,11 +20,11 @@ def search_valid_date(
 
     Parameters:
     -----------
-    start_date: `datetime`
+    start_date: ``datetime``
         Start date to search.
-    end_date: `datetime`
+    end_date: ``datetime``
         End date to search.
-    stock_symbol: `str`
+    stock_symbol: ``str``
         The symbol of the stock.
 
     Return:
@@ -60,15 +60,15 @@ def search_valid_date(
 
 
 def dataframe_to_json_files(
-    df: pd.DataFrame, dir_path: str, interval: CandlestickInterval
+    df: pd.DataFrame, dir_path: Path, interval: CandlestickInterval
 ):
     """Process the given dataframe and convert it into suitable data structure i.e dictionary which will be stored in json file.
 
     Parameters:
     -----------
-    df: `pd.DataFrame`
+    df: ``pd.DataFrame``
         pandas DataFrame to store into json files.
-    dir_path: `str`
+    dir_path: ``str``
         Path of the destination directory to store json files.
     """
     # Convert timestamp to datetime and extract year and day
@@ -87,12 +87,11 @@ def dataframe_to_json_files(
                 .to_dict(orient="index")
             )
             # Load
-            json_file_path = f"{dir_path}/{str(year)}.json"
-            if os.path.exists(json_file_path):
+            json_file_path = dir_path / f"{year}.json"
+            if json_file_path.exists():
                 stored_data = load_json_data(json_file_path)
                 stored_data.update(data)
-                data = stored_data
-            write_to_json_file(json_file_path, data)
+            write_to_json_file(json_file_path, stored_data)
     else:
         df["time"] = df["timestamp"].dt.strftime("%H:%M")
 
@@ -102,9 +101,9 @@ def dataframe_to_json_files(
         # Iterate over each group
         for (year, day), group in grouped:
             # Create directory for the year if it doesn't exist
-            year_dir = f"{dir_path}/{str(year)}"
-            if not os.path.exists(year_dir):
-                os.makedirs(year_dir)
+            year_dir = dir_path / f"{year}"
+            if not year_dir.exists():
+                year_dir.mkdir(parents=True, exist_ok=True)
 
             # Prepare data for JSON
             data = (
@@ -113,5 +112,5 @@ def dataframe_to_json_files(
                 .to_dict(orient="index")
             )
             # Write to JSON file
-            json_file_path = os.path.join(year_dir, f"{day}.json")
+            json_file_path = year_dir / f"{day}.json"
             write_to_json_file(json_file_path, data)

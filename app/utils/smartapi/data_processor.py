@@ -55,20 +55,18 @@ def process_smart_api_historical_stock_data(
     List[HistoricalStockPriceInfo]
         The processed data from the SmartAPI as a list of HistoricalStockPriceInfo.
     """
-    processed_historical_stock_data = []
-    for stock_data in historical_stock_data[0]:
-        if len(stock_data) == 0:
-            continue
-        processed_historical_stock_data.append(
-            HistoricalStockPriceInfo(
-                timestamp=stock_data[0],
-                open=stock_data[1],
-                close=stock_data[2],
-                low=stock_data[3],
-                high=stock_data[4],
-                volume=stock_data[5],
-                stock_symbol=historical_stock_data[1],
-                candle_interval=historical_stock_data[2],
-            )
+    processed_historical_stock_data = [
+        HistoricalStockPriceInfo(
+            timestamp=stock_data[0],
+            open=stock_data[1],
+            close=stock_data[2],
+            low=stock_data[3],
+            high=stock_data[4],
+            volume=stock_data[5],
+            stock_symbol=historical_stock_data[1],
+            candle_interval=historical_stock_data[2],
         )
+        for stock_data in historical_stock_data[0]
+        if len(stock_data) > 0
+    ]
     return processed_historical_stock_data

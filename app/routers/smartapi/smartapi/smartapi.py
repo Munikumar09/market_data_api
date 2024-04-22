@@ -31,7 +31,7 @@ async def latest_price_quote(stock_symbol: Annotated[str, Path()]):
     -----------
     - **stock_symbol**:
         It must be a valid stock symbol that is registered in the NSE website.
-        eg: ``TCS``, ``RELIANCE``
+        eg: `TCS`, `RELIANCE`
 
     """
 
@@ -113,7 +113,7 @@ async def historical_stock_data(
     -----------
     - **stock_symbol**:
         It must be a valid stock symbol that is registered in the NSE website.
-        eg: ``TCS``, ``RELIANCE``
+        eg: `TCS`, `RELIANCE`
 
     """
 

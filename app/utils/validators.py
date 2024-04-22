@@ -123,7 +123,7 @@ def validate_derivative_symbol_with_type(
 
 def get_date_format(date: str) -> str:
     """
-    Gives the format of given date eg, if date is ``09/09/2023`` then format is ``%d/%m/%Y``.
+    Gives the format of given date eg, if date is `09/09/2023` then format is `%d/%m/%Y`.
 
     Parameters:
     -----------
