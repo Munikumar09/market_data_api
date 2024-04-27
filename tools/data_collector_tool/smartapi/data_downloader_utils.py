@@ -86,6 +86,7 @@ def dataframe_to_json_files(
                 .drop(columns=["year", "timestamp"])
                 .to_dict(orient="index")
             )
+            # Load
             json_file_path = dir_path / f"{year}.json"
             if json_file_path.exists():
                 stored_data = load_json_data(json_file_path)

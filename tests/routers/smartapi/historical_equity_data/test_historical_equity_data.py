@@ -28,15 +28,13 @@ def validate_endpoint_io(input_stock_data: dict[str, Any]):
 
         # Assert that the response status code matches the expected status code
         assert response.status_code == input_stock_data["status_code"]
+
         data = response.json()
         # Assert that the response contains JSON data
-        assert response.json() is not None
-
-        # Assert that the response is list of stock data
-        assert isinstance(data, list)
+        assert data is not None
 
         # Parse the response JSON into a HistoricalStockDataBundle object
-        smart_api_stock_price_info = HistoricalStockDataBundle.parse_obj(data[0])
+        smart_api_stock_price_info = HistoricalStockDataBundle.parse_obj(data)
 
         # Assert that the stock_price_info object is an instance of StockPriceInfo
         assert isinstance(smart_api_stock_price_info, HistoricalStockDataBundle)

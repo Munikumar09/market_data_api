@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi import HTTPException, status
 
 
@@ -106,20 +108,20 @@ class AllDaysHolidayException(HTTPException):
 class DataUnavailableException(HTTPException):
     """DataUnavailableException raised when the requested data is not available from the SmartAPI."""
 
-    def __init__(self, start_date: str, stock_symbol: str):
+    def __init__(self, start_date: datetime, stock_symbol: str):
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=self.get_detail(stock_symbol, start_date),
         )
 
-    def get_detail(self, stock_symbol: str, start_date: str) -> str:
+    def get_detail(self, stock_symbol: str, start_date: datetime) -> str:
         """Provides the message related to the exception based on the stock symbol and start date.
 
         Parameters:
         -----------
         stock_symbol: ``str``
             The symbol of the stock.
-        start_date: ``str``
+        start_date: ``datetime``
             The date from where available of data starts.
 
         Return:
@@ -127,6 +129,9 @@ class DataUnavailableException(HTTPException):
         ``str``
             Message related the exception.
         """
-        if start_date is None:
+        if not start_date:
             return f"No data available for this stock {stock_symbol}"
-        return f"Data for the provided dates is unavailable; please use a date range starting from the {start_date} date onwards."
+        return (
+            "Data for the provided dates is unavailable; please use a date range"
+            f"starting from the {start_date.strftime('%Y-%m-%d')} date onwards."
+        )

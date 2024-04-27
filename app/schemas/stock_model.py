@@ -1,5 +1,3 @@
-from typing import Any
-
 from pydantic import BaseModel
 
 
@@ -40,10 +38,12 @@ class SmartAPIStockPriceInfo(StockPriceInfo):
     symbol_token: str
     prev_day_close: float
 
+
 class HistoricalStockDataBundle(BaseModel):
     """
-    HistoricalStockDataBundle model represents the available historical stock price information 
+    HistoricalStockDataBundle model represents the available historical stock price information
     and timestamps of missing data points of a stock at a given time .
     """
+
     available_stock_data: list[HistoricalStockPriceInfo]
     missing_timestamps: list[str]

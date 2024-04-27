@@ -129,20 +129,21 @@ def check_data_availability(
     # If end date is less than the date from where the data availability starts, then
     # no data can be retrieved; therefore, an error should be raised.
     data_starting_dates = load_json_data(DATA_STARTING_DATES_PATH)
-    data_starting_date = start_datetime
     if stock_symbol in data_starting_dates:
         data_starting_date = data_starting_dates.get(stock_symbol).get(interval.name)
-        if data_starting_date is None:
+        if not data_starting_date:
             raise DataUnavailableException(data_starting_date, stock_symbol)
-        data_starting_date = datetime.strptime(data_starting_date, '%Y-%m-%d')
-        if data_starting_date>end_datetime:
+        data_starting_date = datetime.strptime(data_starting_date, "%Y-%m-%d")
+        if data_starting_date > end_datetime:
             raise DataUnavailableException(data_starting_date, stock_symbol)
-    return max(start_datetime,data_starting_date)
+    else:
+        data_starting_date = start_datetime
+    return max(start_datetime, data_starting_date)
 
 
 def validate_date_range(
     from_date: str, to_date: str, interval: CandlestickInterval, stock_symbol: str
-) -> Tuple[str, str]:
+) -> Tuple[datetime, datetime]:
     """
     Validate given dates and their range.
 
@@ -154,6 +155,8 @@ def validate_date_range(
         End date and time to be validated.
     interval: ``CandlestickInterval``
         The interval of the candlestick.
+    stock_symbol: ``str``
+        The symbol of the stock.
 
     Exceptions:
     -----------
@@ -168,14 +171,16 @@ def validate_date_range(
 
     Return:
     -------
-    Tuple[str, str]
+    Tuple[datetime, datetime]
         validated start and end datetimes.
     """
     start_datetime = validate_datetime_format(from_date)
     end_datetime = validate_datetime_format(to_date)
 
     # check data is available or not between given dates.
-    start_datetime = check_data_availability(start_datetime, end_datetime, stock_symbol)
+    start_datetime = check_data_availability(
+        start_datetime, end_datetime, stock_symbol, interval
+    )
 
     # check date range should not exceed specific days per request based on given interval.
     total_days = (end_datetime - start_datetime).days
@@ -200,4 +205,4 @@ def validate_date_range(
         and (end_datetime.time() < start_time or start_datetime.time() > end_time)
     ):
         raise InvalidTradingHoursException()
-    return start_datetime.strftime("%Y-%m-%d %H:%M"), end_datetime.strftime("%Y-%m-%d %H:%M")
+    return start_datetime, end_datetime

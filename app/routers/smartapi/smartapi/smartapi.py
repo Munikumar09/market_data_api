@@ -1,5 +1,5 @@
 import json
-from typing import Annotated, List
+from typing import Annotated
 
 from fastapi import APIRouter, Path, Query
 
@@ -59,7 +59,7 @@ async def latest_price_quote(stock_symbol: Annotated[str, Path()]):
     return process_smart_api_stock_data(data["data"])
 
 
-@router.get("/history/{stock_symbol}")
+@router.get("/history/{stock_symbol}", response_model=HistoricalStockDataBundle)
 async def historical_stock_data(
     stock_symbol: Annotated[str, Path()],
     interval: Annotated[
@@ -120,16 +120,16 @@ async def historical_stock_data(
     stock_token, stock_symbol = validate_symbol_and_get_token(
         stock_exchange=Exchange.NSE, stock_symbol=stock_symbol
     )
-    valid_interval = CandlestickInterval.validate_interval(interval)
-    # start_date, end_date = validate_date_range(
-    #     start_date, end_date, valid_interval, stock_symbol.split("-")[0]
-    # )
+    validated_interval = CandlestickInterval.validate_interval(interval)
+    validated_start_date, validated_end_date = validate_date_range(
+        start_date, end_date, validated_interval, stock_symbol.split("-")[0]
+    )
     payload = {
         "exchange": Exchange.NSE.value,
         "tradingsymbol": stock_symbol,
-        "interval": valid_interval.name,
-        "fromdate": start_date,
-        "todate": end_date,
+        "interval": validated_interval.name,
+        "fromdate": validated_start_date.strftime("%Y-%m-%d %H:%M"),
+        "todate": validated_end_date.strftime("%Y-%m-%d %H:%M"),
         "symboltoken": stock_token,
     }
     json_payload = json.dumps(payload)
@@ -141,14 +141,13 @@ async def historical_stock_data(
     )
     res = connection.getresponse()
     data = json.loads(res.read().decode("utf-8"))
-    # if not data["data"]:
-    #     raise UnkownException(error_message=data["message"], status_code=res.status)
+    if not data["data"]:
+        raise UnkownException(error_message=data["message"], status_code=res.status)
 
-    return data['data']
-# process_smart_api_historical_stock_data(
-#         data["data"],
-#         stock_symbol,
-#         valid_interval,
-#         start_date,
-#         end_date,
-#     )
+    return process_smart_api_historical_stock_data(
+        data["data"],
+        stock_symbol,
+        validated_interval,
+        validated_start_date,
+        validated_end_date,
+    )

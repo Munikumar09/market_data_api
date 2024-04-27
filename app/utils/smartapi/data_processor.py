@@ -1,4 +1,4 @@
-from datetime import datetime, time, timedelta
+from datetime import datetime, time
 from typing import Any, Dict, List
 
 import numpy as np
@@ -49,19 +49,19 @@ def process_smart_api_stock_data(
 
 
 def process_available_stock_data(
-    historical_stock_data: tuple[List[List[Any]],str],
+    historical_stock_data: tuple[List[List[Any]], str, str],
 ) -> List[HistoricalStockPriceInfo]:
     """Processes the available data from the SmartAPI and returns the processed data.
 
     Parameters:
-    ----------- 
+    -----------
     historical_stock_data: `tuple[list[list[Any]],str]`
         The data to be processed.
 
     Return:
-    -------                 
-    List[HistoricalStockPriceInfo]         
-        Processed data as a HistoricalStockPriceInfo object.  
+    -------
+    List[HistoricalStockPriceInfo]
+        Processed data as a HistoricalStockPriceInfo object.
     """
     return [
         HistoricalStockPriceInfo(
@@ -79,12 +79,17 @@ def process_available_stock_data(
     ]
 
 
-def get_time_range(current_date: datetime, start_datetime: datetime, end_datetime: datetime, interval:CandlestickInterval)->List[str]:
-    """ Finds the list of all possible timestamps of given interval for the given current date 
-    from start time which is either 9:15 or time in given start_datetime to end time which is either 15:29 or time in given end_datetime.
+def get_time_range(
+    current_date: datetime,
+    start_datetime: datetime,
+    end_datetime: datetime,
+    interval: CandlestickInterval,
+) -> List[str]:
+    """Finds the list of all possible timestamps of given interval for the given current date from start time
+    which is either 9:15 or time in given start_datetime to end time which is either 15:29 or time in given end_datetime.
 
     Parameters:
-    ----------- 
+    -----------
     current_date: `datetime`
         The date for which to find the range of timestamps.
     start_datetime: `str`
@@ -95,21 +100,23 @@ def get_time_range(current_date: datetime, start_datetime: datetime, end_datetim
         The interval of the candlestick
 
     Return:
-    -------                 
-    List[str]         
-        The possible time range for given current date.  
+    -------
+    List[str]
+        The possible time range for given current date.
     """
-    if  interval.name == 'ONE_DAY':
+    if interval.name == "ONE_DAY":
         return [f"{current_date.strftime('%Y-%m-%d')}T00:00:00+05:30"]
-    start_time =  time(9,15)
-    end_time = time(15,29)
-    if(start_datetime.date()==current_date.date()):
+    start_time = time(9, 15)
+    end_time = time(15, 29)
+    if start_datetime.date() == current_date.date():
         start_time = max(start_time, start_datetime.time())
-    if(end_datetime.date()==current_date.date()):
-        end_time = min(end_time,end_datetime.time())
+    if end_datetime.date() == current_date.date():
+        end_time = min(end_time, end_datetime.time())
     # Create a datetime range for every minute from 9:15 to 15:29 on the particular day
     time_range = pd.date_range(
-        start=f"{current_date.date()} {start_time.strftime('%H:%M')}:00+05:30", end=f"{current_date.date()} {end_time.strftime('%H:%M')}:00+05:30", freq=f"{interval.value[0]}min"
+        start=f"{current_date.date()} {start_time.strftime('%H:%M')}:00+05:30",
+        end=f"{current_date.date()} {end_time.strftime('%H:%M')}:00+05:30",
+        freq=f"{interval.value[0]}min",
     )
 
     # Convert the datetime range to a list of timestamps of string type
@@ -124,76 +131,73 @@ def get_missing_timestamps(
     historical_stock_data: List[List[str]],
     stock_symbol: str,
     interval: CandlestickInterval,
-    start_datetime: str,
-    end_datetime: str,
+    start_datetime: datetime,
+    end_datetime: datetime,
 ) -> List[str]:
     """Finds the missing timestamps of given interval in the historical stock data
     of a stock between start_datetime and end_datetime.
     Parameters:
-    ----------- 
+    -----------
     historical_stock_data: `List[List[str]]`
         Available historical stock data points.
     stock_symbol: `str`
         The symbol of the stock.
     interval: `CandlestickInterval`
         Candlestick interval.
-    start_datetime: `str`
+    start_datetime: `datetime`
          The initial datetime from which to find timestamps of missing data points.
-    end_datetime: `str`
+    end_datetime: `datetime`
         The final datetime up to which to find timestamps of missing data points.
 
     Return:
-    -------                 
-    List[str]         
-        List of missing timestamps in given historical stock data.  
+    -------
+    List[str]
+        List of missing timestamps in given historical stock data.
     """
     df = pd.DataFrame(historical_stock_data)
-    start_datetime = datetime.strptime(start_datetime, "%Y-%m-%d %H:%M")
-    end_datetime = datetime.strptime(end_datetime, "%Y-%m-%d %H:%M")
-    full_datetime_range=[]
+    full_datetime_range = []
     missing_timestamps = []
     try:
         start_datetime = check_data_availability(
-            start_datetime, end_datetime, stock_symbol.split("-")[0]
+            start_datetime, end_datetime, stock_symbol.split("-")[0], interval
         )
         open_dates = find_open_market_days(start_datetime, end_datetime)
-        ic(start_datetime, end_datetime)
-        ic(open_dates)
         for open_date in open_dates:
-            full_datetime_range.extend(get_time_range(open_date, start_datetime, end_datetime, interval))
+            full_datetime_range.extend(
+                get_time_range(open_date, start_datetime, end_datetime, interval)
+            )
         missing_timestamps = np.setdiff1d(full_datetime_range, df[0]).tolist()
     except Exception as e:
         ic(e)
     return missing_timestamps
-    
 
 
 def process_smart_api_historical_stock_data(
     historical_stock_data: List[List[Any]],
     stock_symbol: str,
     interval: CandlestickInterval,
-    start_datetime: str,
-    end_datetime: str,
+    start_datetime: datetime,
+    end_datetime: datetime,
 ) -> HistoricalStockDataBundle:
-    """Processes the available data points and find timestamps of missing data points of a stock 
+    """Processes the available data points and find timestamps of missing data points of a stock
     between given start date and end date and returns them as a tuple.
 
     Parameters:
-    ----------- 
+    -----------
     historical_stock_data: `List[List[Any]]`
         Available historical stock data points.
     stock_symbol: `str`
         The symbol of the stock.
     interval: `CandlestickInterval`
         Candlestick interval.
-    start_datetime: `str`
+    start_datetime: `datetime`
          The initial datetime from which historical stock data should be retrieved.
-    end_datetime: `str`
+    end_datetime: `datetime`
         The final datetime up to which historical stock data should be retrieved.
 
     Return:
-    -------                 
-    HistoricalStockDataBundle         
+    -------
+    HistoricalStockDataBundle
         The processed available data points and timestamps of missing data points as a HistoricalStockDataBundle object.
     """
     processed_available_stock_data = process_available_stock_data(

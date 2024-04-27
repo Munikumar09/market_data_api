@@ -218,12 +218,12 @@ def data_unavailable_dates_io() -> list[dict[str, Any]]:
             "error": "Data for the provided dates is unavailable; please use a date range starting from the 2016-10-03 date onwards.",
         },
         {
-            "input_stock_symbol": "VCL",
-            "input_interval": "ONE_MINUTE",
+            "input_stock_symbol": "GRINDWELL",
+            "input_interval": "1d",
             "input_from_date": "2015-10-14 9:20",
             "input_to_date": "2015-10-15 13:25",
             "status_code": 404,
-            "error": "No data available for this stock VCL",
+            "error": "No data available for this stock GRINDWELL",
         },
     ]
 
