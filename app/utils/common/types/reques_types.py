@@ -18,14 +18,14 @@ class CandlestickInterval(Enum):
     Each member corresponds to a specific time interval and its associated value.
     """
 
-    ONE_MINUTE = 30
-    THREE_MINUTE = 60
-    FIVE_MINUTE = 100
-    TEN_MINUTE = 100
-    FIFTEEN_MINUTE = 200
-    THIRTY_MINUTE = 200
-    ONE_HOUR = 400
-    ONE_DAY = 2000
+    ONE_MINUTE = (1, 30)
+    THREE_MINUTE = (3, 60)
+    FIVE_MINUTE = (5, 100)
+    TEN_MINUTE = (10, 100)
+    FIFTEEN_MINUTE = (15, 200)
+    THIRTY_MINUTE = (30, 200)
+    ONE_HOUR = (60, 400)
+    ONE_DAY = (1440, 2000)
     POSSIBLE_INPUT_INTERVALS = (
         ("1min", "1minute", "oneminute", ONE_MINUTE),
         ("3min", "3minute", "threeminute", THREE_MINUTE),
@@ -33,7 +33,8 @@ class CandlestickInterval(Enum):
         ("10min", "10minute", "tenminute", TEN_MINUTE),
         ("15min", "15minute", "fifteenminute", FIFTEEN_MINUTE),
         ("30min", "30minute", "thirtyminute", THIRTY_MINUTE),
-        ("1day", "1d", "oneday", ONE_DAY),
+        ("1hr", "1hour", "onehour", ONE_HOUR),
+        ("1d", "1day", "oneday", ONE_DAY),
     )
 
     @staticmethod

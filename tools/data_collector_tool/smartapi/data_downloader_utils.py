@@ -51,7 +51,7 @@ def search_valid_date(
                 valid_date = first_day.replace(day=1)
             else:
                 start_date = last_day + timedelta(days=1)
-            time.sleep(0.2)
+            time.sleep(0.3)
         except Exception as e:
             print(e)
             start_date = last_day + timedelta(days=1)
@@ -86,7 +86,6 @@ def dataframe_to_json_files(
                 .drop(columns=["year", "timestamp"])
                 .to_dict(orient="index")
             )
-            # Load
             json_file_path = dir_path / f"{year}.json"
             if json_file_path.exists():
                 stored_data = load_json_data(json_file_path)

@@ -61,61 +61,83 @@ def validate_symbol_and_get_token(
     return all_symbols_data[stock_symbol], stock_symbol
 
 
-def check_market_open_between_dates(start_date: datetime, end_date: datetime):
-    """Checks whether the stock market is open between the given dates.
+def find_open_market_days(start_datetime: datetime, end_datetime: datetime) -> list:
+    """Finds the open market days between start_datetime and end_datetime.
 
     Parameters:
     -----------
-    start_date: ``datetime``
-        Start date.
-    end_date: ``datetime``
-        End date.
+    start_datetime: ``datetime``
+        The initial date from which to find the open market days
+    end_datetime: ``datetime``
+        The final date upto which to find the open market days.
 
-    Exceptions:
-    -----------
-    ``AllDaysHolidayException``
-        Raised when all days in the given date range are market holidays.
+    Return:
+    -------
+    list
+        List of open market days between the given start date and end date.
     """
     # Read the holidays data into list
     holidays_data = read_text_data(NSE_HOLIDAYS_PATH)
+    open_days = []
     # Check for any market open day between given dates.
     # If you find any open day then definitely the data is not empty otherwise raise an error.
-    for n in range((end_date - start_date).days + 1):
-        current_date = start_date + timedelta(days=n)
-        index = bisect_left(holidays_data, current_date.strftime("%Y-%m-%d"))
+    for day in range((end_datetime.date() - start_datetime.date()).days + 1):
+        current_datetime = start_datetime + timedelta(days=day)
+        index = bisect_left(holidays_data, current_datetime.strftime("%Y-%m-%d"))
         if (
-            current_date.weekday() < 5
+            current_datetime.weekday() < 5
             and index != len(holidays_data)
-            and holidays_data[index] != current_date.strftime("%Y-%m-%d")
+            and holidays_data[index] != current_datetime.strftime("%Y-%m-%d")
         ):
-            return
-        current_date += timedelta(days=1)
-    raise AllDaysHolidayException(
-        start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d")
-    )
+            open_days.append(current_datetime)
+    return open_days
 
 
-def check_data_availability(end_date: datetime, stock_symbol: str):
-    """Check whether the data is available or not for the requested dates from the SmartAPI.
+def check_data_availability(
+    start_datetime: datetime,
+    end_datetime: datetime,
+    stock_symbol: str,
+    interval: CandlestickInterval,
+) -> datetime:
+    """Verifies the availability of stock data for a given stock symbol and date range through SmartAPI.
+    Returns the earliest date from which data is available. If data is available for the requested start date,
+    it returns that date; otherwise, it returns the earliest available date with data.
+
 
     Parameters:
     -----------
-    end_date: ``datetime``
-        End date
+    start_datetime: ``datetime``
+        The initial date from which historical stock data should be retrieved.
+    end_datetime: ``datetime``
+        The final date up to which historical stock data should be retrieved.
     stock_symbol: ``str``
-        Symbol of the stock.
+        The symbol of the stock.
+    interval: ``CandlestickInterval``
+        The interval of the Candlestick.
 
     Exceptions:
     -----------
     ``DataUnavailableException``
         Raised when the data is unavailable for the requested dates from the SmartAPI.
+
+    Return:
+    -------
+    datetime
+        Either the requested start date or the earliest available date with data.
     """
+
     # If end date is less than the date from where the data availability starts, then
     # no data can be retrieved; therefore, an error should be raised.
     data_starting_dates = load_json_data(DATA_STARTING_DATES_PATH)
-    starting_date = data_starting_dates.get(stock_symbol)
-    if starting_date is None or end_date < datetime.strptime(starting_date, "%Y-%m-%d"):
-        raise DataUnavailableException(starting_date, stock_symbol)
+    data_starting_date = start_datetime
+    if stock_symbol in data_starting_dates:
+        data_starting_date = data_starting_dates.get(stock_symbol).get(interval.name)
+        if data_starting_date is None:
+            raise DataUnavailableException(data_starting_date, stock_symbol)
+        data_starting_date = datetime.strptime(data_starting_date, '%Y-%m-%d')
+        if data_starting_date>end_datetime:
+            raise DataUnavailableException(data_starting_date, stock_symbol)
+    return max(start_datetime,data_starting_date)
 
 
 def validate_date_range(
@@ -130,45 +152,52 @@ def validate_date_range(
         Start date and time to be validated.
     to_date: ``str``
         End date and time to be validated.
-    interval: ``str``
-        candlestick interval.
+    interval: ``CandlestickInterval``
+        The interval of the candlestick.
 
     Exceptions:
     -----------
     ``InvalidDateRangeBoundsException``
         If the specified date range is invalid for given interval.
 
-    InvalidTradingHoursException:
+    ``InvalidTradingHoursException``
         If the time accessed outside trading hours of stock market.
+
+    ``AllDaysHolidayException``
+        Raised when all days in the given date range are market holidays.
 
     Return:
     -------
     Tuple[str, str]
-        validated start and end dates.
+        validated start and end datetimes.
     """
-    start_date = validate_datetime_format(from_date)
-    end_date = validate_datetime_format(to_date)
+    start_datetime = validate_datetime_format(from_date)
+    end_datetime = validate_datetime_format(to_date)
 
     # check data is available or not between given dates.
-    check_data_availability(end_date, stock_symbol)
+    start_datetime = check_data_availability(start_datetime, end_datetime, stock_symbol)
+
+    # check date range should not exceed specific days per request based on given interval.
+    total_days = (end_datetime - start_datetime).days
+    if total_days < 0 and total_days > interval.value(1):
+        raise InvalidDateRangeBoundsException(
+            from_date, to_date, interval.value(1), interval.name
+        )
 
     # check given dates range are market holidays or not.
-    check_market_open_between_dates(start_date, end_date)
+    open_dates = find_open_market_days(start_datetime, end_datetime)
+    if not open_dates:
+        raise AllDaysHolidayException(
+            start_datetime.strftime("%Y-%m-%d"), end_datetime.strftime("%Y-%m-%d")
+        )
 
     # check given timings are market active trading hours.
     start_time = time(9, 15)
     end_time = time(15, 29)
-    if (start_date.time() < start_time or start_date.time() > end_time) and (
-        end_date.time() < start_time or end_date.time() > end_time
+    if (
+        interval.name != "ONE_DAY"
+        and open_dates[0].date() == end_datetime.date()
+        and (end_datetime.time() < start_time or start_datetime.time() > end_time)
     ):
         raise InvalidTradingHoursException()
-
-    # check date range should not exceed specific days per request based on given interval.
-    total_days = (end_date - start_date).days
-    if total_days >= 0 and total_days <= interval.value:
-        return start_date.strftime("%Y-%m-%d %H:%M"), end_date.strftime(
-            "%Y-%m-%d %H:%M"
-        )
-    raise InvalidDateRangeBoundsException(
-        from_date, to_date, interval.value, interval.name
-    )
+    return start_datetime.strftime("%Y-%m-%d %H:%M"), end_datetime.strftime("%Y-%m-%d %H:%M")

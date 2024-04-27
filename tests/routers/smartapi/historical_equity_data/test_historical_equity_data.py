@@ -4,7 +4,7 @@ from typing import Any
 from fastapi.testclient import TestClient
 
 from app.routers.smartapi.smartapi.smartapi import router
-from app.schemas.stock_model import HistoricalStockPriceInfo
+from app.schemas.stock_model import HistoricalStockDataBundle
 from tests.utils.common.exception_validators import validate_exception
 
 client = TestClient(router)
@@ -35,11 +35,11 @@ def validate_endpoint_io(input_stock_data: dict[str, Any]):
         # Assert that the response is list of stock data
         assert isinstance(data, list)
 
-        # Parse the response JSON into a HistoricalStockPriceInfo object
-        smart_api_stock_price_info = HistoricalStockPriceInfo.parse_obj(data[0])
+        # Parse the response JSON into a HistoricalStockDataBundle object
+        smart_api_stock_price_info = HistoricalStockDataBundle.parse_obj(data[0])
 
-        # # Assert that the stock_price_info object is an instance of StockPriceInfo
-        assert isinstance(smart_api_stock_price_info, HistoricalStockPriceInfo)
+        # Assert that the stock_price_info object is an instance of StockPriceInfo
+        assert isinstance(smart_api_stock_price_info, HistoricalStockDataBundle)
 
     else:
         validate_exception(endpoint_url, input_stock_data, client)

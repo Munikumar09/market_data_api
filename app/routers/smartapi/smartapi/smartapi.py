@@ -3,7 +3,7 @@ from typing import Annotated, List
 
 from fastapi import APIRouter, Path, Query
 
-from app.schemas.stock_model import HistoricalStockPriceInfo, SmartAPIStockPriceInfo
+from app.schemas.stock_model import HistoricalStockDataBundle, SmartAPIStockPriceInfo
 from app.utils.common.exceptions import UnkownException
 from app.utils.common.types.financial_types import Exchange
 from app.utils.common.types.reques_types import CandlestickInterval, RequestType
@@ -59,7 +59,7 @@ async def latest_price_quote(stock_symbol: Annotated[str, Path()]):
     return process_smart_api_stock_data(data["data"])
 
 
-@router.get("/history/{stock_symbol}", response_model=List[HistoricalStockPriceInfo])
+@router.get("/history/{stock_symbol}")
 async def historical_stock_data(
     stock_symbol: Annotated[str, Path()],
     interval: Annotated[
@@ -121,9 +121,9 @@ async def historical_stock_data(
         stock_exchange=Exchange.NSE, stock_symbol=stock_symbol
     )
     valid_interval = CandlestickInterval.validate_interval(interval)
-    start_date, end_date = validate_date_range(
-        start_date, end_date, valid_interval, stock_symbol.split("-")[0]
-    )
+    # start_date, end_date = validate_date_range(
+    #     start_date, end_date, valid_interval, stock_symbol.split("-")[0]
+    # )
     payload = {
         "exchange": Exchange.NSE.value,
         "tradingsymbol": stock_symbol,
@@ -141,13 +141,14 @@ async def historical_stock_data(
     )
     res = connection.getresponse()
     data = json.loads(res.read().decode("utf-8"))
-    if not data["data"]:
-        raise UnkownException(error_message=data["message"], status_code=res.status)
+    # if not data["data"]:
+    #     raise UnkownException(error_message=data["message"], status_code=res.status)
 
-    return process_smart_api_historical_stock_data(
-        (
-            data["data"],
-            stock_symbol,
-            valid_interval.name,
-        )
-    )
+    return data['data']
+# process_smart_api_historical_stock_data(
+#         data["data"],
+#         stock_symbol,
+#         valid_interval,
+#         start_date,
+#         end_date,
+#     )
