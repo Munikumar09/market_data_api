@@ -132,6 +132,6 @@ class DataUnavailableException(HTTPException):
         if not start_date:
             return f"No data available for this stock {stock_symbol}"
         return (
-            "Data for the provided dates is unavailable; please use a date range"
+            "Data for the provided dates is unavailable; please use a date range "
             f"starting from the {start_date.strftime('%Y-%m-%d')} date onwards."
         )
