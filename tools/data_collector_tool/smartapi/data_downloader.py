@@ -19,8 +19,14 @@ from tools.data_collector_tool.smartapi.data_downloader_utils import (
 
 
 def download_nifty500_stock_data(interval: str):
-    """Download the candlestick data of the given interval for the nifty 500 stocks"""
+    """Download the candlestick data of the given interval for the nifty 500 stocks
 
+
+    Parameters:
+    -----------
+    interval: ``str``
+        The interval of the candlestick.
+    """
     valid_interval = CandlestickInterval.validate_interval(interval)
 
     # Load nifty 500 stocks symbols from the given csv file.

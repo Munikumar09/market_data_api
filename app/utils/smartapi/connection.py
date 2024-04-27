@@ -110,7 +110,7 @@ def get_endpoint_connection(
     
     Returns:
     --------
-    ``HTTPConnection``:
+    HTTPConnection:
         The HTTP connection object for the given endpoint.
     
 

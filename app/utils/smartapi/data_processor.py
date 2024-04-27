@@ -17,17 +17,17 @@ def process_smart_api_stock_data(
     stock_price_data: Dict[str, Any]
 ) -> SmartAPIStockPriceInfo:
     """
-    Processes the data from the SmartAPI and returns the processed data
+    Processes the data from the SmartAPI and returns the processed data.
 
     Parameters:
     -----------
     stock_price_data: ``Dict[str, Any]``
-        The data from the SmartAPI to be processed
+        The data from the SmartAPI to be processed.
 
     Returns:
     --------
     ``SmartAPIStockPriceInfo``
-        The processed data from the SmartAPI as a SmartAPIStockPriceInfo object
+        The processed data from the SmartAPI as a SmartAPIStockPriceInfo object.
 
     """
     return SmartAPIStockPriceInfo(
@@ -54,7 +54,7 @@ def process_available_stock_data(
 
     Parameters:
     -----------
-    historical_stock_data: `tuple[list[list[Any]],str]`
+    historical_stock_data: ``tuple[list[list[Any]],str]``
         The data to be processed.
 
     Return:
@@ -89,13 +89,13 @@ def get_time_range(
 
     Parameters:
     -----------
-    current_date: `datetime`
+    current_date: ``datetime``
         The date for which to find the range of timestamps.
-    start_datetime: `str`
+    start_datetime: ``str``
          The initial datetime from which historical stock data should be retrieved.
-    end_datetime: `str`
+    end_datetime: ``str``
         The final datetime up to which historical stock data should be retrieved.
-    interval: `CandlestickInterval`
+    interval: ``CandlestickInterval``
         The interval of the candlestick
 
     Return:
@@ -137,15 +137,15 @@ def get_missing_timestamps(
     of a stock between start_datetime and end_datetime.
     Parameters:
     -----------
-    historical_stock_data: `List[List[str]]`
+    historical_stock_data: ``List[List[str]]``
         Available historical stock data points.
-    stock_symbol: `str`
+    stock_symbol: ``str``
         The symbol of the stock.
-    interval: `CandlestickInterval`
+    interval: ``CandlestickInterval``
         Candlestick interval.
-    start_datetime: `datetime`
+    start_datetime: ``datetime``
          The initial datetime from which to find timestamps of missing data points.
-    end_datetime: `datetime`
+    end_datetime: ``datetime``
         The final datetime up to which to find timestamps of missing data points.
 
     Return:
@@ -183,15 +183,15 @@ def process_smart_api_historical_stock_data(
 
     Parameters:
     -----------
-    historical_stock_data: `List[List[Any]]`
+    historical_stock_data: ``List[List[Any]]``
         Available historical stock data points.
-    stock_symbol: `str`
+    stock_symbol: ``str``
         The symbol of the stock.
-    interval: `CandlestickInterval`
+    interval: ``CandlestickInterval``
         Candlestick interval.
-    start_datetime: `datetime`
+    start_datetime: ``datetime``
          The initial datetime from which historical stock data should be retrieved.
-    end_datetime: `datetime`
+    end_datetime: ``datetime``
         The final datetime up to which historical stock data should be retrieved.
 
     Return:

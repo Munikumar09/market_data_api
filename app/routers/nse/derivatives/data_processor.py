@@ -35,7 +35,7 @@ def filter_strike_prices_with_expiry_date(
 
 def get_option(option: dict[str, Any]) -> dict[str, float]:
     """
-    Filter the option data required to initialize ``Option`` model class,
+    Filter the option data required to initialize `Option` model class,
     from the given "CE" or "PE" data.
 
     Parameters:
