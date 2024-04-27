@@ -3,7 +3,6 @@ from typing import Any, Dict, List
 
 import numpy as np
 import pandas as pd
-from icecream import ic
 
 from app.schemas.stock_model import (
     HistoricalStockDataBundle,
@@ -168,7 +167,7 @@ def get_missing_timestamps(
             )
         missing_timestamps = np.setdiff1d(full_datetime_range, df[0]).tolist()
     except Exception as e:
-        ic(e)
+        print(e)
     return missing_timestamps
 
 
