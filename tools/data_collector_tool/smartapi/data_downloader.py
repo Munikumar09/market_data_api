@@ -10,12 +10,12 @@ from app.utils.file_utils import create_dir, load_json_data
 from tools.data_collector_tool.smartapi.constants import (
     DATA_DOWNLOAD_PATH,
     DATA_STARTING_DATES_PATH,
+    HISTORICAL_STOCK_DATA_URL,
     NIFTY_500_STOCK_LIST_PATH,
 )
 from tools.data_collector_tool.smartapi.data_downloader_utils import (
     dataframe_to_json_files,
 )
-from tools.data_collector_tool.smartapi.constants import HISTORICAL_STOCK_DATA_URL
 
 
 def download_nifty500_stock_data(interval: str):
