@@ -5,6 +5,7 @@ from pathlib import Path
 import pandas as pd
 import requests
 
+from tools.data_collector_tool.smartapi.constants import HISTORICAL_STOCK_DATA_URL
 from app.utils.common.types.reques_types import CandlestickInterval
 from app.utils.file_utils import create_dir, load_json_data, write_to_json_file
 
@@ -42,7 +43,7 @@ def search_valid_date(
                 days=1
             )
             stocks_url = (
-                f"http://127.0.0.1:8000/smart-api/equity/history/{stock_symbol}?interval={interval.name}"
+                f"{HISTORICAL_STOCK_DATA_URL}{stock_symbol}?interval={interval.name}"
                 f"&start_date={first_day.strftime('%Y-%m-%d')}%2009%3A15&end_date={last_day.strftime('%Y-%m-%d')}%2015%3A29"
             )
             response = requests.get(stocks_url, timeout=(60, 60))

@@ -15,6 +15,7 @@ from tools.data_collector_tool.smartapi.constants import (
 from tools.data_collector_tool.smartapi.data_downloader_utils import (
     dataframe_to_json_files,
 )
+from tools.data_collector_tool.smartapi.constants import HISTORICAL_STOCK_DATA_URL
 
 
 def download_nifty500_stock_data(interval: str):
@@ -52,7 +53,7 @@ def download_nifty500_stock_data(interval: str):
             first_day = start_date + timedelta(days=next_day)
             last_day = first_day + timedelta(days=valid_interval.value[1] - 1)
             stocks_url = (
-                f"http://127.0.0.1:8000/smart-api/equity/history/{stock_symbol}?interval={valid_interval.name}&start_date="
+                f"{HISTORICAL_STOCK_DATA_URL}{stock_symbol}?interval={valid_interval.name}&start_date="
                 f"{first_day.strftime('%Y-%m-%d')}%2000%3A00&end_date={last_day.strftime('%Y-%m-%d')}%2015%3A29"
             )
             try:
