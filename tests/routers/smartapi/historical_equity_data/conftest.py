@@ -12,7 +12,7 @@ def stock_symbol_io() -> list[dict[str, Any]]:
     Return:
     -------
     ``List[dict]``
-          List of inputs and respective outputs
+        List of inputs and respective outputs
     """
     return [
         {
@@ -56,7 +56,7 @@ def candlestick_interval_io() -> list[dict[str, Any]]:
     Return:
     -------
     ``List[dict]``
-          List of inputs and respective outputs
+        List of inputs and respective outputs
     """
     return [
         {
@@ -108,7 +108,7 @@ def different_datetime_formats_io() -> list[dict[str, Any]]:
     Return:
     -------
     ``List[dict]``
-          List of inputs and respective outputs
+        List of inputs and respective outputs
     """
     return [
         {
@@ -143,14 +143,6 @@ def different_datetime_formats_io() -> list[dict[str, Any]]:
             "error": "Given datetime format january is invalid. Please provide a valid datetime that should be in the form 'year-month-day hour:minute'.",
         },
         {
-            "input_stock_symbol": "lt",
-            "input_interval": "ONE_MINUTE",
-            "input_from_date": "20-3-2023 10:34",
-            "input_to_date": "2023-10-11 15:29",
-            "status_code": 400,
-            "error": "Given datetime format 20-3-2023 10:34 is invalid. Please provide a valid datetime that should be in the form 'year-month-day hour:minute'.",
-        },
-        {
             "input_stock_symbol": "SBIN",
             "input_interval": "ONE_MINUTE",
             "input_from_date": "2023/10/9 15:15",
@@ -176,7 +168,7 @@ def holiday_dates_io() -> list[dict[str, Any]]:
     Return:
     -------
     ``List[dict]``
-          List of inputs and respective outputs
+        List of inputs and respective outputs
     """
     return [
         {
@@ -206,7 +198,7 @@ def data_unavailable_dates_io() -> list[dict[str, Any]]:
     Return:
     -------
     ``List[dict]``
-          List of inputs and respective outputs
+        List of inputs and respective outputs
     """
     return [
         {

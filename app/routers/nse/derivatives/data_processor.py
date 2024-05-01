@@ -45,7 +45,7 @@ def get_option(option: dict[str, Any]) -> dict[str, float]:
 
     Return:
     -------
-    dict[str, float]:
+    dict[str, float]
         dictionary contain the option data that is required to initialize `Option` model class.
     """
     return {

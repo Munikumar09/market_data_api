@@ -13,9 +13,11 @@ class RequestType(Enum):
 
 class CandlestickInterval(Enum):
     """
-    Enumeration class representing candlestick intervals.
+    Enumeration class representing possible candlestick intervals.
 
-    Each member corresponds to a specific time interval and its associated value.
+    Each member except the last one corresponds to a specific time interval and its associated value which is a tuple of
+    numerical value of interval in minutes and max days possible per request. The last member corresponds to the possible input
+    intervals given by the users.
     """
 
     ONE_MINUTE = (1, 30)
@@ -48,7 +50,7 @@ class CandlestickInterval(Enum):
 
         Exceptions:
         -----------
-        ``IntervalNotFoundException``:
+        ``IntervalNotFoundException``
             If the interval is not a valid enum member.
 
         Return:
@@ -57,10 +59,11 @@ class CandlestickInterval(Enum):
             The enum member corresponding to the validated interval.
         """
 
-        # Normalize the interval string
+        # Normalize the interval string by removing spaces, -, _, and converting all characters to lower case.
         normalized_interval = (
             interval.lower().replace(" ", "").replace("-", "").replace("_", "")
         )
+        # Remove last s in the interval if exist.
         if normalized_interval.endswith("s"):
             normalized_interval = normalized_interval[:-1]
         for (

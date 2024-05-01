@@ -27,7 +27,7 @@ def get_option_chain(
 
     Raises:
     -------
-    HTTPException:
+    ``HTTPException``
         If there is no expiry for the given derivative on the given expiry date.
 
     Return:

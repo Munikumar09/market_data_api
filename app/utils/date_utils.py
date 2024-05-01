@@ -37,7 +37,7 @@ def last_date_of_weekday(year: int, month: int, weekday: int):
 
     Raises
     ------
-    ValueError:
+    ``ValueError``
         If the input year, month or weekday is out of range.
 
     """
@@ -85,13 +85,13 @@ def get_date(weekday: str, monthly: bool = False):
 
     Returns
     -------
-    str:
+    str
         The date of the weekday in the format "%d-%b-%Y", such as "08-Oct-2023".
 
 
     Raises
     ------
-    ValueError:
+    ``ValueError``
         If the input weekday is invalid.
 
     Examples
@@ -165,7 +165,7 @@ def get_expiry_dates(
 
     Returns:
     --------
-    ``List[str]``
+    List[str]
         The list of expiry dates for the given symbol
     """
 

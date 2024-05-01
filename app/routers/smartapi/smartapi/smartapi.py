@@ -13,10 +13,7 @@ from app.utils.smartapi.data_processor import (
     process_smart_api_stock_data,
 )
 from app.utils.smartapi.urls import CANDLE_DATA_URL, LAST_TRADED_PRICE_URL
-from app.utils.smartapi.validator import (
-    validate_date_range,
-    validate_symbol_and_get_token,
-)
+from app.utils.smartapi.validator import validate_dates, validate_symbol_and_get_token
 
 router = APIRouter(prefix="/smart-api/equity", tags=["equity"])
 
@@ -106,8 +103,8 @@ async def historical_stock_data(
 ):
     """
     Get the historical stock data for a given symbol.
-    This endpoint provides the historical candle data of the  given stock symbol for a particular time period from an
-    External API in realtime.
+    This endpoint provides the historical candle data of the  given stock symbol and candlestick interval for
+    a particular time period from an External API in realtime.
 
     Parameters:
     -----------
@@ -121,7 +118,7 @@ async def historical_stock_data(
         stock_exchange=Exchange.NSE, stock_symbol=stock_symbol
     )
     validated_interval = CandlestickInterval.validate_interval(interval)
-    validated_start_date, validated_end_date = validate_date_range(
+    validated_start_date, validated_end_date = validate_dates(
         start_date, end_date, validated_interval, stock_symbol.split("-")[0]
     )
     payload = {

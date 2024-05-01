@@ -1,13 +1,12 @@
 # pylint: disable=too-many-locals
 from datetime import datetime, timedelta
-from pathlib import Path
 
 import pandas as pd
 import requests
 from tqdm import tqdm
 
 from app.utils.common.types.reques_types import CandlestickInterval
-from app.utils.file_utils import load_json_data
+from app.utils.file_utils import create_dir, load_json_data
 from tools.data_collector_tool.smartapi.constants import (
     DATA_DOWNLOAD_PATH,
     DATA_STARTING_DATES_PATH,
@@ -44,10 +43,7 @@ def download_nifty500_stock_data(interval: str):
             continue
         start_date = datetime.strptime(start_date, "%Y-%m-%d")
         # Destination location to store the downloaded stock data.
-        dir_path = Path(f"{DATA_DOWNLOAD_PATH}/{stock_symbol}")
-        # Create a directory if it doesn't exist.
-        if not dir_path.exists():
-            dir_path.mkdir(parents=True, exist_ok=True)
+        dir_path = create_dir(f"{DATA_DOWNLOAD_PATH}/{stock_symbol}")
 
         # Traverse the dates and download the data of the given stock and interval.
         for next_day in range(

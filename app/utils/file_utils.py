@@ -15,7 +15,7 @@ def resolve_path(file_path: str | Path) -> Path:
 
     Raises:
     -------
-    FileNotFoundError:
+    ``FileNotFoundError``
         Raised when the given file path not exists.
 
     Return:
@@ -106,3 +106,23 @@ def write_to_json_file(file_path: str | Path, data: dict):
     with open(file_path, "w", encoding="utf-8") as fp:
         json.dump(data, fp, indent=4)
     print(f"Data successfully written into the file {file_path}")
+
+
+def create_dir(dir_path: str | Path) -> Path:
+    """Create a directory if it doesn't exist.
+
+    Parameters:
+    -----------
+    dir_path: `str | Path`
+        The path of the directory to be created. It can be a string or a Path object.
+
+    Return:
+    -------
+    Path
+        The Path object corresponding to the created directory.
+    """
+    if isinstance(dir_path, str):
+        dir_path = Path(dir_path)
+    if not dir_path.exists():
+        dir_path.mkdir(parents=True, exist_ok=True)
+    return dir_path

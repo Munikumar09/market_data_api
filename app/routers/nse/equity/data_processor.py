@@ -11,7 +11,7 @@ def filter_nifty_stocks(stocks_data: list[dict[str, Any]]) -> list[StockPriceInf
     Parameters:
     -----------
     stocks_data: ``list[dict[str,Any]]``
-        Json parsed response of s stock from the Nse api
+        Json parsed response of stock from the Nse api
 
     Return:
     -------

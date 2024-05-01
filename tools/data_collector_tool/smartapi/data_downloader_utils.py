@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 
 from app.utils.common.types.reques_types import CandlestickInterval
-from app.utils.file_utils import load_json_data, write_to_json_file
+from app.utils.file_utils import create_dir, load_json_data, write_to_json_file
 
 
 def search_valid_date(
@@ -101,9 +101,7 @@ def dataframe_to_json_files(
         # Iterate over each group
         for (year, day), group in grouped:
             # Create directory for the year if it doesn't exist
-            year_dir = dir_path / f"{year}"
-            if not year_dir.exists():
-                year_dir.mkdir(parents=True, exist_ok=True)
+            year_dir = create_dir(dir_path / f"{year}")
 
             # Prepare data for JSON
             data = (

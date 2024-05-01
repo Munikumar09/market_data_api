@@ -76,6 +76,8 @@ def find_open_market_days(start_datetime: datetime, end_datetime: datetime) -> l
     list
         List of open market days between the given start date and end date.
     """
+    if end_datetime < start_datetime:
+        raise ValueError()
     # Read the holidays data into list
     holidays_data = read_text_data(NSE_HOLIDAYS_PATH)
     open_days = []
@@ -141,7 +143,7 @@ def check_data_availability(
     return max(start_datetime, data_starting_date)
 
 
-def validate_date_range(
+def validate_dates(
     from_date: str, to_date: str, interval: CandlestickInterval, stock_symbol: str
 ) -> Tuple[datetime, datetime]:
     """
@@ -184,9 +186,9 @@ def validate_date_range(
 
     # check date range should not exceed specific days per request based on given interval.
     total_days = (end_datetime - start_datetime).days
-    if total_days < 0 and total_days > interval.value(1):
+    if total_days < 0 or total_days > interval.value[1]:
         raise InvalidDateRangeBoundsException(
-            from_date, to_date, interval.value(1), interval.name
+            from_date, to_date, interval.value[1], interval.name
         )
 
     # check given dates range are market holidays or not.

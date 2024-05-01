@@ -51,7 +51,7 @@ def get_stock_url(stock_symbol: str) -> str:
     -----------
     stock_symbol: ``str``
         Nse stock symbol, can be obtained from the nse official website.
-                eg: "SBIN","TCS" etc.
+            eg: "SBIN","TCS" etc.
 
     Raises:
     ------

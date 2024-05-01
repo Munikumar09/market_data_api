@@ -22,13 +22,13 @@ def fetch_nse_data(url: str, max_tries: int = 1000) -> Any:
 
     Raises:
     -------
-    HTTPException:
+    ``HTTPException``
         If not get response even after max_tries.
 
 
     Returns:
     --------
-    Any:
+    Any
         Json loaded response from the api.
     """
     if max_tries < 1:

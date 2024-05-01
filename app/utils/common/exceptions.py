@@ -126,7 +126,7 @@ class DataUnavailableException(HTTPException):
 
         Return:
         -------
-        ``str``
+        str
             Message related the exception.
         """
         if not start_date:

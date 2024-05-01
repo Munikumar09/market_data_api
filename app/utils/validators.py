@@ -21,12 +21,12 @@ def validate_and_format_stock_symbol(stock_symbol: str) -> str:
 
     Raises:
     -------
-    HTTPException:
+    ``HTTPException``
         Raises when the stock symbol is not available in the Nse official website
 
     Return:
     -------
-    str:
+    str
         Given stock symbol in upper case
     """
     symbols: set[str] = set(get_symbols(NSE_STOCK_SYMBOLS)["symbols"])
@@ -55,12 +55,12 @@ def validate_index_symbol(index_symbol: Annotated[str, Path()]) -> str:
 
     Raises:
     -------
-    HTTPException:
+    ``HTTPException``
         Raises when the index symbol is not available in the Nse official website.
 
     Return:
     -------
-    ``str``
+    str
         Url path to the index symbol endpoint.
     """
     symbols: dict[str, str] = get_symbols(NSE_INDEX_SYMBOLS)
@@ -93,7 +93,7 @@ def validate_derivative_symbol_with_type(
 
     Raises:
     -------
-    HTTPException:
+    ``HTTPException``
         If derivative type and derivate symbol mismatch.
         If derivative symbol is not present the symbols file.
     """
