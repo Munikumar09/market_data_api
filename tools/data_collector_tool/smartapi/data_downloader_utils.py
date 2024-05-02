@@ -12,12 +12,12 @@ from tools.data_collector_tool.smartapi.constants import HISTORICAL_STOCK_DATA_U
 
 def get_historical_stock_data_url(
     stock_symbol: str, interval: str, start_date: str, end_date: str
-)-> str:
+) -> str:
     """
     Provides the url to the historical stock data endpoint.
 
     Parameters:
-    ----------- 
+    -----------
     stock_symbol: ``str``
         The symbol of the stock.
     interval: ``str``
@@ -28,9 +28,9 @@ def get_historical_stock_data_url(
         The final datetime up to which historical stock data should be retrieved.
 
     Return:
-    -------                 
-    ``str``         
-        Url to the historical stock data endpoint.  
+    -------
+    ``str``
+        Url to the historical stock data endpoint.
     """
     return (
         f"{HISTORICAL_STOCK_DATA_URL}{stock_symbol}?interval={interval}"

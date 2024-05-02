@@ -28,7 +28,7 @@ def test_open_market_days_no_weekends_no_holidays():
 
 def test_open_market_days_with_weekends_and_holidays():
     """
-    Test open_market_days function for a range of dates including weekends and holidays 
+    Test open_market_days function for a range of dates including weekends and holidays
     and market working days.
     """
     start_datetime = datetime(2024, 1, 22)
@@ -88,7 +88,7 @@ def test_data_available_for_requested_start_date():
 
 def test_data_not_available_for_requested_start_date():
     """
-    Test check_data_availability function when data is not available 
+    Test check_data_availability function when data is not available
     for the requested start date but is available later before the end date.
     """
     start_datetime = datetime(2016, 9, 28)
@@ -121,7 +121,7 @@ def test_end_date_before_data_availability_start_date():
     ) in str(excinfo.value.detail)
 
 
-def test_end_date_before_data_availability_start_date():
+def test_data_unavailable_for_stock():
     """
     Test check_data_availability function when there is no data available for the given stock and interval.
     i.e data starting date is none for the given stock symbol and interval.

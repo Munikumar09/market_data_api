@@ -1,4 +1,5 @@
 import pytest
+
 from app.utils.common.types.reques_types import CandlestickInterval
 
 
@@ -8,8 +9,8 @@ def valid_intervals_io() -> list[tuple[str, CandlestickInterval]]:
     Test cases for valid intervals that may contains spaces, hyphens, underscores, and trailing 's'.
 
     Return:
-    -------                 
-    ``list[tuple[str, CandlestickInterval]]``        
+    -------
+    ``list[tuple[str, CandlestickInterval]]``
         List of input intervals and their expected CandlestickInterval member.
     """
     return [
@@ -35,9 +36,9 @@ def invalid_intervals_io() -> list[str]:
     """Test cases for invalid intervals.
 
     Return:
-    -------                 
-    ``list[str]``         
-        List of invalid input intervals.  
+    -------
+    ``list[str]``
+        List of invalid input intervals.
     """
     return [
         "2min",

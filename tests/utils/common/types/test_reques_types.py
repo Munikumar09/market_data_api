@@ -12,7 +12,7 @@ def test_validate_interval_valid(
     CandlestickInterval member corresponds to the given valid input interval string.
 
     Parameters:
-    ----------- 
+    -----------
     valid_intervals_io: ``list[tuple[str, CandlestickInterval]]``
         List of input intervals and their expected CandlestickInterval member.
     """
@@ -29,7 +29,7 @@ def test_validate_interval_invalid(invalid_intervals_io: list[str]):
     for the given invalid input interval string.
 
     Parameters:
-    ----------- 
+    -----------
     invalid_intervals_io: ``list[str]``
         List of invalid input intervals.
     """

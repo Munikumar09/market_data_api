@@ -14,7 +14,7 @@ def test_validate_datetime_format_valid(
     i.e. year-month-day hour:minute or year/month/day hour:minute
 
     Parameters:
-    ----------- 
+    -----------
     valid_datetime_formats_io: ``list[tuple[str, datetime]]``
         List of valid datetime format of input string and their expected datetime object.
     """
@@ -27,7 +27,7 @@ def test_validate_datetime_format_invalid(invalid_datetime_formats_io: list[str]
     Test validate_datetime_format function for invalid datetime formats.
     i.e. not year-month-day hour:minute or year/month/day hour:minute
     Parameters:
-    ----------- 
+    -----------
     invalid_datetime_formats_io: ``list[str]``
         List of invalid datetime format of input strings.
     """
@@ -46,9 +46,9 @@ def test_validate_datetime_format_edge_cases(invalid_datetime_value_io: list[str
     Test for edge cases like invalid day or month or year or time.
     i.e. valid datetime format but invalid datetime value.
     e.g. `2023-13-12 3:22` here month 13 is invalid since there are only 12 months.
-    
+
     Parameters:
-    ----------- 
+    -----------
     date_time: ``list[str]``
         List of invalid datetime format of input string.
     """

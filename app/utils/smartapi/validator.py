@@ -61,7 +61,9 @@ def validate_symbol_and_get_token(
     return all_symbols_data[stock_symbol], stock_symbol
 
 
-def find_open_market_days(start_datetime: datetime, end_datetime: datetime) -> list[datetime]:
+def find_open_market_days(
+    start_datetime: datetime, end_datetime: datetime
+) -> list[datetime]:
     """Finds the open market days between start_datetime and end_datetime.
 
     Parameters:
