@@ -34,7 +34,7 @@ def get_stock_io_data(
 
     Returns:
     --------
-    tuple:
+    ``tuple``
         A tuple containing the input data and expected output data for the stock.
     """
     stock_input_data = {

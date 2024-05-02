@@ -16,10 +16,9 @@ from app.utils.smartapi.validator import (
 )
 
 
-# Test for a range of dates without weekends or holidays
 def test_open_market_days_no_weekends_no_holidays():
     """
-    Test for a range of dates without weekends or holidays.
+    Test open_market_days function for a range of dates without weekends or holidays.
     """
     start_datetime = datetime(2023, 1, 2)
     end_datetime = datetime(2023, 1, 6)  # A week without holidays
@@ -27,10 +26,10 @@ def test_open_market_days_no_weekends_no_holidays():
     assert find_open_market_days(start_datetime, end_datetime) == expected_days
 
 
-# Test for a range of dates including weekends and holidays
 def test_open_market_days_with_weekends_and_holidays():
     """
-    Test for a range of dates including weekends and holidays.
+    Test open_market_days function for a range of dates including weekends and holidays 
+    and market working days.
     """
     start_datetime = datetime(2024, 1, 22)
     end_datetime = datetime(2024, 1, 30)  # Includes a weekend and a holiday
@@ -44,20 +43,21 @@ def test_open_market_days_with_weekends_and_holidays():
     assert find_open_market_days(start_datetime, end_datetime) == expected_days
 
 
-# Test for an empty list when the range is only weekends and holidays
 def test_open_market_days_only_weekends_and_holidays():
     """
-    Test for an empty list when the range is only weekends and holidays.
+    Test open_market_days function for an empty list when the range is only weekends and holidays.
     """
     start_datetime = datetime(2024, 1, 26)  # A holiday
     end_datetime = datetime(2024, 1, 28)  # The following weekend
     assert not find_open_market_days(start_datetime, end_datetime)
 
 
-# Test for edge cases
 def test_open_market_days_edge_cases():
     """
-    Test for edge cases.
+    Test open_market_days function for edge cases like:
+    - Start date is after the end date.
+    - Start date and end date are the same and it's a holiday.
+    - Start date and end date are the same and it's not a holiday
     """
     # Start date is after the end date
     with pytest.raises(ValueError):
@@ -72,10 +72,9 @@ def test_open_market_days_edge_cases():
     ]
 
 
-# Test when data is available for the requested start date
 def test_data_available_for_requested_start_date():
     """
-    Test when data is available for the requested start date
+    Test check_data_availability function when data is available for the requested start date.
     """
     start_datetime = datetime(2023, 1, 2)
     end_datetime = datetime(2023, 1, 10)
@@ -87,10 +86,10 @@ def test_data_available_for_requested_start_date():
     )
 
 
-# Test when data is not available for the requested start date but is available later
 def test_data_not_available_for_requested_start_date():
     """
-    Test when data is not available for the requested start date but is available later
+    Test check_data_availability function when data is not available 
+    for the requested start date but is available later before the end date.
     """
     start_datetime = datetime(2016, 9, 28)
     end_datetime = datetime(2016, 10, 10)
@@ -103,10 +102,10 @@ def test_data_not_available_for_requested_start_date():
     )
 
 
-# Test when data is not available for the requested dates
-def test_data_unavailable_for_requested_dates():
+def test_end_date_before_data_availability_start_date():
     """
-    Test when data is not available for the requested dates.
+    Test check_data_availability function when data is not available for the requested dates.
+    i.e. given date range is below the data available starting date.
     """
     start_datetime = datetime(2016, 5, 1)
     end_datetime = datetime(2016, 5, 25)
@@ -122,10 +121,10 @@ def test_data_unavailable_for_requested_dates():
     ) in str(excinfo.value.detail)
 
 
-# Test when there is no data available i.e data starting date is none for the given stock symbol and interval
 def test_end_date_before_data_availability_start_date():
     """
-    Test when there is no data available i.e data starting date is none for the given stock symbol and interval.
+    Test check_data_availability function when there is no data available for the given stock and interval.
+    i.e data starting date is none for the given stock symbol and interval.
     """
     start_datetime = datetime(2019, 12, 31)
     end_datetime = datetime(2020, 1, 1)
@@ -139,10 +138,9 @@ def test_end_date_before_data_availability_start_date():
     )
 
 
-# Test for valid date range and trading hours
 def test_validate_dates_valid():
     """
-    Test for valid date range and trading hours
+    Test validate_dates function for valid dates and their range and trading hours
     """
     from_date = "2024-01-02 09:30"
     to_date = "2024-01-03 15:00"
@@ -155,10 +153,10 @@ def test_validate_dates_valid():
     assert end_datetime == datetime(2024, 1, 3, 15, 0)
 
 
-# Test for invalid date range bounds exceeds limit of given interval
 def test_validate_dates_invalid_date_range_bounds():
     """
-    Test for valid date range and trading hours.
+    Test validate_dates function for invalid date range.
+    i.e. Either exceeds the limit per request or start date is greater than end date.
     """
     from_date = "2024-01-02 09:30"
     to_date = "2024-03-10 15:00"  # Exceeds the allowed range for ONE_MINUTE interval
@@ -173,10 +171,10 @@ def test_validate_dates_invalid_date_range_bounds():
     ) == excinfo.value.detail
 
 
-# Test for all days being holidays
 def test_validate_dates_all_days_holidays():
     """
-    Test for all days being holidays.
+    Test validate_dates function for all days being holidays.
+    i.e. the date range from start_date to end_date are all holidays.
     """
     from_date = "2024-01-26 09:30"
     to_date = "2024-01-28 15:00"
@@ -189,10 +187,10 @@ def test_validate_dates_all_days_holidays():
     assert f"All days from {from_date} to {to_date} are market holidays."
 
 
-# Test for invalid trading hours
 def test_validate_dates_invalid_trading_hours():
     """
-    Test for invalid trading hours.
+    Test valid_dates function for invalid trading hours.
+    i.e. before the market open or after the market close hours.
     """
     from_date = "2024-01-02 07:00"  # Before market open
     to_date = "2024-01-02 9:00"

@@ -43,7 +43,7 @@ def validate_symbol_and_get_token(
 
     Returns:
     --------
-    Tuple[str, str]
+    ``Tuple[str, str]``
         The stock token and the stock symbol
 
     """
@@ -61,7 +61,7 @@ def validate_symbol_and_get_token(
     return all_symbols_data[stock_symbol], stock_symbol
 
 
-def find_open_market_days(start_datetime: datetime, end_datetime: datetime) -> list:
+def find_open_market_days(start_datetime: datetime, end_datetime: datetime) -> list[datetime]:
     """Finds the open market days between start_datetime and end_datetime.
 
     Parameters:
@@ -73,7 +73,7 @@ def find_open_market_days(start_datetime: datetime, end_datetime: datetime) -> l
 
     Return:
     -------
-    list
+    ``list[datetime]``
         List of open market days between the given start date and end date.
     """
     if end_datetime < start_datetime:
@@ -124,7 +124,7 @@ def check_data_availability(
 
     Return:
     -------
-    datetime
+    ``datetime``
         Either the requested start date or the earliest available date with data.
     """
 
@@ -173,7 +173,7 @@ def validate_dates(
 
     Return:
     -------
-    Tuple[datetime, datetime]
+    ``Tuple[datetime, datetime]``
         validated start and end datetimes.
     """
     start_datetime = validate_datetime_format(from_date)

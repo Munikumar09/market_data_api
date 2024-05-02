@@ -26,7 +26,7 @@ def validate_and_format_stock_symbol(stock_symbol: str) -> str:
 
     Return:
     -------
-    str
+    ``str``
         Given stock symbol in upper case
     """
     symbols: set[str] = set(get_symbols(NSE_STOCK_SYMBOLS)["symbols"])
@@ -60,7 +60,7 @@ def validate_index_symbol(index_symbol: Annotated[str, Path()]) -> str:
 
     Return:
     -------
-    str
+    ``str``
         Url path to the index symbol endpoint.
     """
     symbols: dict[str, str] = get_symbols(NSE_INDEX_SYMBOLS)
@@ -87,7 +87,7 @@ def validate_derivative_symbol_with_type(
     -----------
     derivative_symbol: ``str``
         Derivative symbol to be validated.
-         eg: "NIFTY", "ABB", etc.
+            eg: "NIFTY", "ABB", etc.
     derivative_type: ``str``
         Derivative type should be either index of stock.
 
@@ -132,7 +132,7 @@ def get_date_format(date: str) -> str:
 
     Return:
     -------
-    str
+    ``str``
         Format of the given date.
     """
     date_separator = "/" if len(date.split("/")) > 1 else "-"
@@ -151,7 +151,7 @@ def validate_and_reformat_date(data: str) -> Tuple[str, bool]:
 
     Return:
     -------
-    Tuple[str,bool]
+    ``Tuple[str,bool]``
         Reformated expiry date is date is valid else input date and validation status of expiry date.
     """
     required_date_format = "%d-%b-%Y"

@@ -55,7 +55,7 @@ class CandlestickInterval(Enum):
 
         Return:
         -------
-        CandlestickInterval
+        ``CandlestickInterval``
             The enum member corresponding to the validated interval.
         """
 

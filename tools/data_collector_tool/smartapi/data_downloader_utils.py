@@ -10,6 +10,34 @@ from app.utils.file_utils import create_dir, load_json_data, write_to_json_file
 from tools.data_collector_tool.smartapi.constants import HISTORICAL_STOCK_DATA_URL
 
 
+def get_historical_stock_data_url(
+    stock_symbol: str, interval: str, start_date: str, end_date: str
+)-> str:
+    """
+    Provides the url to the historical stock data endpoint.
+
+    Parameters:
+    ----------- 
+    stock_symbol: ``str``
+        The symbol of the stock.
+    interval: ``str``
+        The interval of the candlestick.
+    start_date: ``str``
+        The initial datetime from which historical stock data should be retrieved.
+    end_date: ``str``
+        The final datetime up to which historical stock data should be retrieved.
+
+    Return:
+    -------                 
+    ``str``         
+        Url to the historical stock data endpoint.  
+    """
+    return (
+        f"{HISTORICAL_STOCK_DATA_URL}{stock_symbol}?interval={interval}"
+        f"&start_date={start_date}&end_date={end_date}"
+    )
+
+
 def search_valid_date(
     start_date: datetime,
     end_date: datetime,
@@ -30,7 +58,7 @@ def search_valid_date(
 
     Return:
     -------
-    datetime
+    ``datetime``
         searched month from where the availability of data starts for the given stock symbol and interval.
     """
     valid_date = end_date
@@ -42,10 +70,13 @@ def search_valid_date(
             last_day = (middle_date + timedelta(days=31)).replace(day=1) - timedelta(
                 days=1
             )
-            stocks_url = (
-                f"{HISTORICAL_STOCK_DATA_URL}{stock_symbol}?interval={interval.name}"
-                f"&start_date={first_day.strftime('%Y-%m-%d')}%2009%3A15&end_date={last_day.strftime('%Y-%m-%d')}%2015%3A29"
+            stocks_url = get_historical_stock_data_url(
+                stock_symbol,
+                interval.name,
+                f"{first_day.strftime('%Y-%m-%d')} 09:15",
+                f"{last_day.strftime('%Y-%m-%d')} 15:29",
             )
+
             response = requests.get(stocks_url, timeout=(60, 60))
             if response.status_code == 200 and response.json():
                 end_date = first_day - timedelta(days=3)

@@ -23,7 +23,7 @@ def last_date_of_weekday(year: int, month: int, weekday: int):
 
     Returns
     -------
-    datetime.date
+    ``datetime.date``
     The date object representing the last occurrence of the input weekday in the input month and year.
 
     Examples
@@ -85,7 +85,7 @@ def get_date(weekday: str, monthly: bool = False):
 
     Returns
     -------
-    str
+    ``str``
         The date of the weekday in the format "%d-%b-%Y", such as "08-Oct-2023".
 
 
@@ -165,7 +165,7 @@ def get_expiry_dates(
 
     Returns:
     --------
-    List[str]
+    ``List[str]``
         The list of expiry dates for the given symbol
     """
 
@@ -195,7 +195,7 @@ def validate_datetime_format(date_time: str) -> datetime:
         If the date and time is in wrong format.
     Return:
     -------
-    datetime
+    ``datetime``
         validated given date and time and returns valid datetime object.
     """
     date_separator = "/" if len(date_time.split("/")) > 1 else "-"

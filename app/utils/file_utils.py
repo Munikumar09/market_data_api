@@ -20,7 +20,7 @@ def resolve_path(file_path: str | Path) -> Path:
 
     Return:
     -------
-    Path
+    ``Path``
         Path object representation of the file.
     """
 
@@ -44,7 +44,7 @@ def load_json_data(file_path: str | Path) -> Any:
 
     Return:
     -------
-    Any
+    ``Any``
         Loaded data from the given file path.
     """
     file_path = resolve_path(file_path)
@@ -64,7 +64,7 @@ def read_text_data(file_path: str | Path) -> Any:
 
     Return:
     -------
-    Any
+    ``Any``
         Reded data from the given file path.
     """
     file_path = resolve_path(file_path)
@@ -87,7 +87,7 @@ def get_symbols(symbol_file: str) -> Any:
 
     Return:
     -------
-    Any
+    ``Any``
         symbols data from the file.
     """
     stock_symbols_data = load_json_data(symbol_file)
@@ -113,12 +113,12 @@ def create_dir(dir_path: str | Path) -> Path:
 
     Parameters:
     -----------
-    dir_path: `str | Path`
+    dir_path: ``str | Path``
         The path of the directory to be created. It can be a string or a Path object.
 
     Return:
     -------
-    Path
+    ``Path``
         The Path object corresponding to the created directory.
     """
     if isinstance(dir_path, str):

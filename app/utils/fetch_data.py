@@ -28,7 +28,7 @@ def fetch_nse_data(url: str, max_tries: int = 1000) -> Any:
 
     Returns:
     --------
-    Any
+    ``Any``
         Json loaded response from the api.
     """
     if max_tries < 1:

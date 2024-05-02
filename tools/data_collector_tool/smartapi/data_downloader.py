@@ -10,11 +10,11 @@ from app.utils.file_utils import create_dir, load_json_data
 from tools.data_collector_tool.smartapi.constants import (
     DATA_DOWNLOAD_PATH,
     DATA_STARTING_DATES_PATH,
-    HISTORICAL_STOCK_DATA_URL,
     NIFTY_500_STOCK_LIST_PATH,
 )
 from tools.data_collector_tool.smartapi.data_downloader_utils import (
     dataframe_to_json_files,
+    get_historical_stock_data_url,
 )
 
 
@@ -52,9 +52,11 @@ def download_nifty500_stock_data(interval: str):
         ):
             first_day = start_date + timedelta(days=next_day)
             last_day = first_day + timedelta(days=valid_interval.value[1] - 1)
-            stocks_url = (
-                f"{HISTORICAL_STOCK_DATA_URL}{stock_symbol}?interval={valid_interval.name}&start_date="
-                f"{first_day.strftime('%Y-%m-%d')}%2000%3A00&end_date={last_day.strftime('%Y-%m-%d')}%2015%3A29"
+            stocks_url = get_historical_stock_data_url(
+                stock_symbol,
+                valid_interval.name,
+                f"{first_day.strftime('%Y-%m-%d')} 00:00",
+                f"{last_day.strftime('%Y-%m-%d')} 15:29",
             )
             try:
                 response = requests.get(stocks_url, timeout=(60, 60))

@@ -32,7 +32,7 @@ def get_option_chain(
 
     Return:
     -------
-    ExpiryOptionData
+    ``ExpiryOptionData``
         Option expiry data that contains the option chain information about the given derivative.
     """
     base_url = INDEX_OPTION_CHAIN_URL

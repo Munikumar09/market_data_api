@@ -15,7 +15,7 @@ def filter_nifty_stocks(stocks_data: list[dict[str, Any]]) -> list[StockPriceInf
 
     Return:
     -------
-    list[StockData]
+    ``list[StockData]``
         List of StockData models that contain the price information about the stocks.
     """
     if len(stocks_data) == 0:
@@ -53,7 +53,7 @@ def filter_single_stock(symbol: str, stock_data: dict[str, Any]) -> StockPriceIn
 
     Return:
     -------
-    StockData
+    ``StockData``
         StockData model contain the information about the stock.
     """
     if len(stock_data) == 0:
@@ -81,7 +81,7 @@ def filter_single_index(index_data: dict[str, Any]) -> StockPriceInfo:
 
     Return:
     -------
-    StockData
+    ``StockData``
         StockData model contains the price information about the index.
     """
     if len(index_data) == 0:

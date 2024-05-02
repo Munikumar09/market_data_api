@@ -6,69 +6,57 @@ from app.utils.common.exceptions import InvalidDateTimeFormatException
 from app.utils.date_utils import validate_datetime_format
 
 
-# Test cases for valid date and time formats
-@pytest.mark.parametrize(
-    "date_time, expected",
-    [
-        ("2024-04-30 21:10", datetime(2024, 4, 30, 21, 10)),
-        ("2023/Apr/30 9:15", datetime(2023, 4, 30, 9, 15)),
-        ("2021/April/30 21:10", datetime(2021, 4, 30, 21, 10)),
-        ("2022-OCTOber-5 11:0", datetime(2022, 10, 5, 11, 0)),
-    ],
-)
-# Test cases for valid datetime formats
-def test_validate_datetime_format_valid(date_time, expected):
+def test_validate_datetime_format_valid(
+    valid_datetime_formats_io: list[tuple[str, datetime]]
+):
     """
-    Test for valid datetime formats
+    Test validate_datetime_format function for valid datetime formats.
+    i.e. year-month-day hour:minute or year/month/day hour:minute
+
+    Parameters:
+    ----------- 
+    valid_datetime_formats_io: ``list[tuple[str, datetime]]``
+        List of valid datetime format of input string and their expected datetime object.
     """
-    assert validate_datetime_format(date_time) == expected
+    for valid_datetime in valid_datetime_formats_io:
+        assert validate_datetime_format(valid_datetime[0]) == valid_datetime[1]
 
 
-# Test cases for invalid date formats
-@pytest.mark.parametrize(
-    "date_time",
-    [
-        "30-04-2024 21:10",
-        "04/30/2024 21:10",
-        "2024/30/Apr 21:10",
-        "2023_3/2 12:32",
-        "2022-3-4T3:21",
-        "2024/30/Apr 21-10",
-        "2024/30/Apr-21:10",
-    ],
-)
-def test_validate_datetime_format_invalid(date_time):
+def test_validate_datetime_format_invalid(invalid_datetime_formats_io: list[str]):
     """
-    Test for invalid datetime formats
+    Test validate_datetime_format function for invalid datetime formats.
+    i.e. not year-month-day hour:minute or year/month/day hour:minute
+    Parameters:
+    ----------- 
+    invalid_datetime_formats_io: ``list[str]``
+        List of invalid datetime format of input strings.
     """
-    with pytest.raises(InvalidDateTimeFormatException) as excinfo:
-        validate_datetime_format(date_time)
-    assert excinfo.value.status_code == 400
-    assert (
-        f"Given datetime format {date_time} is invalid. "
-        "Please provide a valid datetime that should be in the form 'year-month-day hour:minute'."
-    ) in str(excinfo.value.detail)
+    for invalid_datetime in invalid_datetime_formats_io:
+        with pytest.raises(InvalidDateTimeFormatException) as excinfo:
+            validate_datetime_format(invalid_datetime)
+        assert excinfo.value.status_code == 400
+        assert (
+            f"Given datetime format {invalid_datetime} is invalid. "
+            "Please provide a valid datetime that should be in the form 'year-month-day hour:minute'."
+        ) in str(excinfo.value.detail)
 
 
-# Test cases for edge cases
-@pytest.mark.parametrize(
-    "date_time",
-    [
-        "2024-04-31 21:10",  # Invalid day
-        "2022-13-30 21:10",  # Invalid month
-        "2023-02-29 21:10",  # Invalid leap year date
-        "2021-02-29 40:10",  # invalid hours
-        "2020-02-29 21:71",  # invalid minutes
-    ],
-)
-def test_validate_datetime_format_edge_cases(date_time):
+def test_validate_datetime_format_edge_cases(invalid_datetime_value_io: list[str]):
     """
     Test for edge cases like invalid day or month or year or time.
+    i.e. valid datetime format but invalid datetime value.
+    e.g. `2023-13-12 3:22` here month 13 is invalid since there are only 12 months.
+    
+    Parameters:
+    ----------- 
+    date_time: ``list[str]``
+        List of invalid datetime format of input string.
     """
-    with pytest.raises(InvalidDateTimeFormatException) as excinfo:
-        validate_datetime_format(date_time)
-    assert excinfo.value.status_code == 400
-    assert (
-        f"Given datetime format {date_time} is invalid. "
-        "Please provide a valid datetime that should be in the form 'year-month-day hour:minute'."
-    ) in str(excinfo.value.detail)
+    for datetime_value in invalid_datetime_value_io:
+        with pytest.raises(InvalidDateTimeFormatException) as excinfo:
+            validate_datetime_format(datetime_value)
+        assert excinfo.value.status_code == 400
+        assert (
+            f"Given datetime format {datetime_value} is invalid. "
+            "Please provide a valid datetime that should be in the form 'year-month-day hour:minute'."
+        ) in str(excinfo.value.detail)

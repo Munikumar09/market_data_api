@@ -4,79 +4,40 @@ from app.utils.common.exceptions import IntervalNotFoundException
 from app.utils.common.types.reques_types import CandlestickInterval
 
 
-# Test cases for valid intervals
-@pytest.mark.parametrize(
-    "interval, expected",
-    [
-        ("1minute", CandlestickInterval.ONE_MINUTE),
-        ("3min", CandlestickInterval.THREE_MINUTE),
-        ("tenminute", CandlestickInterval.TEN_MINUTE),
-        ("30min", CandlestickInterval.THIRTY_MINUTE),
-        ("1hr", CandlestickInterval.ONE_HOUR),
-        ("1d", CandlestickInterval.ONE_DAY),
-        ("oneday", CandlestickInterval.ONE_DAY),
-    ],
-)
-def test_validate_interval_valid(interval: str, expected: CandlestickInterval):
-    """Test cases for valid intervals.
+def test_validate_interval_valid(
+    valid_intervals_io: list[tuple[str, CandlestickInterval]]
+):
+    """
+    Test function to check whether the validate_interval function is returning a valid
+    CandlestickInterval member corresponds to the given valid input interval string.
 
     Parameters:
-    -----------
-    interval: `str`
-        Input interval of the candlestick.
-    expected: `CandlestickInterval`
-        Expected CandlestickInterval corresponding to the given input interval.
+    ----------- 
+    valid_intervals_io: ``list[tuple[str, CandlestickInterval]]``
+        List of input intervals and their expected CandlestickInterval member.
     """
-    assert CandlestickInterval.validate_interval(interval) == expected
+    for valid_interval in valid_intervals_io:
+        assert (
+            CandlestickInterval.validate_interval(valid_interval[0])
+            == valid_interval[1]
+        )
 
 
-# Test cases for intervals with spaces, hyphens, underscores, and trailing 's'
-@pytest.mark.parametrize(
-    "interval, expected",
-    [
-        ("1 min", CandlestickInterval.ONE_MINUTE),
-        ("1-minute", CandlestickInterval.ONE_MINUTE),
-        ("one_minute", CandlestickInterval.ONE_MINUTE),
-        ("5MINS", CandlestickInterval.FIVE_MINUTE),
-        ("1 hr", CandlestickInterval.ONE_HOUR),
-        ("ONE HOUR", CandlestickInterval.ONE_HOUR),
-        ("1_D", CandlestickInterval.ONE_DAY),
-    ],
-)
-def test_validate_interval_variations(interval: str, expected: CandlestickInterval):
-    """Test cases for intervals with spaces, hyphens, underscores, and trailing 's'.
+def test_validate_interval_invalid(invalid_intervals_io: list[str]):
+    """
+    Test function to check whether the validate_interval function is raising an exception or not
+    for the given invalid input interval string.
 
     Parameters:
-    -----------
-    interval: `str`
-        Input interval of the candlestick.
-    expected: `CandlestickInterval`
-        Expected CandlestickInterval corresponding to given input interval.
+    ----------- 
+    invalid_intervals_io: ``list[str]``
+        List of invalid input intervals.
     """
-    assert CandlestickInterval.validate_interval(interval) == expected
-
-
-# Test cases for invalid intervals
-@pytest.mark.parametrize(
-    "interval",
-    [
-        "2min",
-        "invalid",
-        "30 sec",
-    ],
-)
-def test_validate_interval_invalid(interval: str):
-    """Test cases for invalid intervals.
-
-    Parameters:
-    -----------
-    interval: `str`
-        Input interval of the candlestick.
-    """
-    with pytest.raises(IntervalNotFoundException) as excinfo:
-        CandlestickInterval.validate_interval(interval)
-    assert excinfo.value.status_code == 404
-    assert (
-        f"Candlestick interval {interval} not found. Please provide a valid interval."
-        in str(excinfo.value.detail)
-    )
+    for invalid_interval in invalid_intervals_io:
+        with pytest.raises(IntervalNotFoundException) as excinfo:
+            CandlestickInterval.validate_interval(invalid_interval)
+        assert excinfo.value.status_code == 404
+        assert (
+            f"Candlestick interval {invalid_interval} not found. Please provide a valid interval."
+            == excinfo.value.detail
+        )

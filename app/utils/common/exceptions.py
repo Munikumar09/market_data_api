@@ -96,7 +96,9 @@ class InvalidTradingHoursException(HTTPException):
 
 
 class AllDaysHolidayException(HTTPException):
-    """Exception raised when all days in the given date range are market holidays."""
+    """
+    Exception raised when all days in the given date range are market holidays.
+    """
 
     def __init__(self, start_date: str, end_date: str):
         super().__init__(
@@ -106,7 +108,9 @@ class AllDaysHolidayException(HTTPException):
 
 
 class DataUnavailableException(HTTPException):
-    """DataUnavailableException raised when the requested data is not available from the SmartAPI."""
+    """
+    DataUnavailableException raised when the requested data is not available from the SmartAPI.
+    """
 
     def __init__(self, start_date: datetime, stock_symbol: str):
         super().__init__(
@@ -115,7 +119,8 @@ class DataUnavailableException(HTTPException):
         )
 
     def get_detail(self, stock_symbol: str, start_date: datetime) -> str:
-        """Provides the message related to the exception based on the stock symbol and start date.
+        """
+        Provides the message related to the exception based on the stock symbol and start date.
 
         Parameters:
         -----------
@@ -126,7 +131,7 @@ class DataUnavailableException(HTTPException):
 
         Return:
         -------
-        str
+        ``str``
             Message related the exception.
         """
         if not start_date:

@@ -7,12 +7,12 @@ import pytest
 @pytest.fixture
 def stock_symbol_io() -> list[dict[str, Any]]:
     """
-    Provide list of inputs with different valid or invalid stock symbols and their respective outputs.
+    Test cases for different valid or invalid stock symbols.
 
     Return:
     -------
     ``List[dict]``
-        List of inputs and respective outputs
+        List of inputs and respective expected outputs.
     """
     return [
         {
@@ -51,12 +51,12 @@ def stock_symbol_io() -> list[dict[str, Any]]:
 @pytest.fixture
 def candlestick_interval_io() -> list[dict[str, Any]]:
     """
-    Provide list of inputs and respective outputs with different valid or invalid candlestick intervals.
+    Test cases for different valid or invalid candlestick intervals.
 
     Return:
     -------
     ``List[dict]``
-        List of inputs and respective outputs
+        List of inputs and respective expected outputs.
     """
     return [
         {
@@ -103,12 +103,12 @@ def candlestick_interval_io() -> list[dict[str, Any]]:
 @pytest.fixture
 def different_datetime_formats_io() -> list[dict[str, Any]]:
     """
-    Provide list of inputs with different valid or invalid datetime formats and their respective outputs.
+    Test cases for different valid or invalid datetime formats and their respective expected outputs.
 
     Return:
     -------
     ``List[dict]``
-        List of inputs and respective outputs
+        List of inputs and respective expected outputs.
     """
     return [
         {
@@ -163,12 +163,12 @@ def different_datetime_formats_io() -> list[dict[str, Any]]:
 @pytest.fixture
 def holiday_dates_io() -> list[dict[str, Any]]:
     """
-    Provide list of inputs with market holiday dates and their respective outputs.
+    Test cases for market holiday dates and their respective expected output error.
 
     Return:
     -------
     ``List[dict]``
-        List of inputs and respective outputs
+        List of inputs and respective expected outputs.
     """
     return [
         {
@@ -193,12 +193,12 @@ def holiday_dates_io() -> list[dict[str, Any]]:
 @pytest.fixture
 def data_unavailable_dates_io() -> list[dict[str, Any]]:
     """
-    Provide list of inputs with dates on which data is not available and their respective outputs.
+    Test cases for dates on which data is not available and their respective expected output error.
 
     Return:
     -------
     ``List[dict]``
-        List of inputs and respective outputs
+        List of inputs and respective expected outputs.
     """
     return [
         {
@@ -223,12 +223,12 @@ def data_unavailable_dates_io() -> list[dict[str, Any]]:
 @pytest.fixture
 def invalid_trading_time_io() -> dict[str, Any]:
     """
-    Provide input with invalid trading time and their respective output.
+    Test cases for invalid trading time and their respective expected output error.
 
     Return:
     -------
     ``dict[str,Any]``
-
+        List of inputs and respective expected outputs.
     """
     return {
         "input_stock_symbol": "TITAN",
@@ -243,12 +243,12 @@ def invalid_trading_time_io() -> dict[str, Any]:
 @pytest.fixture
 def date_range_io() -> dict[str, Any]:
     """
-    Provide input with invalid date range and their respective output.
+    Test case for invalid date range and their respective expected output error.
 
     Return:
     -------
     ``dict[str,Any]``
-
+        List of inputs and respective expected outputs.
     """
     return {
         "input_stock_symbol": "TVSMOTOR",

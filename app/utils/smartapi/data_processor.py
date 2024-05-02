@@ -60,7 +60,7 @@ def process_available_stock_data(
 
     Return:
     -------
-    List[HistoricalStockPriceInfo]
+    ``List[HistoricalStockPriceInfo]``
         Processed data as a HistoricalStockPriceInfo object.
     """
     return [
@@ -101,7 +101,7 @@ def get_possible_timestamps_on_date(
 
     Return:
     -------
-    List[str]
+    ``List[str]``
         The possible timestamps for given current date.
     """
     if interval.name == "ONE_DAY":
@@ -152,7 +152,7 @@ def get_missing_timestamps(
 
     Return:
     -------
-    List[str]
+    ``List[str]``
         List of missing timestamps in given historical stock data.
     """
     available_timestamps = pd.DataFrame(historical_stock_data)[0]
@@ -204,7 +204,7 @@ def process_smart_api_historical_stock_data(
 
     Return:
     -------
-    HistoricalStockDataBundle
+    ``HistoricalStockDataBundle``
         The processed available data points and timestamps of missing data points as a HistoricalStockDataBundle object.
     """
     processed_available_stock_data = process_available_stock_data(
