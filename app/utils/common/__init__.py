@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Any
+from typing import Any, cast
 
 from hydra.utils import instantiate
 from omegaconf import DictConfig, OmegaConf
@@ -25,12 +25,15 @@ def pop_name(cfg: DictConfig) -> DictConfig:
     OmegaConf.set_struct(cfg_copy, False)
     cfg_copy.pop("name", None)
     OmegaConf.set_struct(cfg_copy, True)
-    
+
     return cfg_copy
 
 
 def init_from_cfg(
-    cfg: DictConfig, base_class: type|None = None, *args: Any, **kwargs: Any
+    cfg: DictConfig,
+    base_class: type[Registrable] | None = None,
+    *args: Any,
+    **kwargs: Any,
 ) -> Any:
     """
     Initialize a class instance from a configuration object.
@@ -59,7 +62,12 @@ def init_from_cfg(
         If the name is not registered under the given base_class
     """
     if "_target_" in cfg:
-        return instantiate(cfg, *args, **kwargs)
+        config_dict = cast(dict[str, Any], OmegaConf.to_container(cfg, resolve=True))
+        target = config_dict.pop("_target_")
+
+        return instantiate(
+            {"_target_": target}, *list(config_dict.values()), *args, **kwargs
+        )
 
     name = cfg.get("name")
 
@@ -83,5 +91,8 @@ def init_from_cfg(
     if hasattr(base_class, "from_cfg") and callable(base_class.from_cfg):
         return base_class.from_cfg(cfg, *args, **kwargs)
 
-    cfg = OmegaConf.to_container(pop_name(cfg), resolve=True)
-    return base_class(*args, **kwargs, **cfg)
+    config_dict = cast(
+        dict[str, Any], OmegaConf.to_container(pop_name(cfg), resolve=True)
+    )
+
+    return base_class(*list(config_dict.values()), *args, **kwargs)

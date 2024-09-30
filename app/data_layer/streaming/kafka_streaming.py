@@ -24,13 +24,8 @@ class KafkaStreaming(Streaming):
     """
 
     def __init__(self, kafka_server: str, kafka_topic: str):
-        self.kafka_producer = None
         self.kafka_topic = kafka_topic
-
-        try:
-            self.kafka_producer = KafkaProducer(bootstrap_servers=kafka_server)
-        except Exception as e:
-            logger.error("Error in KafkaCallback initialization: %s", e)
+        self.kafka_producer = KafkaProducer(bootstrap_servers=kafka_server)
 
     def __call__(self, data: str):
         """
@@ -43,8 +38,8 @@ class KafkaStreaming(Streaming):
             The data to be sent to the Kafka server as a string
         """
         try:
-            data = data.encode("utf-8")
-            self.kafka_producer.send(self.kafka_topic, data)
+            bytes_data = data.encode("utf-8")
+            self.kafka_producer.send(self.kafka_topic, bytes_data)
             self.kafka_producer.flush()
         except Exception as e:
             logger.error("Error sending data to Kafka: %s", e)
@@ -61,4 +56,8 @@ class KafkaStreaming(Streaming):
 
     @classmethod
     def from_cfg(cls, cfg):
-        return cls(cfg["kafka_server"], cfg["kafka_topic"])
+        try:
+            return cls(cfg["kafka_server"], cfg["kafka_topic"])
+        except Exception as e:
+            logger.error("Error creating KafkaStreaming object: %s", e)
+            return None
