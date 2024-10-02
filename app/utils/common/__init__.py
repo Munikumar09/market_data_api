@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Any, cast
+from typing import Any, Optional, Type, TypeVar, cast
 
 from hydra.utils import instantiate
 from omegaconf import DictConfig, OmegaConf
@@ -29,12 +29,13 @@ def pop_name(cfg: DictConfig) -> DictConfig:
     return cfg_copy
 
 
+# pylint: disable=keyword-arg-before-vararg
 def init_from_cfg(
     cfg: DictConfig,
-    base_class: type[Registrable] | None = None,
+    base_class: Type | None = None,
     *args: Any,
     **kwargs: Any,
-) -> Any:
+) -> Type:
     """
     Initialize a class instance from a configuration object.
 
@@ -42,24 +43,24 @@ def init_from_cfg(
     ----------
     cfg: ``DictConfig``
         The configuration object
-    base_class: ``Optional[Type]
+    base_class: ``Type | None``
         The base class from which the instance should be initialized
-    args: Any
-        The arguments to pass to the class constructor
-    kwargs: Any
-        The keyword arguments to pass to the class constructor
+    args: ``Any``
+        The positional arguments to be passed to the class constructor
+    kwargs: ``Any``
+        The keyword arguments to be passed to the class constructor
 
     Returns
     -------
-    Any
-        The instance of the class initialized
+    ``Type``
+        The initialized class instance
 
     Raises
     ------
-    ValueError
-        If both name and base_class are None, or if base_class is None after processing
-    RegistrationError
-        If the name is not registered under the given base_class
+    ``ValueError``
+        If both `name` and `base_class` are `None`
+    ``RegistrationError``
+        If the `name` is not registered
     """
     if "_target_" in cfg:
         config_dict = cast(dict[str, Any], OmegaConf.to_container(cfg, resolve=True))
@@ -79,11 +80,11 @@ def init_from_cfg(
             base_class = (
                 base_class.by_name(name) if base_class else Registrable.by_name(name)
             )
-        except RegistrationError:
+        except RegistrationError as e:
             raise RegistrationError(
                 f"`{name}` is not a registered name. "
                 "Please provide a proper base_class under which the class is registered."
-            )
+            ) from e
 
     if base_class is None:
         raise ValueError("base_class cannot be None")

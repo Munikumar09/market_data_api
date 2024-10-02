@@ -23,6 +23,9 @@ class BaseClass(Registrable):
 
     @classmethod
     def from_cfg(cls, cfg: DictConfig):
+        """
+        Initialize the class instance from a configuration object.
+        """
         return cls(cfg.x, cfg.y)
 
 
@@ -44,6 +47,11 @@ class ChildClass(BaseClass):
 
 
 class SampleClass:
+    """
+    Sample class for testing the init_from_cfg function with additional args and kwargs
+    passed directly to the class constructor
+    """
+
     def __init__(self, x, y, *args, **kwargs):
         self.x = x
         self.y = y
@@ -210,17 +218,13 @@ def test_init_from_cfg_without_from_cfg_method():
     Test that init_from_cfg correctly initializes a class instance when from_cfg method is not available.
     """
 
-    class SimpleClass:
-        def __init__(self, a, b):
-            self.a = a
-            self.b = b
-
     cfg = OmegaConf.create({"a": 1, "b": 2})
-    instance = init_from_cfg(cfg, SimpleClass)
+    instance = init_from_cfg(cfg, SampleClass)
 
-    assert isinstance(instance, SimpleClass)
-    assert instance.a == 1
-    assert instance.b == 2
+    assert isinstance(instance, SampleClass)
+    assert instance.x == 1
+    assert instance.y == 2
+    
 
 
 # Test: 11
