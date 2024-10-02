@@ -224,7 +224,6 @@ def test_init_from_cfg_without_from_cfg_method():
     assert isinstance(instance, SampleClass)
     assert instance.x == 1
     assert instance.y == 2
-    
 
 
 # Test: 11
