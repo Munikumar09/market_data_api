@@ -1,6 +1,8 @@
 from pathlib import Path
+from typing import Optional
 
 from kafka import KafkaProducer
+from omegaconf import DictConfig
 
 from app.data_layer.streaming import Streaming
 from app.utils.common.logger_utils import get_logger
@@ -12,8 +14,7 @@ logger = get_logger(Path(__file__).name)
 class KafkaStreaming(Streaming):
     """
     Kafka streaming class to send data to Kafka server. This can be used as a callback
-    function to send data to Kafka. The Kafka server and topic are provided in the
-    configuration file.
+    function to send data to Kafka.
 
     Attributes:
     -----------
@@ -55,7 +56,7 @@ class KafkaStreaming(Streaming):
                 logger.error("Error closing Kafka producer: %s", e)
 
     @classmethod
-    def from_cfg(cls, cfg):
+    def from_cfg(cls, cfg: DictConfig) -> Optional["KafkaStreaming"]:
         try:
             return cls(cfg["kafka_server"], cfg["kafka_topic"])
         except Exception as e:

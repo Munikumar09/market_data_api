@@ -1,10 +1,11 @@
 # pylint: disable=missing-function-docstring
 import pytest
-from kafka.errors import KafkaError
+from kafka.errors import KafkaError, NoBrokersAvailable
 
 from app.data_layer.streaming.kafka_streaming import KafkaStreaming
 
 
+####################### FIXTURES #######################
 @pytest.fixture
 def kafka_server():
     return "localhost:9092"
@@ -27,6 +28,9 @@ def kafka_streaming(mocker, kafka_server, kafka_topic):
     return KafkaStreaming(kafka_server, kafka_topic)
 
 
+####################### TESTS #######################
+
+
 # Test: 1 (Test the initialization of the KafkaStreaming class)
 def test_kafka_streaming_init(mocker, kafka_server, kafka_topic):
     # Mock KafkaProducer
@@ -39,7 +43,6 @@ def test_kafka_streaming_init(mocker, kafka_server, kafka_topic):
     # Initialize KafkaStreaming
     kafka_streaming = KafkaStreaming(kafka_server, kafka_topic)
 
-    # Assertions
     assert kafka_streaming.kafka_topic == kafka_topic
     assert kafka_streaming.kafka_producer == mock_kafka_producer
 
@@ -49,11 +52,11 @@ def test_kafka_streaming_init_failure(mocker, kafka_server, kafka_topic):
     # Mock KafkaProducer to raise exception
     mocker.patch(
         "app.data_layer.streaming.kafka_streaming.KafkaProducer",
-        side_effect=KafkaError("Failed to connect"),
+        side_effect=NoBrokersAvailable("No Brokers Available"),
     )
 
     # Initialize KafkaStreaming and expect an exception
-    with pytest.raises(KafkaError):
+    with pytest.raises(NoBrokersAvailable):
         KafkaStreaming(kafka_server, kafka_topic)
 
 

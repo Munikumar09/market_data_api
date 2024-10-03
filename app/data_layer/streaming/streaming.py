@@ -41,7 +41,7 @@ class Streaming(ABC, Registrable):
 
         Returns:
         --------
-        ``Streaming|None``
+        ``Optional[Streaming]``
             The streaming object created from the configuration file
         """
         raise NotImplementedError

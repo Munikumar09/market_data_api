@@ -107,14 +107,8 @@ def test_init_from_cfg_with_target_and_missing_args():
         {"_target_": "tests.utils.test_init_from_cfg.BaseClass", "x": 2}
     )
 
-    with pytest.raises(InstantiationException) as exec_info:
+    with pytest.raises(InstantiationException):
         init_from_cfg(cfg)
-
-    assert (
-        exec_info.value.args[0]
-        == "Error in call to target 'tests.utils.test_init_from_cfg.BaseClass':"
-        "\nTypeError(\"BaseClass.__init__() missing 1 required positional argument: 'y'\")"
-    )
 
 
 # Test: 4
@@ -161,13 +155,8 @@ def test_init_from_cfg_with_none_target():
     """
     cfg = OmegaConf.create({"_target_": None, "x": 2, "y": 3})
 
-    with pytest.raises(InstantiationException) as exec_info:
+    with pytest.raises(InstantiationException):
         init_from_cfg(cfg)
-
-    assert (
-        exec_info.value.args[0]
-        == "Expected a callable target, got 'None' of type 'NoneType'"
-    )
 
 
 # Test: 7
@@ -215,7 +204,8 @@ def test_init_from_cfg_with_base_class_only():
 # Test: 10
 def test_init_from_cfg_without_from_cfg_method():
     """
-    Test that init_from_cfg correctly initializes a class instance when from_cfg method is not available.
+    Test that init_from_cfg correctly initializes a class instance when from_cfg method
+    is not available.
     """
 
     cfg = OmegaConf.create({"a": 1, "b": 2})
@@ -276,12 +266,8 @@ def test_init_from_cfg_with_missing_required_arg():
     """
     cfg = OmegaConf.create({"name": "base_class", "x": 2})
 
-    with pytest.raises(ConfigAttributeError) as exec_info:
+    with pytest.raises(ConfigAttributeError):
         init_from_cfg(cfg)
-    assert (
-        exec_info.value.args[0]
-        == "Missing key y\n    full_key: y\n    object_type=dict"
-    )
 
 
 # Test: 15

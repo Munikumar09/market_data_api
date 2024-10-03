@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Any, Optional, Type, TypeVar, cast
+from typing import Any, Type, cast
 
 from hydra.utils import instantiate
 from omegaconf import DictConfig, OmegaConf
