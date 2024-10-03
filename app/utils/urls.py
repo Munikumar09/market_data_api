@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from app import ROOT_DIR
 
 NSE_BASE_URL = "https://www.nseindia.com"
@@ -22,4 +24,4 @@ ALL_INDICES = f"{NSE_BASE_URL}/api/allIndices"
 
 
 # Database urls
-SQLITE_DB_URL = f"sqlite:///{ROOT_DIR}/data_layer/database/db/sqlite/db.sqlite3"
+SQLITE_DB_URL = f"sqlite:///{ROOT_DIR}/database/db/sqlite/db{datetime.now().date().strftime('%Y_%m_%d')}.sqlite3"

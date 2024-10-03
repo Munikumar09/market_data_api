@@ -10,14 +10,14 @@ from sqlmodel import Session, SQLModel, create_engine
 
 from app.utils.urls import SQLITE_DB_URL
 
-sqlite_engine = create_engine(SQLITE_DB_URL, echo=True)
+sqlite_engine = create_engine(SQLITE_DB_URL)
 
 
 def create_db_and_tables():
     """
-    Creates the database and tables if they do not exist.
+    Creates the database and tables if they do not exist.This function should 
+    be called only once when the application starts.
     """
-
     SQLModel.metadata.create_all(sqlite_engine)
 
 
