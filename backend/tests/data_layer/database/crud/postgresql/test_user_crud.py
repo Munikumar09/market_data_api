@@ -96,7 +96,7 @@ def test_is_attr_data_in_db(session):
     """
     result = is_attr_data_in_db(User, {"email": "testuser@example.com"}, session)
 
-    assert result == {"message": "email already exists"}
+    assert result ==  "email already exists"
 
 
 def test_get_user_by_attr(session, test_user):

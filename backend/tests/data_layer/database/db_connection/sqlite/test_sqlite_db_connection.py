@@ -35,13 +35,8 @@ def test_database_init_and_interaction():
         assert session.bind
 
         # Check if the tables are created
-        metadata = inspect(sqlite_engine)
-        for table in metadata.get_table_names():
-            assert table in table_names
-            table_names.remove(table)
-
-        # Check if all the tables are found
-        assert not table_names
+        db_tables = inspect(sqlite_engine).get_table_names()
+        assert set(db_tables) == table_names
 
         # Check if the tables are empty and able to interact with the database
         try:

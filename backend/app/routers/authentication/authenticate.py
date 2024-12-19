@@ -171,7 +171,7 @@ def verify_password(password: str, hash_password: str) -> bool:
         True if the password matches the hashed password
     """
     if not bcrypt.checkpw(password.encode("utf-8"), hash_password.encode("utf-8")):
-        raise UserSignupError("Passwords do not match")
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Passwords do not match")
 
     return True
 
@@ -380,9 +380,7 @@ def signup_user(user: UserSignup):
         A message indicating if the user was created successfully or an error message
     """
     if reason := validate_user_exists(user):
-        return reason
-
-    validate_user_data(user)
+        raise UserSignupError(reason)
 
     user_model = User(
         **user.dict(exclude={"password", "date_of_birth"}),
@@ -429,15 +427,11 @@ def signin_user(email, password):
     user = get_user_by_attr("email", email)
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found",
         )
 
-    if not verify_password(password, user.password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password",
-        )
+    verify_password(password, user.password)
 
     if not user.is_verified:
         raise HTTPException(
@@ -470,7 +464,7 @@ def update_user_verification_status(user_email: str, is_verified: bool = True):
     user = get_user_by_attr("email", user_email)
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found",
         )
 

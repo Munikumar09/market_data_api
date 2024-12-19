@@ -1,16 +1,18 @@
+import os
+from pathlib import Path
+from urllib.parse import quote_plus
+
+import psycopg2
 import pytest
+from sqlalchemy import inspect
 from sqlmodel import Session, SQLModel, create_engine
+
 from app.data_layer.database.db_connections.postgresql import (
     create_db_and_tables,
     get_session,
 )
-from sqlalchemy import inspect
-import os
-import psycopg2
-from urllib.parse import quote_plus
-from app.utils.fetch_data import get_required_env_var
-from pathlib import Path
 from app.utils.common.logger import get_logger
+from app.utils.fetch_data import get_required_env_var
 
 logger = get_logger(Path(__file__).name)
 

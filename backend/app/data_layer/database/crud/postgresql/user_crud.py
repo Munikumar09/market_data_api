@@ -13,7 +13,7 @@ logger = get_logger(Path(__file__).name)
 #### User CRUD operations ####
 def is_attr_data_in_db(
     model: Type[SQLModel], att_values: Dict[str, str], session: Session | None = None
-) -> dict | None:
+) -> str | None:
     """
     Checks if any of the specified fields have values that already exist in the database.
 
@@ -37,14 +37,14 @@ def is_attr_data_in_db(
         A message indicating that the field already exists if found, otherwise None
     """
     session = session or next(get_session())
-    existing_attr: dict | None = None
+
+    existing_attr: str | None = None
 
     for attr_name, attr_value in att_values.items():
-        print(attr_name, attr_value)
         statement = select(model).where(getattr(model, attr_name) == attr_value)
 
         if session.exec(statement).first():
-            existing_attr = {"message": f"{attr_name} already exists"}
+            existing_attr = f"{attr_name} already exists"
             break
 
     return existing_attr
