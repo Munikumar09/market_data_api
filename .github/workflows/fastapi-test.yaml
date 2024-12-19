@@ -5,6 +5,13 @@ name: Quality Checks
 env:
   PYTHON_VERSION: 3.12.3
   POETRY_VERSION: 1.8.2
+
+  # Postgres credentials for the test database
+  POSTGRES_USER: testuser
+  POSTGRES_PASSWORD: testpassword
+  POSTGRES_DB: testdb
+  POSTGRES_HOST: localhost
+  POSTGRES_PORT: 5432
 on:
   pull_request:
     branches: [ "master" ]
@@ -47,6 +54,21 @@ jobs:
       run:
         shell: bash -l {0}
         working-directory: backend
+    services:
+      postgres:
+        image: postgres:17  # Use a specific version for consistency
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
