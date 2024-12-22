@@ -13,6 +13,7 @@ from app.data_layer.database.crud.postgresql.user_crud import (
 from app.data_layer.database.models.user_model import UserVerification
 from app.notification.provider import NotificationProvider
 from app.schemas.user_model import UserSignIn, UserSignup, UserVerificationRequest
+from app.data_layer.database.models.user_model import User
 from app.utils.common import init_from_cfg
 from app.utils.common.logger import get_logger
 
@@ -91,7 +92,7 @@ async def send_verification_code(email_or_phone: str, verification_medium: str) 
             detail="Invalid verification medium. Use 'email' or 'phone'.",
         )
 
-    # Fetch the user by attribute
+    # Fetch the user by email address
     user = get_user_by_attr(verification_medium, email_or_phone)
     if not user:
         raise HTTPException(
@@ -152,22 +153,22 @@ async def verify_user(request: UserVerificationRequest) -> dict:
     logger.info("Verification attempt for %s", request.email_or_phone)
 
     # Fetch user verification details
-    email_verification = get_user_verification(request.email_or_phone)
+    user_verification = get_user_verification(request.email_or_phone)
 
-    if email_verification is None:
+    if user_verification is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User does not exist with this email or phone",
         )
 
     # Check if verification code matches
-    if email_verification.verification_code != request.verification_code:
+    if user_verification.verification_code != request.verification_code:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid verification code"
         )
 
     # Check if the verification code has expired
-    if email_verification.expiration_time < int(datetime.now(timezone.utc).timestamp()):
+    if user_verification.expiration_time < int(datetime.now(timezone.utc).timestamp()):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Verification code has expired. Try again",
@@ -187,7 +188,7 @@ async def verify_user(request: UserVerificationRequest) -> dict:
         403: {"description": "Not authorized"},
     },
 )
-def protected_route(current_user: dict = Depends(get_current_user)) -> dict:
+def protected_route(current_user: User = Depends(get_current_user)) -> dict:
     """
     Dummy protected route to test the authentication.
 
@@ -199,5 +200,5 @@ def protected_route(current_user: dict = Depends(get_current_user)) -> dict:
     --------
     - JSON response indicating the protected route access.
     """
-    logger.info("Access to protected route by user: %s", current_user["email"])
+    logger.info("Access to protected route by user: %s", current_user.email)
     return {"message": "This is a protected route", "user": current_user}

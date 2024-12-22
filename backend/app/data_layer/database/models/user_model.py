@@ -8,8 +8,7 @@ from sqlmodel import TIMESTAMP, BigInteger, Column, Field, SQLModel, text
 
 class Gender(str, Enum):
     """
-    Gender enumeration class to define the gender of the
-    user in the system.
+    Gender enumeration class to define the gender of the user in the system.
     """
 
     MALE = "male"
@@ -36,12 +35,13 @@ class Gender(str, Enum):
             If gender is present in the Gender enum returns Gender else None
         """
         try:
-            return cls(gender)
+            return cls(gender.lower())
         except ValueError as exc:
             if raise_exception:
                 raise raise_exception(
                     f"Gender must be in {[g.value for g in Gender]}"
                 ) from exc
+
         return None
 
 
@@ -108,8 +108,8 @@ class UserVerification(SQLModel, table=True):  # type: ignore
     verification_datetime: ``datetime``
         The datetime when the user was verified for the first time
     reverified_datetime: ``datetime``
-        The reverified datetime, if the user reverified the account
-        during the reset password process
+        The reverified datetime, if the user reverified the account during the 
+        password reset process
     """
 
     recipient: str = Field(primary_key=True)

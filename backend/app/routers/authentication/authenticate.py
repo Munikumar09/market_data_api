@@ -1,7 +1,6 @@
 import random
 import re
 from datetime import datetime, timedelta, timezone
-from typing import Optional
 
 import bcrypt
 import jwt
@@ -23,7 +22,11 @@ from app.utils.constants import (
     JWT_REFRESH_SECRET,
     JWT_SECRET,
     REFRESH_TOKEN_EXPIRE_DAYS,
+    JWT_HASHING_ALGO,
 )
+
+USER_ID = "user_id"
+EMAIL = "email"
 
 MACHINE_ID = 1
 snowflake_generator = SnowflakeGenerator(MACHINE_ID)
@@ -56,34 +59,26 @@ class UserSignupError(HTTPException):
     """
 
     def __init__(self, message: str):
-
         super().__init__(status.HTTP_400_BAD_REQUEST, message)
 
 
-def validate_email(email: str) -> bool:
+def validate_email(email: str) -> None:
     """
     This function validates the email format. It allows only email addresses with
-    the domain 'gmail.com'.
+    the domain 'gmail.com'
 
     Parameters:
     -----------
     email: ``str``
         The email address to be validated
-
-    Returns:
-    --------
-    ``bool``
-        True if the email is valid
     """
     email_regex = r"^[\w\.-]+@gmail\.com$"
 
     if re.match(email_regex, email) is None:
         raise UserSignupError("Invalid email format")
 
-    return True
 
-
-def validate_phone_number(phone_number: str) -> bool:
+def validate_phone_number(phone_number: str) -> None:
     """
     This function validates the phone number format. It allows only phone numbers
     with 10 digits.
@@ -92,18 +87,11 @@ def validate_phone_number(phone_number: str) -> bool:
     -----------
     phone_number: ``str``
         The phone number to be validated
-
-    Returns:
-    --------
-    ``bool``
-        True if the phone number is valid
     """
     phone_number_regex = r"^\d{10}$"
 
     if re.match(phone_number_regex, phone_number) is None:
         raise UserSignupError("Invalid phone number format")
-
-    return True
 
 
 def get_hash_password(password: str) -> str:
@@ -123,7 +111,7 @@ def get_hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
-def validate_password(password: str) -> bool:
+def validate_password(password: str) -> None:
     """
     Validates the password format. The password must be at least 8 characters long
     and include an uppercase letter, lowercase letter, digit, and special character.
@@ -132,11 +120,6 @@ def validate_password(password: str) -> bool:
     -----------
     password: ``str``
         The password to be validated
-
-    Returns:
-    --------
-    ``bool``
-        True if the password is valid
     """
 
     if not (
@@ -144,17 +127,16 @@ def validate_password(password: str) -> bool:
         and re.search(r"[A-Z]", password) is not None
         and re.search(r"[a-z]", password) is not None
         and re.search(r"\d+", password) is not None
-        and re.search(r"[!@#$%^&*]", password) is not None
+        and re.search(r"[!@#$%^&*(),.?\":{}|<>]", password) is not None
     ):
 
         raise UserSignupError(
             "Password must be at least 8 characters long and include an uppercase letter, "
             "lowercase letter, digit, and special character",
         )
-    return True
 
 
-def verify_password(password: str, hash_password: str) -> bool:
+def verify_password(password: str, hash_password: str) -> None:
     """
     Verifies the password by comparing the hashed password with the password.
 
@@ -164,53 +146,25 @@ def verify_password(password: str, hash_password: str) -> bool:
         The password to be verified
     hash_password: ``str``
         The hashed password to be compared with the password
-
-    Returns:
-    --------
-    ``bool``
-        True if the password matches the hashed password
     """
     if not bcrypt.checkpw(password.encode("utf-8"), hash_password.encode("utf-8")):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Passwords do not match")
 
-    return True
 
-
-def validate_gender(gender: str) -> bool:
-    """
-    Validates the user gender input.
-
-    Parameters:
-    -----------
-    gender: ``str``
-        Gender of the user. It must be 'M' or 'F' (case-insensitive)
-
-    Returns:
-    --------
-    ``bool``
-        True if the given gender in the correct format
-    """
-    Gender.get_gender_enum(gender, raise_exception=UserSignupError)
-    return True
-
-
-def validate_date_of_birth(date_of_birth: str) -> datetime:
+def validate_date_of_birth(date_of_birth: str) -> None:
     """
     Validates the date of birth format. The date of birth must be in the format
-    'dd/mm/yyyy' and a valid date.
-
+    'dd/mm/yyyy' and cannot be in the future.
     Parameters:
     -----------
     date_of_birth: ``str``
         The date of birth to be validated
-
-    Returns:
-    --------
-    ``datetime``
-        True if the date of birth is valid
     """
     try:
-        return datetime.strptime(date_of_birth, "%d/%m/%Y")
+        dob = datetime.strptime(date_of_birth, "%d/%m/%Y")
+
+        if dob >= datetime.now():
+            raise UserSignupError("Date of birth cannot be in the future")
 
     except ValueError as exc:
         raise UserSignupError(
@@ -218,10 +172,10 @@ def validate_date_of_birth(date_of_birth: str) -> datetime:
         ) from exc
 
 
-def validate_user_exists(user: UserSignup) -> dict | None:
+def validate_user_exists(user: UserSignup) -> str | None:
     """
-    Checks if the user already exists in the database. It checks the email, phone number,
-    and user_id fields to see if the user already exists.
+    Checks if the user already exists in the database. It checks the email
+    and phone number fields to see if the user already exists.
 
     Parameters:
     -----------
@@ -233,15 +187,11 @@ def validate_user_exists(user: UserSignup) -> dict | None:
     ``str | None``
         An error message if the user already exists, otherwise None
     """
-
     fields_to_check = {
         "email": user.email,
         "phone_number": user.phone_number,
     }
     response = is_attr_data_in_db(User, fields_to_check)
-
-    if response:
-        response = {"message": response, "status_code": 400}
 
     return response
 
@@ -255,61 +205,48 @@ def validate_user_data(user: UserSignup) -> None:
     user: ``UserSignup``
         The user details to be validated
     """
+    if user.password != user.confirm_password:
+        raise UserSignupError("Passwords do not match")
+
     validate_email(user.email)
     validate_phone_number(user.phone_number)
     validate_password(user.password)
-    verify_password(user.confirm_password, get_hash_password(user.password))
-    validate_gender(user.gender)
     validate_date_of_birth(user.date_of_birth)
 
 
-def create_access_token(data: dict) -> str:
+def create_token(data: dict, secret: str, expire_time: int) -> str:
     """
-    Creates a JWT access token with the given data and expiration time.
+    Creates a JWT token with the given data and expiration time.
 
     Parameters:
     -----------
     data: ``dict``
         The data to be encoded in the token
+    secret: ``str``
+        The secret key used to encode the token
+    expire_time: ``int``
+        The expiration time of the token in minutes
 
     Returns:
     --------
     ``str``
-        The JWT access token
+        The JWT token
     """
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
 
-    return jwt.encode(to_encode, JWT_SECRET, algorithm="HS256")
+    # Using `exp` as token expiry time, if `exp` is present in the payload data then
+    # pyJwt will verify the token expiry automatically
+    to_encode.update(
+        {"exp": datetime.now(timezone.utc) + timedelta(minutes=expire_time)}
+    )
 
-
-def create_refresh_token(data: dict) -> str:
-    """
-    Creates a JWT refresh token with the given data and expiration time.
-    It can be used to generate a new access token when the access token expires.
-
-    Parameters:
-    -----------
-    data: ``dict``
-        The data to be encoded in the token
-
-    Returns:
-    --------
-    ``str``
-        The JWT refresh token
-    """
-
-    to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
-    to_encode.update({"exp": expire})
-
-    return jwt.encode(to_encode, JWT_REFRESH_SECRET, algorithm="HS256")
+    return jwt.encode(to_encode, secret, algorithm=JWT_HASHING_ALGO)
 
 
-def decode_token(token: str, secret: str) -> Optional[dict]:
+def decode_token(token: str, secret: str) -> dict[str, str]:
     """
     Decodes the given token using the secret key and returns the decoded data.
+    The decoded data contain the payload used for creating the token.
 
     Parameters:
     -----------
@@ -320,19 +257,18 @@ def decode_token(token: str, secret: str) -> Optional[dict]:
 
     Returns:
     --------
-    ``Optional[dict]``
+    ``dict[str, str]``
         The decoded data from the token
     """
     try:
-        decoded_data = jwt.decode(token, secret, algorithms=["HS256"])
-        return decoded_data
+        return jwt.decode(token, secret, algorithms=[JWT_HASHING_ALGO])
     except jwt.ExpiredSignatureError:
-        return None
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Token expired")
     except jwt.InvalidTokenError:
-        return None
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid token")
 
 
-def access_token_from_refresh_token(refresh_token: str) -> dict:
+def access_token_from_refresh_token(refresh_token: str) -> dict[str, str]:
     """
     Create the access token using the refresh token. If the refresh token is invalid
     or expired, it returns an error message. Otherwise, it generates a new access token
@@ -345,17 +281,15 @@ def access_token_from_refresh_token(refresh_token: str) -> dict:
 
     Returns:
     --------
-    ``dict``
+    ``dict[str, str]``
         A dictionary containing the new access token and the refresh token
     """
     decoded_data = decode_token(refresh_token, JWT_REFRESH_SECRET)
 
-    if not decoded_data:
-        return {"message": "Invalid or expired refresh token", "status_code": 401}
-
-    # Generate a new access token
-    access_token = create_access_token(
-        {"user_id": decoded_data["user_id"], "email": decoded_data["email"]}
+    access_token = create_token(
+        {USER_ID: decoded_data[USER_ID], EMAIL: decoded_data[EMAIL]},
+        JWT_SECRET,
+        ACCESS_TOKEN_EXPIRE_MINUTES,
     )
 
     return {
@@ -379,19 +313,24 @@ def signup_user(user: UserSignup):
     ``dict``
         A message indicating if the user was created successfully or an error message
     """
+
+    # Check whether the user is already exists with the given details
     if reason := validate_user_exists(user):
-        raise UserSignupError(reason)
+        raise UserSignupError(reason, status.HTTP_400_BAD_REQUEST)
 
     user_model = User(
-        **user.dict(exclude={"password", "date_of_birth"}),
+        **user.dict(exclude={"password", "date_of_birth", "gender"}),
         password=get_hash_password(user.password),
         user_id=get_snowflake_id(),
-        date_of_birth=validate_date_of_birth(user.date_of_birth),
+        date_of_birth=datetime.strptime(user.date_of_birth, "%d/%m/%Y"),
+        gender=Gender.get_gender_enum(
+            gender=user.gender, raise_exception=UserSignupError
+        ),
     )
 
     create_user(user_model)
 
-    if not get_user_by_attr("email", user.email):
+    if not get_user_by_attr(EMAIL, user.email):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="User not created successfully. Please try again later",
@@ -402,14 +341,11 @@ def signup_user(user: UserSignup):
     }
 
 
-def signin_user(email, password):
+def signin_user(email: str, password: str) -> dict[str, str]:
     """
-    Sign in the user with the given email and password. If the user does not exist or
-    the password is incorrect, it returns an error message. If the user is not verified,
-    it returns a message indicating that the user is not verified and cannot sign in.
-
-    If the user exists and the password is correct, it generates an access token and a
-    refresh token and returns them to the user.
+    Sign in the user with the given email and password. If email or password is incorrect,
+    or the user is not verified, it raises an error message. Otherwise, it generates an
+    access token and a refresh token and returns them to the user.
 
     Parameters:
     -----------
@@ -420,17 +356,10 @@ def signin_user(email, password):
 
     Returns:
     --------
-    ``dict``
-        A message indicating if the login was successful or an error message
+    ``dict[str, str]``
+        Dictionary containing the message, access token, and refresh token
     """
-
-    user = get_user_by_attr("email", email)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
-
+    user = get_user_by_attr(EMAIL, email)
     verify_password(password, user.password)
 
     if not user.is_verified:
@@ -439,8 +368,17 @@ def signin_user(email, password):
             detail="User is not verified",
         )
 
-    access_token = create_access_token({"user_id": user.user_id, "email": user.email})
-    refresh_token = create_refresh_token({"user_id": user.user_id, "email": user.email})
+    token_data = {USER_ID: user.user_id, EMAIL: user.email}
+    access_token = create_token(
+        token_data,
+        JWT_SECRET,
+        ACCESS_TOKEN_EXPIRE_MINUTES,
+    )
+    refresh_token = create_token(
+        token_data,
+        JWT_REFRESH_SECRET,
+        REFRESH_TOKEN_EXPIRE_DAYS,
+    )
 
     return {
         "message": "Login successful",
@@ -449,25 +387,27 @@ def signin_user(email, password):
     }
 
 
-def update_user_verification_status(user_email: str, is_verified: bool = True):
+def update_user_verification_status(
+    user_email: str, is_verified: bool = True
+) -> dict[str, str]:
     """
     Update the user verification status in the database. If the user does not exist,
-    it returns an error message.
+    it raises an error message. Otherwise, it updates the user verification status
+    and returns a success message.
 
     Parameters:
     -----------
     user_email: ``str``
         The email address of the user
-    is_verified: ``bool``
+    is_verified: ``bool`` ( default = True )
         The verification status of the user
-    """
-    user = get_user_by_attr("email", user_email)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
 
+    Returns:
+    --------
+    ``dict[str, str]``
+        A message indicating if the user was verified successfully or an error message
+    """
+    user = get_user_by_attr(EMAIL, user_email)
     user.is_verified = is_verified
     update_user(user.user_id, user.model_dump())
 
@@ -491,7 +431,7 @@ def generate_verification_code(length: int = 6) -> str:
     return "".join([str(random.randint(0, 9)) for _ in range(length)])
 
 
-def get_current_user(token: str = Depends(oauth2_scheme)):
+def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
     """
     Retrieve the current user from the database using the access token. If the token
     is invalid or expired, it returns an error message. If the token is valid, it
@@ -507,29 +447,6 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     ``User``
         The user details retrieved from the database
     """
-    try:
-        decoded_data = decode_token(token, JWT_SECRET)
+    decoded_data = decode_token(token, JWT_SECRET)
 
-        if not decoded_data:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Unable to decode token",
-            )
-
-        exp_time = decoded_data["exp"]
-        current_time = datetime.now(timezone.utc).timestamp()
-
-        if current_time > exp_time:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token has expired",
-            )
-        user = get_user(decoded_data["user_id"])
-
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid access token",
-        ) from e
-
-    return user
+    return get_user(decoded_data[USER_ID])

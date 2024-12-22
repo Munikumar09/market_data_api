@@ -3,9 +3,8 @@ from pathlib import Path
 from urllib.parse import quote_plus
 
 import psycopg2
-import pytest
 from sqlalchemy import inspect
-from sqlmodel import Session, SQLModel, create_engine
+from sqlmodel import create_engine
 
 from app.data_layer.database.db_connections.postgresql import (
     create_db_and_tables,
@@ -24,7 +23,9 @@ POSTGRES_DB = "POSTGRES_DB"
 
 
 def create_database_if_not_exists():
-    """Creates the database if it doesn't already exist and returns True if created, False otherwise."""
+    """
+    Creates the database if it doesn't already exist and returns True if created, False otherwise.
+    """
     conn = None
     try:
         conn = psycopg2.connect(
@@ -60,7 +61,9 @@ def create_database_if_not_exists():
 
 
 def drop_database_if_created(created: bool):
-    """Drops the database only if it was created by the create_database_if_not_exists function."""
+    """
+    Drops the database only if it was created by the create_database_if_not_exists function.
+    """
     if not created:
         logger.info("Skipping database drop as it was not created in this session.")
         return
@@ -127,57 +130,28 @@ def test_create_db_and_tables():
     """
     Test the create_db_and_tables function to ensure it creates the tables.
     """
-
     set_env_vars()
     created = create_database_if_not_exists()
     db_url = f"postgresql://{quote_plus(get_required_env_var(POSTGRES_USER))}:{quote_plus(get_required_env_var(POSTGRES_PASSWORD))}@{get_required_env_var(POSTGRES_HOST)}:{get_required_env_var(POSTGRES_PORT)}/{get_required_env_var(POSTGRES_DB)}"
     engine = create_engine(db_url)
     inspector = inspect(engine)
     tables = inspector.get_table_names()
+    
+    # Ensure the database is created and the tables are empty
     assert tables == []
+    
     create_db_and_tables(engine)
     inspector = inspect(engine)
     tables = inspector.get_table_names()
-
+    
+    # Ensure the tables are created
     assert set(tables) == table_names
 
-    session = next(get_session(engine))
-
-    assert session.is_active
-    assert session.connection
-    assert session.bind
+    with get_session() as session:
+        # Check if the session is active and able to connect to the database
+        assert session.is_active
+        assert session.connection
+        assert session.bind
 
     drop_database_if_created(created)
     remove_env_vars()
-
-
-# # Test the session creation and handling
-# def test_get_session(setup_database):
-#     """
-#     Test the get_session function to ensure it yields a session object.
-#     """
-#     session_generator = get_session()
-#     session = next(session_generator)
-#     assert isinstance(session, Session)
-#     session_generator.close()
-
-# # Test the logging of errors during database creation
-# def test_create_db_and_tables_error(setup_database):
-#     """
-#     Test the create_db_and_tables function to ensure it logs an error if the database creation fails.
-#     """
-#     # Simulate an error by dropping the connection
-#     engine.dispose()
-#     with pytest.raises(Exception):
-#         create_db_and_tables()
-
-# # Test the logging of errors during session handling
-# def test_get_session_error(setup_database):
-#     """
-#     Test the get_session function to ensure it logs an error if session creation fails.
-#     """
-#     # Simulate an error by dropping the connection
-#     engine.dispose()
-#     session_generator = get_session()
-#     with pytest.raises(Exception):
-#         next(session_generator)
