@@ -108,7 +108,7 @@ class UserVerification(SQLModel, table=True):  # type: ignore
     verification_datetime: ``datetime``
         The datetime when the user was verified for the first time
     reverified_datetime: ``datetime``
-        The reverified datetime, if the user reverified the account during the 
+        The reverified datetime, if the user reverified the account during the
         password reset process
     """
 

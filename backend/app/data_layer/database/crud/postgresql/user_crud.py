@@ -1,21 +1,24 @@
+from functools import wraps
 from pathlib import Path
-from typing import Dict, Type
+from typing import Any, Callable, Dict, Type
+
 from fastapi import HTTPException, status
 from sqlmodel import Session, SQLModel, select
-from typing import Callable, Any
-from functools import wraps
+
 from app.data_layer.database.db_connections.postgresql import get_session
 from app.data_layer.database.models.user_model import User, UserVerification
 from app.utils.common.logger import get_logger
 
 logger = get_logger(Path(__file__).name)
 
+
 def with_session(func: Callable) -> Callable:
-    """ 
+    """
     This decorator function is used to provide a session object to the decorated function.
     If the session object is not provided, a new session object is created and used for the
     database operations.
     """
+
     @wraps(func)
     def wrapper(*args, session: Session = None, **kwargs) -> Any:
         # Use provided session or create a new one
@@ -23,12 +26,15 @@ def with_session(func: Callable) -> Callable:
             with get_session() as new_session:
                 return func(*args, session=new_session, **kwargs)
         return func(*args, session=session, **kwargs)
-    
+
     return wrapper
+
 
 #### User CRUD operations ####
 @with_session
-def is_attr_data_in_db(model: Type[SQLModel], att_values: Dict[str, str], session: Session) -> str | None:
+def is_attr_data_in_db(
+    model: Type[SQLModel], att_values: Dict[str, str], session: Session
+) -> str | None:
     """
     Checks if any of the specified fields have values that already exist in the database.
 
@@ -52,7 +58,7 @@ def is_attr_data_in_db(model: Type[SQLModel], att_values: Dict[str, str], sessio
         A message indicating that the field already exists if found, otherwise None
     """
     existing_attr: str | None = None
-    
+
     for attr_name, attr_value in att_values.items():
         statement = select(model).where(getattr(model, attr_name) == attr_value)
 
@@ -62,10 +68,9 @@ def is_attr_data_in_db(model: Type[SQLModel], att_values: Dict[str, str], sessio
 
     return existing_attr
 
+
 @with_session
-def get_user_by_attr(
-    attr_name: str, attr_value: str, session: Session
-) -> User:
+def get_user_by_attr(attr_name: str, attr_value: str, session: Session) -> User:
     """
     Retrieves a user from the database using the specified attribute name and value.
     Example: get_user_by_attr("email", "example@gmail.com")
@@ -97,6 +102,7 @@ def get_user_by_attr(
 
     return result
 
+
 @with_session
 def create_user(user: User, session: Session):
     """
@@ -114,7 +120,10 @@ def create_user(user: User, session: Session):
         session.commit()
         session.refresh(user)
     except Exception as e:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Error while creating user: {e}")
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, f"Error while creating user: {e}"
+        )
+
 
 @with_session
 def get_user(user_id: int, session: Session) -> User:
@@ -127,7 +136,7 @@ def get_user(user_id: int, session: Session) -> User:
         The `user_id` of the user to retrieve
     session: ``Session``
         Session object to interact with the database
-    
+
     Raises:
     -------
     ``HTTPException``
@@ -145,6 +154,7 @@ def get_user(user_id: int, session: Session) -> User:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "User not found")
 
     return user
+
 
 @with_session
 def update_user(user_id: int, user_data: dict, session: Session) -> None:
@@ -170,15 +180,16 @@ def update_user(user_id: int, user_data: dict, session: Session) -> None:
     for key, value in user_data.items():
         if not hasattr(user, key):
             raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Invalid field: {key}")
-        
+
         setattr(user, key, value)
 
     session.add(user)
     session.commit()
     session.refresh(user)
 
+
 @with_session
-def delete_user(user_id: int, session: Session)->None:
+def delete_user(user_id: int, session: Session) -> None:
     """
     Delete a user from the database using the `user_id` if the user is present.
 
@@ -194,17 +205,16 @@ def delete_user(user_id: int, session: Session)->None:
     ``bool``
         True if the user was deleted successfully, otherwise False
     """
-    user = get_user(user_id,session=session)
+    user = get_user(user_id, session=session)
     session.delete(user)
     session.commit()
 
 
 #### UserVerification CRUD operations ####
 
+
 @with_session
-def get_user_verification(
-    recipient: str, session: Session
-) -> UserVerification | None:
+def get_user_verification(recipient: str, session: Session) -> UserVerification | None:
     """
     Retrieve a user verification object from the database using the recipient (email/phone number).
 
@@ -220,12 +230,11 @@ def get_user_verification(
     ``UserVerification | None``
         The user verification object if found, otherwise None
     """
-    statement = select(UserVerification).where(
-        UserVerification.recipient == recipient
-    )
+    statement = select(UserVerification).where(UserVerification.recipient == recipient)
     result = session.exec(statement).first()
 
     return result
+
 
 @with_session
 def create_or_update_user_verification(
@@ -244,7 +253,7 @@ def create_or_update_user_verification(
     session: ``Session``
         Session object to interact with the database
     """
-    
+
     existing_user_verification = get_user_verification(
         user_verification.recipient, session=session
     )
@@ -255,9 +264,7 @@ def create_or_update_user_verification(
         existing_user_verification.verification_code = (
             user_verification.verification_code
         )
-        existing_user_verification.expiration_time = (
-            user_verification.expiration_time
-        )
+        existing_user_verification.expiration_time = user_verification.expiration_time
         existing_user_verification.reverified_datetime = (
             user_verification.reverified_datetime
         )

@@ -10,10 +10,9 @@ from app.data_layer.database.crud.postgresql.user_crud import (
     get_user_by_attr,
     get_user_verification,
 )
-from app.data_layer.database.models.user_model import UserVerification
+from app.data_layer.database.models.user_model import User, UserVerification
 from app.notification.provider import NotificationProvider
 from app.schemas.user_model import UserSignIn, UserSignup, UserVerificationRequest
-from app.data_layer.database.models.user_model import User
 from app.utils.common import init_from_cfg
 from app.utils.common.logger import get_logger
 
@@ -201,4 +200,4 @@ def protected_route(current_user: User = Depends(get_current_user)) -> dict:
     - JSON response indicating the protected route access.
     """
     logger.info("Access to protected route by user: %s", current_user.email)
-    return {"message": "This is a protected route", "user": current_user}
+    return {"message": "This is a protected route", "user": current_user.model_dump()}

@@ -19,10 +19,10 @@ from app.data_layer.database.models.user_model import Gender, User
 from app.schemas.user_model import UserSignup
 from app.utils.constants import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
+    JWT_HASHING_ALGO,
     JWT_REFRESH_SECRET,
     JWT_SECRET,
     REFRESH_TOKEN_EXPIRE_DAYS,
-    JWT_HASHING_ALGO,
 )
 
 USER_ID = "user_id"
@@ -155,6 +155,7 @@ def validate_date_of_birth(date_of_birth: str) -> None:
     """
     Validates the date of birth format. The date of birth must be in the format
     'dd/mm/yyyy' and cannot be in the future.
+
     Parameters:
     -----------
     date_of_birth: ``str``
@@ -263,7 +264,7 @@ def decode_token(token: str, secret: str) -> dict[str, str]:
     try:
         return jwt.decode(token, secret, algorithms=[JWT_HASHING_ALGO])
     except jwt.ExpiredSignatureError:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Token expired")
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Token has expired")
     except jwt.InvalidTokenError:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid token")
 
@@ -316,7 +317,7 @@ def signup_user(user: UserSignup):
 
     # Check whether the user is already exists with the given details
     if reason := validate_user_exists(user):
-        raise UserSignupError(reason, status.HTTP_400_BAD_REQUEST)
+        raise UserSignupError(reason)
 
     user_model = User(
         **user.dict(exclude={"password", "date_of_birth", "gender"}),

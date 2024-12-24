@@ -1,13 +1,15 @@
 """
 This module handles the PostgreSQL database connections and session management.
 """
+
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Generator
 from urllib.parse import quote_plus
 
 from sqlalchemy.engine import Engine
 from sqlmodel import Session, SQLModel, create_engine
-from contextlib import contextmanager
+
 from app.utils.common.logger import get_logger
 from app.utils.fetch_data import get_required_env_var
 
@@ -25,6 +27,7 @@ DATABASE_URL = f"postgresql://{quote_plus(user_name)}:{quote_plus(password)}@{ho
 
 engine = create_engine(DATABASE_URL)
 
+
 def create_db_and_tables(db_engine: Engine | None = None):
     """
     Create the database and tables if they do not exist
@@ -41,15 +44,16 @@ def create_db_and_tables(db_engine: Engine | None = None):
         logger.error("Failed to create database and tables: %s", e)
         raise
 
+
 @contextmanager
-def get_session(db_engine:Engine | None = None) -> Generator[Session, None, None]:
+def get_session(db_engine: Engine | None = None) -> Generator[Session, None, None]:
     """
     Context manager for database sessions.
     Ensures proper handling of commits and rollbacks.
     """
     db_engine = db_engine or engine
     session = Session(db_engine)
-    
+
     try:
         yield session
     except Exception as e:

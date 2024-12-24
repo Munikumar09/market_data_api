@@ -136,14 +136,14 @@ def test_create_db_and_tables():
     engine = create_engine(db_url)
     inspector = inspect(engine)
     tables = inspector.get_table_names()
-    
+
     # Ensure the database is created and the tables are empty
     assert tables == []
-    
+
     create_db_and_tables(engine)
     inspector = inspect(engine)
     tables = inspector.get_table_names()
-    
+
     # Ensure the tables are created
     assert set(tables) == table_names
 
