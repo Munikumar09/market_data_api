@@ -79,10 +79,14 @@ class BrevoEmailProvider(EmailProvider):
         """
         Initialize the BrevoEmailProvider from the configuration.
         """
-        if cfg.get("sender") is None:
+        if (
+            cfg.get("sender") is None
+            or cfg.sender.get("name") is None
+            or cfg.sender.get("email") is None
+        ):
             raise ValueError("Brevo sender details are required")
 
-        if cfg.get("security") is None:
+        if cfg.get("security") is None or cfg.security.api_key_name is None:
             raise ValueError("brevo_api_key_name is required")
 
         return cls(
