@@ -469,13 +469,8 @@ def test_on_message_callback(binary_data_io: tuple[bytes, dict]):
 
     smartsocket._on_message(None, binary_data_io[0], is_binary=True)
     exptected_data = binary_data_io[1]
-    exptected_data.update(
-        {
-            "symbol": "symbol"
-            # "socket_name": "smartapi",
-            # "exchange": "NSE_CM",
-        }
-    )
+    exptected_data["symbol"] = "symbol"
+
     actual_call_args = json.loads(smartsocket.on_data_save_callback.call_args.args[0])
     assert actual_call_args.pop("retrieval_timestamp")
 

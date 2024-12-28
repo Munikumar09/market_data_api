@@ -5,17 +5,18 @@ to get a session object to interact with the database.
 """
 
 from contextlib import contextmanager
+from functools import wraps
 from pathlib import Path
-from typing import Generator
+from typing import Any, Callable, Generator
 
 from sqlalchemy.engine import Engine
 from sqlmodel import Session, SQLModel, create_engine
 
 from app.utils.common.logger import get_logger
+from app.utils.urls import SQLITE_DB_URL
 
 logger = get_logger(Path(__file__).name)
 
-from app.utils.urls import SQLITE_DB_URL
 
 sqlite_engine = create_engine(SQLITE_DB_URL)
 
@@ -54,3 +55,21 @@ def get_session(db_engine: Engine | None = None) -> Generator[Session, None, Non
         raise
     finally:
         session.close()
+
+
+def with_session(func: Callable) -> Callable:
+    """
+    This decorator function is used to provide a session object to the decorated function.
+    If the session object is not provided, a new session object is created and used for the
+    database operations.
+    """
+
+    @wraps(func)
+    def wrapper(*args, session: Session | None = None, **kwargs) -> Any:
+        # Use provided session or create a new one
+        if session is None:
+            with get_session() as new_session:
+                return func(*args, session=new_session, **kwargs)
+        return func(*args, session=session, **kwargs)
+
+    return wrapper

@@ -153,8 +153,9 @@ def test_retrieve_and_save(sqlite_saver: SqliteDataSaver, kafka_data: list[dict]
 
     assert sqlite_saver.consumer.__iter__.call_count == 1
 
-    session = get_session(sqlite_saver.engine)
-    stock_price_info = get_all_stock_price_info(session)
+    with get_session(sqlite_saver.engine) as session:
+        stock_price_info = get_all_stock_price_info(session=session)
+
     inserted_data = [info.to_dict() for info in stock_price_info]
     expected_data = [InstrumentPrice(**data).to_dict() for data in kafka_data]
 

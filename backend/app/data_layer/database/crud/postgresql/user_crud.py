@@ -1,33 +1,14 @@
-from functools import wraps
 from pathlib import Path
-from typing import Any, Callable, Dict, Type
+from typing import Dict, Type
 
 from fastapi import HTTPException, status
 from sqlmodel import Session, SQLModel, select
 
-from app.data_layer.database.db_connections.postgresql import get_session
+from app.data_layer.database.db_connections.postgresql import with_session
 from app.data_layer.database.models.user_model import User, UserVerification
 from app.utils.common.logger import get_logger
 
 logger = get_logger(Path(__file__).name)
-
-
-def with_session(func: Callable) -> Callable:
-    """
-    This decorator function is used to provide a session object to the decorated function.
-    If the session object is not provided, a new session object is created and used for the
-    database operations.
-    """
-
-    @wraps(func)
-    def wrapper(*args, session: Session = None, **kwargs) -> Any:
-        # Use provided session or create a new one
-        if session is None:
-            with get_session() as new_session:
-                return func(*args, session=new_session, **kwargs)
-        return func(*args, session=session, **kwargs)
-
-    return wrapper
 
 
 #### User CRUD operations ####
@@ -122,7 +103,7 @@ def create_user(user: User, session: Session):
     except Exception as e:
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST, f"Error while creating user: {e}"
-        )
+        ) from e
 
 
 @with_session

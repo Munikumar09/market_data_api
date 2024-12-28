@@ -3,8 +3,9 @@ This module handles the PostgreSQL database connections and session management.
 """
 
 from contextlib import contextmanager
+from functools import wraps
 from pathlib import Path
-from typing import Generator
+from typing import Any, Callable, Generator
 from urllib.parse import quote_plus
 
 from sqlalchemy.engine import Engine
@@ -62,3 +63,21 @@ def get_session(db_engine: Engine | None = None) -> Generator[Session, None, Non
         raise
     finally:
         session.close()
+
+
+def with_session(func: Callable) -> Callable:
+    """
+    This decorator function is used to provide a session object to the decorated function.
+    If the session object is not provided, a new session object is created and used for the
+    database operations.
+    """
+
+    @wraps(func)
+    def wrapper(*args, session: Session | None = None, **kwargs) -> Any:
+        # Use provided session or create a new one
+        if session is None:
+            with get_session() as new_session:
+                return func(*args, session=new_session, **kwargs)
+        return func(*args, session=session, **kwargs)
+
+    return wrapper

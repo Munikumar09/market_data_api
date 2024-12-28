@@ -9,7 +9,7 @@ from app.schemas.user_model import UserSignup
 
 # Mock data
 @pytest.fixture
-def mock_user_sign_up_data():
+def sign_up_data() -> UserSignup:
     return UserSignup(
         username="testuser",
         email="test@gmail.com",
@@ -23,20 +23,18 @@ def mock_user_sign_up_data():
 
 # Mock user model
 @pytest.fixture
-def mock_user(mock_user_sign_up_data):
+def test_user(sign_up_data: UserSignup) -> User:
     return User(
         user_id=12345678901,
-        username=mock_user_sign_up_data.username,
-        email=mock_user_sign_up_data.email,
-        phone_number=mock_user_sign_up_data.phone_number,
+        username=sign_up_data.username,
+        email=sign_up_data.email,
+        phone_number=sign_up_data.phone_number,
         password=get_hash_password("Password1!"),
-        date_of_birth=datetime.strptime(
-            mock_user_sign_up_data.date_of_birth, "%d/%m/%Y"
-        ),
-        gender=mock_user_sign_up_data.gender,
+        date_of_birth=datetime.strptime(sign_up_data.date_of_birth, "%d/%m/%Y"),
+        gender=sign_up_data.gender,
     )
 
 
 @pytest.fixture
-def token_data(mock_user):
-    return {"user_id": mock_user.user_id, "email": mock_user.email}
+def token_data(test_user) -> dict[str, str]:
+    return {"user_id": test_user.user_id, "email": test_user.email}

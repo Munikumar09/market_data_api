@@ -111,7 +111,7 @@ def get_hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
-def validate_password(password: str) -> None:
+def validate_password(password: str):
     """
     Validates the password format. The password must be at least 8 characters long
     and include an uppercase letter, lowercase letter, digit, and special character.
@@ -215,7 +215,7 @@ def validate_user_data(user: UserSignup) -> None:
     validate_date_of_birth(user.date_of_birth)
 
 
-def create_token(data: dict, secret: str, expire_time: int) -> str:
+def create_token(data: dict, secret: str, expire_time: float) -> str:
     """
     Creates a JWT token with the given data and expiration time.
 

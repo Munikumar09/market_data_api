@@ -17,14 +17,12 @@ def mock_session(mocker) -> MagicMock:
     """
     Mock the get_session function to return a MagicMock object
     """
-    mock_session = mocker.MagicMock()
-    mocker.patch(
-        "app.data_layer.database.crud.sqlite.websocket_crud.get_session",
-        return_value=iter([mock_session]),
-    )
-    mock_session.__enter__.return_value = mock_session
+    session = mocker.patch("app.data_layer.database.db_connections.sqlite.get_session")
+    session.return_value = session
+    session.__enter__.side_effect = session
+    session.exec.return_value = session
 
-    return mock_session
+    return session
 
 
 @pytest.fixture
@@ -94,7 +92,7 @@ def test_insert_with_session(
     Test insert_data with a single dict and `update_existing=False` by passing a session
     """
     mock_session.__next__.return_value = mock_session
-    insert_data(sample_stock_price_info, update_existing=False, session=mock_session)
+    insert_data(sample_stock_price_info, session=mock_session, update_existing=False)
 
     mock_session.exec.assert_called_once()
     mock_session.commit.assert_called_once()
@@ -177,7 +175,7 @@ def test_upsert(mock_session, sample_stock_price_info: dict[str, str | None]) ->
     """
 
     mock_session.__next__.return_value = mock_session
-    upsert(sample_stock_price_info, mock_session)
+    upsert(sample_stock_price_info, session=mock_session)
 
     mock_session.exec.assert_called_once()
     mock_session.commit.assert_called_once()
@@ -191,7 +189,7 @@ def test_insert_or_ignore(
     Test insert_or_ignore logic
     """
     mock_session.__next__.return_value = mock_session
-    insert_or_ignore(sample_stock_price_info, mock_session)
+    insert_or_ignore(sample_stock_price_info, session=mock_session)
 
     mock_session.exec.assert_called_once()
     mock_session.commit.assert_called_once()

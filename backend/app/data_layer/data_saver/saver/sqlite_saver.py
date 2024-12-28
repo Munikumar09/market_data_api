@@ -52,7 +52,6 @@ class SqliteDataSaver(DataSaver):
 
         current_date = datetime.now().strftime("%Y_%m_%d")
         self.sqlite_db = f"sqlite:///{sqlite_db}_{current_date}.sqlite3"
-        print(self.sqlite_db)
 
         self.engine = create_engine(self.sqlite_db)
         create_db_and_tables(self.engine)
@@ -83,7 +82,8 @@ class SqliteDataSaver(DataSaver):
             total_buy_quantity=data.get("total_buy_quantity"),
             total_sell_quantity=data.get("total_sell_quantity"),
         )
-        insert_data(socket_stock_price_info, session=get_session(self.engine))
+        with get_session(self.engine) as session:
+            insert_data(socket_stock_price_info, session=session)
 
     def save(self, data: bytes) -> None:
         """

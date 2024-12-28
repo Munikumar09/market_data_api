@@ -4,7 +4,7 @@ Test the database connection and interaction with the SQLite database.
 
 from pathlib import Path
 
-from sqlmodel import inspect, select
+from sqlmodel import create_engine, inspect, select
 
 from app.data_layer.database.db_connections.sqlite import (
     create_db_and_tables,
@@ -12,7 +12,6 @@ from app.data_layer.database.db_connections.sqlite import (
     sqlite_engine,
 )
 from app.data_layer.database.models.smartapi_model import SmartAPIToken
-from app.utils.urls import SQLITE_DB_URL
 
 table_names = {"smartapitoken", "instrumentprice", "user", "userverification"}
 
@@ -21,30 +20,20 @@ def test_database_init_and_interaction():
     """
     Test if the database is created and tables are created and empty and able to interact with the database.
     """
+    engine = create_engine("sqlite:///:memory:")
+    create_db_and_tables(engine)
 
-    db_file_path = Path(SQLITE_DB_URL.split("sqlite:///")[-1])
-    remove_at_end = not db_file_path.exists()
+    # Check if the tables are created
+    db_tables = inspect(sqlite_engine).get_table_names()
+    assert set(db_tables) == table_names
 
-    try:
-        create_db_and_tables()
-
-        # Check if the session is active
-        session = next(get_session())
+    with get_session(engine) as session:
         assert session.is_active
         assert session.connection
         assert session.bind
 
-        # Check if the tables are created
-        db_tables = inspect(sqlite_engine).get_table_names()
-        assert set(db_tables) == table_names
-
-        # Check if the tables are empty and able to interact with the database
+        # Check if the tables are empty
         try:
             session.exec(select(SmartAPIToken)).all()
         except Exception as e:
             assert False, f"Failed to interact with the database: {e}"
-    finally:
-        sqlite_engine.dispose()
-
-        if remove_at_end:
-            db_file_path.unlink()

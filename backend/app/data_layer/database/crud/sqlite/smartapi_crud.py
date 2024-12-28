@@ -19,7 +19,7 @@ def deleted_all_data():
     """
     Deletes all data from the SmartAPIToken table.
     """
-    with next(get_session()) as session:
+    with get_session() as session:
         statement = delete(SmartAPIToken)
         session.exec(statement)
         session.commit()
@@ -46,7 +46,7 @@ def insert_data(
         logger.warning("Removing existing data from SmartAPIToken table...")
         deleted_all_data()
 
-    with next(get_session()) as session:
+    with get_session() as session:
         session.add_all(data)
         session.commit()
         session.close()
@@ -110,7 +110,7 @@ def get_smartapi_tokens_by_any_condition(**kwargs) -> Sequence[SmartAPIToken]:
     The above example will return all the SmartAPIToken objects with symbol 'INFY' or
     exchange 'NSE'.
     """
-    with next(get_session()) as session:
+    with get_session() as session:
         conditions = get_conditions_list(kwargs)
 
         statement = select(SmartAPIToken).where(
@@ -148,7 +148,7 @@ def get_smartapi_tokens_by_all_conditions(
     The above example will return all the SmartAPIToken objects with symbol 'INFY' and
     exchange 'NSE'.
     """
-    with next(get_session()) as session:
+    with get_session() as session:
         conditions = get_conditions_list(kwargs)
         statement = select(SmartAPIToken).where(*conditions)
         result = session.exec(statement).all()
