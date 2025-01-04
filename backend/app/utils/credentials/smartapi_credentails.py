@@ -4,11 +4,7 @@ This module contains the SmartapiCredentials class to store the credentials
 required to authenticate the SmartAPI connection. 
 """
 
-import os
-
-from app.utils.common.exceptions import CredentialsException
 from app.utils.credentials.credentials import Credentials
-from app.utils.file_utils import load_json_data
 from app.utils.fetch_data import get_required_env_var
 
 
