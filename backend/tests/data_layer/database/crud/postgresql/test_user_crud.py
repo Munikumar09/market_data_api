@@ -197,7 +197,7 @@ def test_create_or_update_user_verification(session):
     )
     create_or_update_user_verification(user_verification, session=session)
     result = get_user_verification("testuser@gmail.com", session=session)
-    assert result.model_dumps() == user_verification.model_dumps()
+    assert result.model_dump() == user_verification.model_dump()
 
     # Test: 7.2 ( Verify the user verification is updated )
     updated_verification = UserVerification(

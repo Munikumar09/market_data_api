@@ -10,4 +10,4 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 1
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
 
-MACHINE_ID = get_required_env_var("MACHINE_ID")
+MACHINE_ID = int(get_required_env_var("MACHINE_ID"))
