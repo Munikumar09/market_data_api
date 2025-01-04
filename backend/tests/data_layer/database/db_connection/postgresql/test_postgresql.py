@@ -111,11 +111,11 @@ def set_env_vars(monkeypatch: MonkeyPatch):
     """
     Set the environment variables required for the tests.
     """
-    monkeypatch.setenv(POSTGRES_USER, "muni123")
-    monkeypatch.setenv(POSTGRES_PASSWORD, "muni123")
+    monkeypatch.setenv(POSTGRES_USER, "testuser")
+    monkeypatch.setenv(POSTGRES_PASSWORD, "testpassword")
     monkeypatch.setenv(POSTGRES_HOST, "localhost")
     monkeypatch.setenv(POSTGRES_PORT, "5432")
-    monkeypatch.setenv(POSTGRES_DB, "test_db")
+    monkeypatch.setenv(POSTGRES_DB, "testdb")
 
 
 table_names = {"smartapitoken", "instrumentprice", "user", "userverification"}
@@ -134,7 +134,7 @@ def test_create_db_and_tables(set_env_vars):
         f"{get_required_env_var(POSTGRES_PORT)}/"
         f"{get_required_env_var(POSTGRES_DB)}"
     )
-    engine = create_engine(db_url)
+    engine = create_engine(db_url, echo=True)
     inspector = inspect(engine)
     tables = inspector.get_table_names()
 
