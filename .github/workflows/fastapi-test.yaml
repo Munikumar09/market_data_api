@@ -12,6 +12,20 @@ env:
   POSTGRES_DB: testdb
   POSTGRES_HOST: localhost
   POSTGRES_PORT: 5432
+
+  # JWT credentials
+  JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+  JWT_REFRESH_SECRET_KEY: ${{ secrets.JWT_REFRESH_SECRET_KEY }}
+  JWT_HASHING_ALGO: ${{ secrets.JWT_HASHING_ALGO }}
+  
+  # Snowflake credentials
+  MACHINE_ID: ${{ secrets.MACHINE_ID }}
+
+  # SmartAPI credentials
+  SMARTAPI_API_KEY: ${{ secrets.SMARTAPI_API_KEY }}
+  SMARTAPI_CLIENT_ID: ${{ secrets.SMARTAPI_CLIENT_ID }}
+  SMARTAPI_PWD: ${{ secrets.SMARTAPI_PWD }}
+  SMARTAPI_TOKEN: ${{ secrets.SMARTAPI_TOKEN }}
 on:
   pull_request:
     branches: [ "master" ]
