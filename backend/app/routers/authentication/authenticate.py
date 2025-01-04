@@ -1,3 +1,5 @@
+# pylint: disable=no-value-for-parameter
+
 import random
 import re
 from datetime import datetime, timedelta, timezone
@@ -22,13 +24,13 @@ from app.utils.constants import (
     JWT_HASHING_ALGO,
     JWT_REFRESH_SECRET,
     JWT_SECRET,
+    MACHINE_ID,
     REFRESH_TOKEN_EXPIRE_DAYS,
 )
 
 USER_ID = "user_id"
 EMAIL = "email"
 
-MACHINE_ID = 1
 snowflake_generator = SnowflakeGenerator(MACHINE_ID)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/authentication/signin")
@@ -88,9 +90,9 @@ def validate_phone_number(phone_number: str) -> None:
     phone_number: ``str``
         The phone number to be validated
     """
-    phone_number_regex = r"^\d{10}$"
+    phone_number_regex = r"\d{10}$"
 
-    if re.match(phone_number_regex, phone_number) is None:
+    if re.fullmatch(phone_number_regex, phone_number) is None:
         raise UserSignupError("Invalid phone number format")
 
 
@@ -263,10 +265,10 @@ def decode_token(token: str, secret: str) -> dict[str, str]:
     """
     try:
         return jwt.decode(token, secret, algorithms=[JWT_HASHING_ALGO])
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Token has expired")
-    except jwt.InvalidTokenError:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid token")
+    except jwt.ExpiredSignatureError as exc:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Token has expired") from exc
+    except jwt.InvalidTokenError as exc:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid token") from exc
 
 
 def access_token_from_refresh_token(refresh_token: str) -> dict[str, str]:

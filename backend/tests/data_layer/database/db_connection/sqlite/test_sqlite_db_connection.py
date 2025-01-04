@@ -2,7 +2,6 @@
 Test the database connection and interaction with the SQLite database.
 """
 
-from pathlib import Path
 
 from sqlmodel import create_engine, inspect, select
 

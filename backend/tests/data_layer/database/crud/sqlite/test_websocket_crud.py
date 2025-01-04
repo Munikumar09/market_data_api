@@ -1,3 +1,5 @@
+# pylint: disable=no-value-for-parameter
+
 from unittest.mock import MagicMock
 
 import pytest

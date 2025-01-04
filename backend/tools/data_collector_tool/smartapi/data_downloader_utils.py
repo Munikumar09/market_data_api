@@ -5,9 +5,12 @@ from pathlib import Path
 import httpx
 import pandas as pd
 
+from app.utils.common.logger import get_logger
 from app.utils.common.types.reques_types import CandlestickInterval
 from app.utils.file_utils import create_dir, load_json_data, write_to_json_file
 from tools.data_collector_tool.smartapi.constants import HISTORICAL_STOCK_DATA_URL
+
+logger = get_logger(Path(__file__).name)
 
 
 def get_historical_stock_data_url(
@@ -89,7 +92,7 @@ def search_valid_date(
                     start_date = last_day + timedelta(days=1)
                 time.sleep(0.3)
             except Exception as e:
-                print(e)
+                logger.error(e)
                 start_date = last_day + timedelta(days=1)
                 continue
 

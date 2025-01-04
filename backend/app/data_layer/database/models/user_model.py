@@ -128,5 +128,6 @@ class UserVerification(SQLModel, table=True):  # type: ignore
             TIMESTAMP(timezone=True),
             nullable=True,
             server_default=text("CURRENT_TIMESTAMP"),
+            onupdate=text("CURRENT_TIMESTAMP"),
         )
     )

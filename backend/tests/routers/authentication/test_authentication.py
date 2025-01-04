@@ -129,7 +129,7 @@ class MockNotificationProvider:
         Test method to send a notification
         """
         self.code = code
-        self.recipient = recipient_email
+        self.recipient_email = recipient_email
         self.recipient_name = recipient_name
         return {
             "message": f"Verification code sent to {recipient_email}. Valid for 10 minutes."
@@ -248,7 +248,7 @@ def test_send_verification_code(
     mock_generate_verification_code.assert_called_once()
     mock_create_or_update_user_verification.assert_called_once()
     assert mock_notification_provider.code == "123456"
-    assert mock_notification_provider.recipient == test_user.email
+    assert mock_notification_provider.recipient_email == test_user.email
     assert mock_notification_provider.recipient_name == test_user.username
 
     # Test: 3.2 ( Invalid verification medium )

@@ -34,7 +34,8 @@ def setup_env_vars():
     with open(deactivate_dir / "project_env_vars.sh", "w") as f:
         f.write("#!/bin/bash\n")
         f.write("unset ROOT_PATH\n")
-
+    
+    # Create .env file if it doesn't exist or update it with ROOT_PATH
     env_path = BACKEND_ROOT_PATH / ".env"
     env_data = [f"ROOT_PATH={BACKEND_ROOT_PATH}\n"]
     if env_path.exists():

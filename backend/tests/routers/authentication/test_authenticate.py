@@ -88,6 +88,9 @@ def test_validate_phone_number():
     with pytest.raises(HTTPException):
         validate_phone_number("123-456-8901")
 
+    with pytest.raises(HTTPException):
+        validate_phone_number("-123456789a")
+
 
 # Test: 3
 def test_get_hash_password():

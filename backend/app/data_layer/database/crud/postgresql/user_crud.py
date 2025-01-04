@@ -1,3 +1,4 @@
+# pylint: disable=no-value-for-parameter
 from pathlib import Path
 from typing import Dict, Type
 
@@ -30,7 +31,7 @@ def is_attr_data_in_db(
         The model to check for the existence of the field values
     att_values: ``Dict[str, str]``
         A dictionary containing the field names and values to check for existence
-    session: ``Session | None``, ( default = None )
+    session: ``Session``
         The session to use for the database operations
 
     Returns:
@@ -62,19 +63,22 @@ def get_user_by_attr(attr_name: str, attr_value: str, session: Session) -> User:
         The name of the attribute used to query the database
     attr_value: ``str``
         Value of the attribute to match against the database
-    session: ``Session | None``, ( default = None )
+    session: ``Session``
         Session object to interact with the database
 
     Raises:
     -------
     ``HTTPException``
-        If user not found in the database with the give parameter
+        If the given attribute name is invalid or the user is not found
 
     Returns:
     -------
     ``User``
         The user object if found, otherwise None
     """
+    if not hasattr(User, attr_name):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Invalid field: {attr_name}")
+
     statement = select(User).where(getattr(User, attr_name) == attr_value)
     result = session.exec(statement).first()
 

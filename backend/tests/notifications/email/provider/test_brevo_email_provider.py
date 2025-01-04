@@ -1,3 +1,4 @@
+# pylint: disable=unused-argument
 """
 This module contains unit tests for the BrevoEmailProvider class. It includes tests 
 for initialization using environment variables and configuration objects, as well as
@@ -10,6 +11,7 @@ from unittest.mock import patch
 import pytest
 from brevo_python.rest import ApiException
 from omegaconf import DictConfig
+from pytest import MonkeyPatch
 from pytest_mock import MockFixture, MockType
 
 from app.notification.email.providers.brevo import BrevoEmailProvider
@@ -53,8 +55,11 @@ invalid_cfg_with_error: List[Tuple[DictConfig, str]] = [
 ]
 
 
+#################### Fixtures ####################
+
+
 @pytest.fixture
-def mock_env_vars(monkeypatch: pytest.MonkeyPatch):
+def mock_env_vars(monkeypatch: MonkeyPatch):
     """
     Fixture to set environment variables for testing.
     """
@@ -71,6 +76,10 @@ def mock_logger(mocker: MockFixture) -> MockType:
     return mocker.patch("app.notification.email.providers.brevo.logger")
 
 
+#################### Tests ####################
+
+
+# Test: 1
 def test_init_from_env_vars(mock_env_vars: None):
     """
     Test initialization of BrevoEmailProvider using environment variables.
@@ -81,6 +90,7 @@ def test_init_from_env_vars(mock_env_vars: None):
     assert provider.configuration.api_key["api-key"] == "test_api_key"
 
 
+# Test: 2
 def test_init_from_cfg(mock_env_vars: None):
     """
     Test initialization of BrevoEmailProvider using a configuration object.
@@ -97,6 +107,7 @@ def test_init_from_cfg(mock_env_vars: None):
     assert provider.configuration.api_key["api-key"] == "test_api_key"
 
 
+# Test: 3
 @pytest.mark.parametrize("invalid_config", invalid_cfg_with_error)
 def test_init_from_cfg_missing_sender(
     invalid_config: Tuple[DictConfig, str], mock_env_vars: None
@@ -112,6 +123,7 @@ def test_init_from_cfg_missing_sender(
     assert str(e.value) == error_msg
 
 
+# Test: 4
 @patch("brevo_python.TransactionalEmailsApi.send_transac_email")
 def test_send_notification_success(mock_send_email: MockType, mock_env_vars: None):
     """
@@ -122,6 +134,7 @@ def test_send_notification_success(mock_send_email: MockType, mock_env_vars: Non
     mock_send_email.assert_called_once()
 
 
+# Test: 5
 @patch("brevo_python.TransactionalEmailsApi.send_transac_email")
 def test_send_notification_api_exception(
     mock_send_email: MockType,

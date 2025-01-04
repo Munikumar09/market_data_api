@@ -1,8 +1,10 @@
-import os
+# pylint: disable=unused-argument
 from pathlib import Path
 from urllib.parse import quote_plus
 
 import psycopg2
+import pytest
+from pytest import MonkeyPatch
 from sqlalchemy import inspect
 from sqlmodel import create_engine
 
@@ -22,7 +24,7 @@ POSTGRES_PORT = "POSTGRES_PORT"
 POSTGRES_DB = "POSTGRES_DB"
 
 
-def create_database_if_not_exists():
+def create_database_if_not_exists() -> bool:
     """
     Creates the database if it doesn't already exist and returns True if created, False otherwise.
     """
@@ -46,14 +48,14 @@ def create_database_if_not_exists():
 
         if not db_exists:
             cursor.execute(f"CREATE DATABASE {quoted_db_name}")
-            logger.info(f"Database '{db_name}' created.")
+            logger.info("Database '%s' created.", db_name)
             return True  # Return True if the database was created
-        else:
-            logger.info(f"Database '{db_name}' already exists.")
-            return False  # Return false if the database was not created
+
+        logger.info("Database '%s' already exists.", db_name)
+        return False  # Return false if the database was not created
 
     except psycopg2.Error as e:
-        logger.error(f"Error creating/checking database: {e}")
+        logger.error("Error creating/checking database: %s", e)
         raise
     finally:
         if conn:
@@ -94,45 +96,44 @@ def drop_database_if_created(created: bool):
         )
 
         cursor.execute(f"DROP DATABASE {quoted_db_name}")
-        logger.info(f"Database '{db_name}' dropped.")
+        logger.info("Database '%s' dropped.", db_name)
 
     except psycopg2.Error as e:
-        logger.error(f"Error dropping database: {e}")
+        logger.error("Error dropping database: %s", e)
         raise
     finally:
         if conn:
             conn.close()
 
 
-def set_env_vars():
-    """Set the environment variables required for the tests."""
-    os.environ[POSTGRES_USER] = "muni123"
-    os.environ[POSTGRES_PASSWORD] = "muni123"
-    os.environ[POSTGRES_HOST] = "localhost"
-    os.environ[POSTGRES_PORT] = "5432"
-    os.environ[POSTGRES_DB] = "test_db"
-
-
-def remove_env_vars():
-    """Remove the environment variables required for the tests."""
-    del os.environ[POSTGRES_USER]
-    del os.environ[POSTGRES_PASSWORD]
-    del os.environ[POSTGRES_HOST]
-    del os.environ[POSTGRES_PORT]
-    del os.environ[POSTGRES_DB]
+@pytest.fixture
+def set_env_vars(monkeypatch: MonkeyPatch):
+    """
+    Set the environment variables required for the tests.
+    """
+    monkeypatch.setenv(POSTGRES_USER, "muni123")
+    monkeypatch.setenv(POSTGRES_PASSWORD, "muni123")
+    monkeypatch.setenv(POSTGRES_HOST, "localhost")
+    monkeypatch.setenv(POSTGRES_PORT, "5432")
+    monkeypatch.setenv(POSTGRES_DB, "test_db")
 
 
 table_names = {"smartapitoken", "instrumentprice", "user", "userverification"}
 
 
 # Test the creation of the database and tables
-def test_create_db_and_tables():
+def test_create_db_and_tables(set_env_vars):
     """
     Test the create_db_and_tables function to ensure it creates the tables.
     """
-    set_env_vars()
     created = create_database_if_not_exists()
-    db_url = f"postgresql://{quote_plus(get_required_env_var(POSTGRES_USER))}:{quote_plus(get_required_env_var(POSTGRES_PASSWORD))}@{get_required_env_var(POSTGRES_HOST)}:{get_required_env_var(POSTGRES_PORT)}/{get_required_env_var(POSTGRES_DB)}"
+    db_url = (
+        f"postgresql://{quote_plus(get_required_env_var(POSTGRES_USER))}:"
+        f"{quote_plus(get_required_env_var(POSTGRES_PASSWORD))}@"
+        f"{get_required_env_var(POSTGRES_HOST)}:"
+        f"{get_required_env_var(POSTGRES_PORT)}/"
+        f"{get_required_env_var(POSTGRES_DB)}"
+    )
     engine = create_engine(db_url)
     inspector = inspect(engine)
     tables = inspector.get_table_names()
@@ -147,11 +148,10 @@ def test_create_db_and_tables():
     # Ensure the tables are created
     assert set(tables) == table_names
 
-    with get_session() as session:
+    with get_session(engine) as session:
         # Check if the session is active and able to connect to the database
         assert session.is_active
         assert session.connection
         assert session.bind
 
     drop_database_if_created(created)
-    remove_env_vars()

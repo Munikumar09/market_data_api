@@ -10,6 +10,9 @@ from app.schemas.user_model import UserSignup
 # Mock data
 @pytest.fixture
 def sign_up_data() -> UserSignup:
+    """
+    Fixture to provide mock sign-up data.
+    """
     return UserSignup(
         username="testuser",
         email="test@gmail.com",
@@ -24,6 +27,9 @@ def sign_up_data() -> UserSignup:
 # Mock user model
 @pytest.fixture
 def test_user(sign_up_data: UserSignup) -> User:
+    """
+    Fixture to provide a mock user model.
+    """
     return User(
         user_id=12345678901,
         username=sign_up_data.username,
@@ -37,4 +43,7 @@ def test_user(sign_up_data: UserSignup) -> User:
 
 @pytest.fixture
 def token_data(test_user) -> dict[str, str]:
+    """
+    Fixture to provide mock token data.
+    """
     return {"user_id": test_user.user_id, "email": test_user.email}
