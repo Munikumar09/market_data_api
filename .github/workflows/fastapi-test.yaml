@@ -13,6 +13,11 @@ env:
   POSTGRES_HOST: localhost
   POSTGRES_PORT: 5432
 
+  # Brevo credentials
+  BREVO_SENDER_NAME: ${{ secrets.BREVO_SENDER_NAME }}
+  BREVO_SENDER_EMAIL: ${{ secrets.BREVO_SENDER_EMAIL }}
+  BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+
   # JWT credentials
   JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
   JWT_REFRESH_SECRET_KEY: ${{ secrets.JWT_REFRESH_SECRET_KEY }}
