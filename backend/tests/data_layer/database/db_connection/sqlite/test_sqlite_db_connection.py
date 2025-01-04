@@ -8,9 +8,20 @@ from app.data_layer.database.db_connections.sqlite import (
     create_db_and_tables,
     get_session,
 )
-from app.data_layer.database.models.smartapi_model import SmartAPIToken
+from app.data_layer.database.models import (
+    SmartAPIToken,
+    InstrumentPrice,
+    User,
+    UserVerification,
+)
 
-table_names = {"smartapitoken", "instrumentprice", "user", "userverification"}
+
+model_classes = {
+    "smartapitoken": SmartAPIToken,
+    "instrumentprice": InstrumentPrice,
+    "user": User,
+    "userverification": UserVerification,
+}
 
 
 def test_database_init_and_interaction():
@@ -22,7 +33,7 @@ def test_database_init_and_interaction():
 
     # Check if the tables are created
     db_tables = inspect(engine).get_table_names()
-    assert set(db_tables) == table_names
+    assert set(db_tables) == set(model_classes.keys())
 
     with get_session(engine) as session:
         assert session.is_active
@@ -31,6 +42,8 @@ def test_database_init_and_interaction():
 
         # Check if the tables are empty
         try:
-            session.exec(select(SmartAPIToken)).all()
+            for model_class in model_classes.values():
+                assert not session.exec(select(model_class)).all()
+
         except Exception as e:
-            assert False, f"Failed to interact with the database: {e}"
+            raise AssertionError(f"Failed to interact with the database: {e}")

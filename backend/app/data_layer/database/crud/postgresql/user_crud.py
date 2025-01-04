@@ -4,6 +4,7 @@ from typing import Dict, Type
 
 from fastapi import HTTPException, status
 from sqlmodel import Session, SQLModel, select
+import datetime
 
 from app.data_layer.database.db_connections.postgresql import with_session
 from app.data_layer.database.models.user_model import User, UserVerification
@@ -42,6 +43,11 @@ def is_attr_data_in_db(
     existing_attr: str | None = None
 
     for attr_name, attr_value in att_values.items():
+
+        if not hasattr(model, attr_name):
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, f"Invalid field: {attr_name}"
+            )
         statement = select(model).where(getattr(model, attr_name) == attr_value)
 
         if session.exec(statement).first():
@@ -148,6 +154,12 @@ def update_user(user_id: int, user_data: dict, session: Session) -> None:
     present in the database. The `user_data` dictionary should contain the fields
     to update and their new values.
 
+    Note:
+    -----
+
+    Validation of the fields is not done in this function. Please ensure that
+    the fields are valid before calling this function.
+
     Parameters:
     ----------
     user_id: ``int``
@@ -158,7 +170,7 @@ def update_user(user_id: int, user_data: dict, session: Session) -> None:
         Session object to interact with the database
 
     >>> Example:
-        update_user("1234", {"first_name": "John", "last_name": "Doe"})
+        update_user(1234, {"first_name": "John", "last_name": "Doe"})
     """
     user = get_user(user_id, session=session)
 
@@ -184,11 +196,6 @@ def delete_user(user_id: int, session: Session) -> None:
         The `user_id` of the user to delete
     session: ``Session``
         Session object to interact with the database
-
-    Returns:
-    -------
-    ``bool``
-        True if the user was deleted successfully, otherwise False
     """
     user = get_user(user_id, session=session)
     session.delete(user)
@@ -251,7 +258,7 @@ def create_or_update_user_verification(
         )
         existing_user_verification.expiration_time = user_verification.expiration_time
         existing_user_verification.reverified_datetime = (
-            user_verification.reverified_datetime
+            user_verification.reverified_datetime or datetime.datetime.now()
         )
         existing_user_verification.verification_medium = (
             user_verification.verification_medium

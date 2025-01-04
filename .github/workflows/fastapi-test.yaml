@@ -7,9 +7,9 @@ env:
   POETRY_VERSION: 1.8.2
 
   # Postgres credentials for the test database
-  POSTGRES_USER: testuser
-  POSTGRES_PASSWORD: testpassword
-  POSTGRES_DB: testdb
+  POSTGRES_USER: ${{ secrets.TEST_DB_USER }}
+  POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
+  POSTGRES_DB: ${{ secrets.TEST_DB_NAME }}
   POSTGRES_HOST: localhost
   POSTGRES_PORT: 5432
 
@@ -100,7 +100,7 @@ jobs:
      # Set up an environment variable with value "app"
       - name: Set up environment variable
         run: |
-         echo "APP=app" >> $GITHUB_ENV
+         echo "APP=app" >> "$GITHUB_ENV"
 
       # Install miniconda and create a new environment with python 3.10
       - name: Install miniconda and create environment

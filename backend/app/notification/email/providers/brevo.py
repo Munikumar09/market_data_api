@@ -3,7 +3,7 @@ BrevoEmailProvider is used to send email notifications using the Brevo API.
 """
 
 from pathlib import Path
-
+from fastapi import HTTPException, status
 import brevo_python
 from brevo_python.rest import ApiException
 from omegaconf import DictConfig
@@ -73,6 +73,10 @@ class BrevoEmailProvider(EmailProvider):
                 "Exception when calling TransactionalEmailsApi->send_transac_email: %s\n",
                 e,
             )
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to send verification code. Please try again.",
+            ) from e
 
     @classmethod
     def from_cfg(cls, cfg: DictConfig) -> "BrevoEmailProvider":

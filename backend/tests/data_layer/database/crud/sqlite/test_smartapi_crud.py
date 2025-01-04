@@ -48,23 +48,38 @@ def test_get_smartapi_tokens_by_any_and_all_condition():
             lot_size=1,
         )
 
+        # Test get_smartapi_tokens_by_any_condition with symbol
         result = get_smartapi_tokens_by_any_condition(symbol="INFY")
         for item in result:
             assert "INFY" == item.symbol
 
+        # Test get_smartapi_tokens_by_any_condition with exchange
         result = get_smartapi_tokens_by_any_condition(exchange="BSE")
         for item in result:
             assert "BSE" == item.exchange
 
+        # Test get_smartapi_tokens_by_all_conditions with valid conditions
         result = get_smartapi_tokens_by_all_conditions(
             symbol="INFY", exchange="NSE", instrument_type="EQ"
         )
         assert token1.to_dict() == result[0].to_dict()
 
+        # Test get_smartapi_tokens_by_all_conditions with different symbol and exchange
         result = get_smartapi_tokens_by_all_conditions(symbol="SBI", exchange="BSE")
         for item in result:
             assert "SBI" == item.symbol
             assert "BSE" == item.exchange
+            
+        # Test get_smartapi_tokens_by_any_condition with instrument_type
+        result = get_smartapi_tokens_by_any_condition(instrument_type="EQ")
+        for item in result:
+            assert "EQ" == item.instrument_type
+
+        # Test all conditions with invalid instrument_type
+        result = get_smartapi_tokens_by_all_conditions(
+            symbol="INFY", exchange="NSE", instrument_type="INVALID"
+        )
+        assert len(result) == 0
 
     finally:
         sqlite_engine.dispose()

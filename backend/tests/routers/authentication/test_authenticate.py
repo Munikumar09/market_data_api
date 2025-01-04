@@ -48,24 +48,25 @@ def mock_session(mocker: MockFixture) -> MockType:
 
 
 # Test: 1
-def test_validate_email():
-    """
-    Test validate_email function
-    """
-    # Test: 1.1 ( Valid email )
-    assert validate_email("test@gmail.com") is None
-
-    # Test: 1.2 ( Invalid email domain )
-    with pytest.raises(HTTPException):
-        validate_email("test@yahoo.com")
-
-    # Test: 1.3 ( Invalid email format )
-    with pytest.raises(HTTPException):
-        validate_email("test.com")
-
-    # Test: 1.4 ( Invalid email format )
-    with pytest.raises(HTTPException):
-        validate_email("testgmail.com")
+@pytest.mark.parametrize(
+    "email,is_valid",
+    [
+        ("test@gmail.com", True),
+        ("test@yahoo.com", False),
+        ("invalid.email", False),
+        ("test@.com", False),
+        ("test@domain", False),
+        ("@domain.com", False),
+        ("", False),
+        ("test@subdomain.domain.com", False),
+    ],
+)
+def test_validate_email(email, is_valid):
+    if is_valid:
+        assert validate_email(email) is None
+    else:
+        with pytest.raises(HTTPException):
+            validate_email(email)
 
 
 # Test: 2
@@ -134,6 +135,7 @@ def test_verify_password():
         ("Password!", False),
         # Test: 5.6 ( Invalid password with less than 8 characters )
         ("Pasw1r@", False),
+        ("", False),  # Test: 5.7 ( Empty password )
     ],
 )
 def test_validate_password(password: str, is_valid: bool):
@@ -181,7 +183,9 @@ def test_create_token(token_data: dict[str, str]):
 
 
 # Test: 8
-def test_access_token_from_refresh_token(token_data: dict[str, str]):
+def test_access_token_from_refresh_token(
+    token_data: dict[str, str], mock_session: MockType
+):
     """
     Test access_token_from_refresh_token function
     """
@@ -189,6 +193,16 @@ def test_access_token_from_refresh_token(token_data: dict[str, str]):
     tokens = access_token_from_refresh_token(refresh_token)
     assert "access_token" in tokens
     assert "refresh_token" in tokens
+
+    dummy_token = create_token(
+        {"user_id": -124, "email": "nothing"}, JWT_REFRESH_SECRET, 1000
+    )
+    mock_session.first.return_value = None
+    
+    with pytest.raises(HTTPException) as exc:
+        access_token_from_refresh_token(dummy_token)
+        
+    assert exc.value.detail == "User not found"
 
 
 # Test: 9

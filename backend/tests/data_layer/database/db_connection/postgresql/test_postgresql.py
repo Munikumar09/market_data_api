@@ -43,11 +43,11 @@ def create_database_if_not_exists() -> bool:
         db_name = get_required_env_var(POSTGRES_DB)
         quoted_db_name = quote_plus(db_name)
 
-        cursor.execute(f"SELECT 1 FROM pg_database WHERE datname='{db_name}'")
+        cursor.execute("SELECT 1 FROM pg_database WHERE datname='%s'" % db_name)
         db_exists = cursor.fetchone()
 
         if not db_exists:
-            cursor.execute(f"CREATE DATABASE {quoted_db_name}")
+            cursor.execute("CREATE DATABASE %s" % quoted_db_name)
             logger.info("Database '%s' created.", db_name)
             return True  # Return True if the database was created
 
@@ -88,14 +88,15 @@ def drop_database_if_created(created: bool):
 
         # Terminate other sessions (same as before)
         cursor.execute(
-            f"""
+            """
             SELECT pg_terminate_backend(pg_stat_activity.pid)
             FROM pg_stat_activity
-            WHERE pg_stat_activity.datname = '{db_name}';
-        """
+            WHERE pg_stat_activity.datname = %s;
+            """,
+            (db_name),
         )
 
-        cursor.execute(f"DROP DATABASE {quoted_db_name}")
+        cursor.execute("DROP DATABASE %s", (quoted_db_name,))
         logger.info("Database '%s' dropped.", db_name)
 
     except psycopg2.Error as e:
@@ -112,7 +113,7 @@ def set_env_vars(monkeypatch: MonkeyPatch):
     Set the environment variables required for the tests.
     """
     monkeypatch.setenv(POSTGRES_USER, "testuser")
-    monkeypatch.setenv(POSTGRES_PASSWORD, "testpassword")
+    monkeypatch.setenv(POSTGRES_PASSWORD, "testuser123")
     monkeypatch.setenv(POSTGRES_HOST, "localhost")
     monkeypatch.setenv(POSTGRES_PORT, "5432")
     monkeypatch.setenv(POSTGRES_DB, "testdb")

@@ -118,6 +118,8 @@ def test_is_attr_data_in_db(session):
         is_attr_data_in_db(User, {"email": "sampleuser@example.com"}, session=session)
         is None
     )
+    with pytest.raises(HTTPException) as exc:
+        is_attr_data_in_db(User, {"user_name": "testuser"}, session=session)
 
 
 # Test: 4
@@ -211,6 +213,19 @@ def test_create_or_update_user_verification(session):
     result = get_user_verification("testuser@gmail.com", session=session)
 
     assert result.verification_code == "654321"
+
+    # Test: 7.2 ( Verify the user verification is updated )
+    updated_verification = UserVerification(
+        recipient="testuser@gmail.com",
+        verification_code="654322",
+        expiration_time=datetime.now(timezone.utc).timestamp(),
+        verification_medium="email",
+    )
+    create_or_update_user_verification(updated_verification, session=session)
+    result = get_user_verification("testuser@gmail.com", session=session)
+
+    assert result.verification_code == "654322"
+    assert result.reverified_datetime is not None
 
 
 # Test: 8
