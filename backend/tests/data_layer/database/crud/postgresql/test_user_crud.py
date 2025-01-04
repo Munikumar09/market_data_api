@@ -120,6 +120,7 @@ def test_is_attr_data_in_db(session):
     )
     with pytest.raises(HTTPException) as exc:
         is_attr_data_in_db(User, {"user_name": "testuser"}, session=session)
+    assert exc.value.detail == "Invalid field: user_name"
 
 
 # Test: 4

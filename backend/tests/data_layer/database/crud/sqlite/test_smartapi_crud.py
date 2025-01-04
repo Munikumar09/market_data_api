@@ -69,7 +69,7 @@ def test_get_smartapi_tokens_by_any_and_all_condition():
         for item in result:
             assert "SBI" == item.symbol
             assert "BSE" == item.exchange
-            
+
         # Test get_smartapi_tokens_by_any_condition with instrument_type
         result = get_smartapi_tokens_by_any_condition(instrument_type="EQ")
         for item in result:

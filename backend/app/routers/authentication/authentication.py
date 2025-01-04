@@ -121,7 +121,7 @@ async def send_verification_code(email_or_phone: str, verification_medium: str) 
             expiration_time=expiration_time,
         )
     )
-    
+
     # Send the notification
     notification_provider.send_notification(
         code=verification_code,

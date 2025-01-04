@@ -64,7 +64,7 @@ class UserSignupError(HTTPException):
         super().__init__(status.HTTP_400_BAD_REQUEST, message)
 
 
-def validate_email(email: str) -> None:
+def validate_email(email: str):
     """
     This function validates the email format. It allows only email addresses with
     the domain 'gmail.com'
@@ -288,7 +288,7 @@ def access_token_from_refresh_token(refresh_token: str) -> dict[str, str]:
         A dictionary containing the new access token and the refresh token
     """
     decoded_data = decode_token(refresh_token, JWT_REFRESH_SECRET)
-    
+
     get_user(decoded_data[USER_ID])
 
     access_token = create_token(

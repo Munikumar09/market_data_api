@@ -61,7 +61,10 @@ def mock_session(mocker: MockFixture) -> MockType:
         ("test@subdomain.domain.com", False),
     ],
 )
-def test_validate_email(email, is_valid):
+def test_validate_email(email: str, is_valid: bool):
+    """
+    Test validate_email function
+    """
     if is_valid:
         assert validate_email(email) is None
     else:
@@ -198,10 +201,10 @@ def test_access_token_from_refresh_token(
         {"user_id": -124, "email": "nothing"}, JWT_REFRESH_SECRET, 1000
     )
     mock_session.first.return_value = None
-    
+
     with pytest.raises(HTTPException) as exc:
         access_token_from_refresh_token(dummy_token)
-        
+
     assert exc.value.detail == "User not found"
 
 

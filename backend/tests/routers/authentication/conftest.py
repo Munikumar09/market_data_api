@@ -1,7 +1,7 @@
+import uuid
 from datetime import datetime
 
 import pytest
-import uuid
 
 from app.data_layer.database.models.user_model import User
 from app.routers.authentication.authenticate import get_hash_password
@@ -32,7 +32,7 @@ def test_user(sign_up_data: UserSignup) -> User:
     Fixture to provide a mock user model.
     """
     return User(
-        user_id=uuid.uuid4().int % (10 ** 11),
+        user_id=uuid.uuid4().int % (10**11),
         username=sign_up_data.username,
         email=sign_up_data.email,
         phone_number=sign_up_data.phone_number,

@@ -1,10 +1,10 @@
 # pylint: disable=no-value-for-parameter
+import datetime
 from pathlib import Path
 from typing import Dict, Type
 
 from fastapi import HTTPException, status
 from sqlmodel import Session, SQLModel, select
-import datetime
 
 from app.data_layer.database.db_connections.postgresql import with_session
 from app.data_layer.database.models.user_model import User, UserVerification

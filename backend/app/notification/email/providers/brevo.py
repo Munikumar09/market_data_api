@@ -3,9 +3,10 @@ BrevoEmailProvider is used to send email notifications using the Brevo API.
 """
 
 from pathlib import Path
-from fastapi import HTTPException, status
+
 import brevo_python
 from brevo_python.rest import ApiException
+from fastapi import HTTPException, status
 from omegaconf import DictConfig
 
 from app.notification.email.email_provider import EmailProvider

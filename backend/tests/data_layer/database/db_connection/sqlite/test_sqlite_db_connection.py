@@ -9,12 +9,11 @@ from app.data_layer.database.db_connections.sqlite import (
     get_session,
 )
 from app.data_layer.database.models import (
-    SmartAPIToken,
     InstrumentPrice,
+    SmartAPIToken,
     User,
     UserVerification,
 )
-
 
 model_classes = {
     "smartapitoken": SmartAPIToken,
@@ -46,4 +45,4 @@ def test_database_init_and_interaction():
                 assert not session.exec(select(model_class)).all()
 
         except Exception as e:
-            raise AssertionError(f"Failed to interact with the database: {e}")
+            raise AssertionError(f"Failed to interact with the database: {e}") from e
