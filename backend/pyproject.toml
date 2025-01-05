@@ -36,6 +36,7 @@ pyjwt = "^2.10.1"
 bcrypt = "^4.2.1"
 snowflake-id = "^1.0.2"
 email-validator = "^2.2.0"
+ruamel-yaml = "^0.18.9"
 
 
 
