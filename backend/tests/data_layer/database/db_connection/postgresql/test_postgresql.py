@@ -43,11 +43,11 @@ def create_database_if_not_exists() -> bool:
         db_name = get_required_env_var(POSTGRES_DB)
         quoted_db_name = quote_plus(db_name)
 
-        cursor.execute("SELECT 1 FROM pg_database WHERE datname='%s'", (db_name,))
+        cursor.execute("SELECT 1 FROM pg_database WHERE datname=%s;", (db_name,))
         db_exists = cursor.fetchone()
 
         if not db_exists:
-            cursor.execute("CREATE DATABASE %s", (quoted_db_name,))
+            cursor.execute(f"CREATE DATABASE {quoted_db_name}")
             logger.info("Database '%s' created.", db_name)
             return True  # Return True if the database was created
 

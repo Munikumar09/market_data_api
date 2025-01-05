@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 import pytest
 from brevo_python.rest import ApiException
+from fastapi import HTTPException
 from omegaconf import DictConfig
 from pytest import MonkeyPatch
 from pytest_mock import MockFixture, MockType
@@ -139,15 +140,12 @@ def test_send_notification_success(mock_send_email: MockType, mock_env_vars: Non
 def test_send_notification_api_exception(
     mock_send_email: MockType,
     mock_env_vars: None,
-    mock_logger: MockType,
 ):
     """
     Test handling of an API exception when sending a notification email.
     """
     mock_send_email.side_effect = ApiException("API error")
     provider = BrevoEmailProvider("SENDER_NAME", "SENDER_EMAIL", "BREVO_API_KEY")
-    provider.send_notification("123456", "recipient@example.com", "Recipient Name")
-    mock_logger.error.assert_called_once_with(
-        "Exception when calling TransactionalEmailsApi->send_transac_email: %s\n",
-        mock_send_email.side_effect,
-    )
+
+    with pytest.raises(HTTPException):
+        provider.send_notification("123456", "recipient@example.com", "Recipient Name")
