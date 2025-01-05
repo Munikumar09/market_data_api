@@ -1,5 +1,6 @@
 from datetime import datetime, time
 from itertools import chain
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -11,8 +12,11 @@ from app.schemas.stock_model import (
     HistoricalStockPriceInfo,
     SmartAPIStockPriceInfo,
 )
+from app.utils.common.logger import get_logger
 from app.utils.common.types.reques_types import CandlestickInterval
 from app.utils.smartapi.validator import check_data_availability, find_open_market_days
+
+logger = get_logger(Path(__file__).name)
 
 
 def process_smart_api_stock_data(
@@ -183,7 +187,7 @@ def get_missing_timestamps(
             all_possible_timestamps, available_timestamps
         ).tolist()
     except Exception as e:
-        print(e)
+        logger.error(e)
 
     return missing_timestamps
 

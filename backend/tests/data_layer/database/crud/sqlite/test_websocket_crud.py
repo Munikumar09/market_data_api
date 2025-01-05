@@ -1,3 +1,5 @@
+# pylint: disable=no-value-for-parameter
+
 from unittest.mock import MagicMock
 
 import pytest
@@ -7,7 +9,7 @@ from app.data_layer.database.crud.sqlite.websocket_crud import (
     insert_or_ignore,
     upsert,
 )
-from app.data_layer.database.models.websocket_model import SocketStockPriceInfo
+from app.data_layer.database.models.websocket_model import InstrumentPrice
 
 #################### FIXTURES ####################
 
@@ -17,14 +19,12 @@ def mock_session(mocker) -> MagicMock:
     """
     Mock the get_session function to return a MagicMock object
     """
-    mock_session = mocker.MagicMock()
-    mocker.patch(
-        "app.data_layer.database.crud.sqlite.websocket_crud.get_session",
-        return_value=iter([mock_session]),
-    )
-    mock_session.__enter__.return_value = mock_session
+    session = mocker.patch("app.data_layer.database.db_connections.sqlite.get_session")
+    session.return_value = session
+    session.__enter__.side_effect = session
+    session.exec.return_value = session
 
-    return mock_session
+    return session
 
 
 @pytest.fixture
@@ -50,11 +50,11 @@ def sample_stock_price_info() -> dict[str, str | None]:
 
 
 @pytest.fixture
-def sample_socket_stock_price_info() -> SocketStockPriceInfo:
+def sample_socket_stock_price_info() -> InstrumentPrice:
     """
-    Sample SocketStockPriceInfo object
+    Sample InstrumentPrice object
     """
-    return SocketStockPriceInfo(
+    return InstrumentPrice(
         token="256265",
         retrieval_timestamp="2021-09-30 10:00:00",
         last_traded_timestamp="2021-09-30 09:59:59",
@@ -94,7 +94,7 @@ def test_insert_with_session(
     Test insert_data with a single dict and `update_existing=False` by passing a session
     """
     mock_session.__next__.return_value = mock_session
-    insert_data(sample_stock_price_info, update_existing=False, session=mock_session)
+    insert_data(sample_stock_price_info, session=mock_session, update_existing=False)
 
     mock_session.exec.assert_called_once()
     mock_session.commit.assert_called_once()
@@ -159,10 +159,10 @@ def test_insert_data_list_dicts_upsert(
 
 # Test: 6
 def test_insert_data_with_object_conversion(
-    mock_session: MagicMock, sample_socket_stock_price_info: SocketStockPriceInfo
+    mock_session: MagicMock, sample_socket_stock_price_info: InstrumentPrice
 ) -> None:
     """
-    Test insert_data with a SocketStockPriceInfo object
+    Test insert_data with a InstrumentPrice object
     """
     insert_data(sample_socket_stock_price_info, update_existing=False)
 
@@ -177,7 +177,7 @@ def test_upsert(mock_session, sample_stock_price_info: dict[str, str | None]) ->
     """
 
     mock_session.__next__.return_value = mock_session
-    upsert(sample_stock_price_info, mock_session)
+    upsert(sample_stock_price_info, session=mock_session)
 
     mock_session.exec.assert_called_once()
     mock_session.commit.assert_called_once()
@@ -191,7 +191,7 @@ def test_insert_or_ignore(
     Test insert_or_ignore logic
     """
     mock_session.__next__.return_value = mock_session
-    insert_or_ignore(sample_stock_price_info, mock_session)
+    insert_or_ignore(sample_stock_price_info, session=mock_session)
 
     mock_session.exec.assert_called_once()
     mock_session.commit.assert_called_once()

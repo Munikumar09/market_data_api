@@ -4,12 +4,8 @@ This module contains the SmartapiCredentials class to store the credentials
 required to authenticate the SmartAPI connection. 
 """
 
-import os
-
-from app.utils.common.exceptions import CredentialsException
 from app.utils.credentials.credentials import Credentials
-from app.utils.file_utils import load_json_data
-from app.utils.smartapi.constants import SMART_API_CREDENTIALS
+from app.utils.fetch_data import get_required_env_var
 
 
 @Credentials.register("smartapi")
@@ -31,18 +27,15 @@ class SmartapiCredentials(Credentials):
         The correlation id is the unique id to identify the request
     """
 
-    def __init__(
-        self, api_key: str, client_id: str, pwd: str, token: str, correlation_id: str
-    ) -> None:
+    def __init__(self, api_key: str, client_id: str, pwd: str, token: str) -> None:
 
         super().__init__(api_key)
         self.client_id = client_id
         self.pwd = pwd
         self.token = token
-        self.correlation_id = correlation_id
 
-    @staticmethod
-    def get_credentials():
+    @classmethod
+    def get_credentials(cls) -> "SmartapiCredentials":
         """
         Create a Credentials object from the credentials file.
 
@@ -56,11 +49,9 @@ class SmartapiCredentials(Credentials):
         ``Credentials``
             The credentials object with the API key, client id, password, token and correlation id
         """
-        credentials_path = os.environ.get(SMART_API_CREDENTIALS)
+        api_key = get_required_env_var("SMARTAPI_API_KEY")
+        client_id = get_required_env_var("SMARTAPI_CLIENT_ID")
+        pwd = get_required_env_var("SMARTAPI_PWD")
+        token = get_required_env_var("SMARTAPI_TOKEN")
 
-        if not credentials_path:
-            raise CredentialsException(SMART_API_CREDENTIALS)
-
-        credentials = load_json_data(credentials_path)
-
-        return SmartapiCredentials(**credentials)
+        return SmartapiCredentials(api_key, client_id, pwd, token)

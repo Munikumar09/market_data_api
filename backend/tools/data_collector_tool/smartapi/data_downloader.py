@@ -1,10 +1,12 @@
 # pylint: disable=too-many-locals
 from datetime import datetime, timedelta
+from pathlib import Path
 
 import httpx
 import pandas as pd
 from tqdm import tqdm
 
+from app.utils.common.logger import get_logger
 from app.utils.common.types.reques_types import CandlestickInterval
 from app.utils.file_utils import create_dir, load_json_data
 from tools.data_collector_tool.smartapi.constants import (
@@ -16,6 +18,8 @@ from tools.data_collector_tool.smartapi.data_downloader_utils import (
     dataframe_to_json_files,
     get_historical_stock_data_url,
 )
+
+logger = get_logger(Path(__file__).name)
 
 
 def download_nifty500_stock_data(interval: str):
@@ -70,7 +74,7 @@ def download_nifty500_stock_data(interval: str):
                             df = pd.DataFrame(data["available_stock_data"])
                             dataframe_to_json_files(df, dir_path, valid_interval)
                 except Exception as e:
-                    print(e)
+                    logger.error(e)
                 break
 
 
