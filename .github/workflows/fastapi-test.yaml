@@ -62,10 +62,13 @@ jobs:
         run: |
           curl -sSL https://install.python-poetry.org | python3 - --version ${{ env.POETRY_VERSION }} -y
           ./scripts/setup
-      - name: Format check
+      - name: Python Format check
         run: ./scripts/format.sh --check
+      - name: Yaml Format check
+        run: ./scripts/yaml_format --check
       - name: Lint check
         run: ./scripts/lint.sh
+      
         
   test:
     runs-on: ubuntu-latest
