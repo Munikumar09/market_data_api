@@ -19,7 +19,7 @@ from app.data_layer.database.crud.postgresql.user_crud import (
     update_user,
 )
 from app.data_layer.database.db_connections.postgresql import get_session
-from app.data_layer.database.models.user_model import User, UserVerification
+from app.data_layer.database.models.user_model import Gender, User, UserVerification
 
 #################### Fixtures ####################
 
@@ -62,7 +62,7 @@ def test_user():
         password="password123",
         date_of_birth=date(1990, 1, 1),
         phone_number="1234567890",
-        gender="male",
+        gender=Gender.MALE,
     )
 
 
@@ -82,7 +82,7 @@ def test_create_user(session, test_user):
     assert user.user_id == test_user.user_id
 
     # Test: 1.2 ( Verify raising exception when user already exists )
-    new_user = User(**test_user.dict())
+    new_user = User(**test_user.model_dump())
     with pytest.raises(HTTPException):
         create_user(new_user, session=session)
 

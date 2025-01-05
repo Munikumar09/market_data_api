@@ -1,8 +1,22 @@
 #!/bin/bash
 
 # PostgreSQL configuration variables
-POSTGRES_COMPOSE_SERVICE="postgres_container"  # Replace with your PostgreSQL service name in Docker Compose
-POSTGRES_COMPOSE_PATH="../../../app/configs/docker/postgres/postgres.yaml"
+POSTGRES_COMPOSE_PATH="$ROOT_PATH/app/configs/docker/postgres/postgres.yaml"
+ENV_FILE_PATH="$ROOT_PATH/.env"
+
+# Validate compose file existence
+if [ ! -f "$POSTGRES_COMPOSE_PATH" ]; then
+    echo "Error: Docker Compose file not found at $POSTGRES_COMPOSE_PATH"
+    exit 1
+fi
+
+
+# Extract the line just above the 'image: postgres' line
+PREVIOUS_LINE=$(awk '/image: postgres/{print x; exit} {x=$0}' $POSTGRES_COMPOSE_PATH)
+
+# Extract the container name from the previous line
+POSTGRES_COMPOSE_SERVICE=$(echo $PREVIOUS_LINE | grep 'container_name:' | awk '{print $2}')
+
 
 # Function to check if a Docker container is running
 is_container_running() {
@@ -13,9 +27,24 @@ is_container_running() {
 start_postgres() {
     if ! is_container_running $POSTGRES_COMPOSE_SERVICE; then
         echo "Starting PostgreSQL container..."
-        docker compose -f $POSTGRES_COMPOSE_PATH up -d
+
+        # Start the PostgreSQL container and if it fails, return an error
+        if ! docker compose --env-file $ENV_FILE_PATH -f $POSTGRES_COMPOSE_PATH up -d; then
+            echo "Error: Failed to start PostgreSQL container" >&2
+            return 1
+        fi
         echo "Waiting for PostgreSQL to start..."
-        sleep 10 # Give PostgreSQL some time to start
+
+        for i in {1..30}; do
+            if docker exec $POSTGRES_COMPOSE_SERVICE pg_isready -q; then
+                echo "PostgreSQL is ready!"
+                return 0
+            fi
+            echo -n "."
+            sleep 1
+        done
+        echo "Error: PostgreSQL failed to start within 30 seconds" >&2
+        return 1
     else
         echo "PostgreSQL container is already running."
     fi
@@ -25,7 +54,19 @@ start_postgres() {
 stop_postgres() {
     if is_container_running $POSTGRES_COMPOSE_SERVICE; then
         echo "Stopping PostgreSQL container... ${POSTGRES_COMPOSE_PATH}"
-        docker compose -f $POSTGRES_COMPOSE_PATH down
+        
+        if ! docker compose --env-file $ENV_FILE_PATH -f $POSTGRES_COMPOSE_PATH down; then
+            echo "Error: Failed to stop PostgreSQL container" >&2
+            return 1
+        fi
+
+        # Verify the container is stopped
+        if is_container_running $POSTGRES_COMPOSE_SERVICE; then
+            echo "Error: PostgreSQL container is still running after attempting to stop it" >&2
+            return 1
+        else
+            echo "PostgreSQL container stopped successfully."
+        fi
     else
         echo "PostgreSQL container is not running."
     fi

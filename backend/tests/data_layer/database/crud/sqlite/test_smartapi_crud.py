@@ -54,9 +54,9 @@ def test_get_smartapi_tokens_by_any_and_all_condition():
             assert "INFY" == item.symbol
 
         # Test get_smartapi_tokens_by_any_condition with exchange
-        result = get_smartapi_tokens_by_any_condition(exchange="BSE")
+        result = get_smartapi_tokens_by_any_condition(exchange="NSE")
         for item in result:
-            assert "BSE" == item.exchange
+            assert "NSE" == item.exchange
 
         # Test get_smartapi_tokens_by_all_conditions with valid conditions
         result = get_smartapi_tokens_by_all_conditions(

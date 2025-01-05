@@ -93,10 +93,10 @@ def drop_database_if_created(created: bool):
             FROM pg_stat_activity
             WHERE pg_stat_activity.datname = %s;
             """,
-            (db_name),
+            (db_name,),
         )
 
-        cursor.execute("DROP DATABASE %s", (quoted_db_name,))
+        cursor.execute(f"DROP DATABASE {quoted_db_name}")
         logger.info("Database '%s' dropped.", db_name)
 
     except psycopg2.Error as e:
@@ -128,31 +128,32 @@ def test_create_db_and_tables(set_env_vars):
     Test the create_db_and_tables function to ensure it creates the tables.
     """
     created = create_database_if_not_exists()
-    db_url = (
-        f"postgresql://{quote_plus(get_required_env_var(POSTGRES_USER))}:"
-        f"{quote_plus(get_required_env_var(POSTGRES_PASSWORD))}@"
-        f"{get_required_env_var(POSTGRES_HOST)}:"
-        f"{get_required_env_var(POSTGRES_PORT)}/"
-        f"{get_required_env_var(POSTGRES_DB)}"
-    )
-    engine = create_engine(db_url, echo=True)
-    inspector = inspect(engine)
-    tables = inspector.get_table_names()
+    try:
+        db_url = (
+            f"postgresql://{quote_plus(get_required_env_var(POSTGRES_USER))}:"
+            f"{quote_plus(get_required_env_var(POSTGRES_PASSWORD))}@"
+            f"{get_required_env_var(POSTGRES_HOST)}:"
+            f"{get_required_env_var(POSTGRES_PORT)}/"
+            f"{get_required_env_var(POSTGRES_DB)}"
+        )
+        engine = create_engine(db_url, echo=True)
+        inspector = inspect(engine)
+        tables = inspector.get_table_names()
 
-    # Ensure the database is created and the tables are empty
-    assert tables == []
+        # Ensure the database is created and the tables are empty
+        assert tables == []
 
-    create_db_and_tables(engine)
-    inspector = inspect(engine)
-    tables = inspector.get_table_names()
+        create_db_and_tables(engine)
+        inspector = inspect(engine)
+        tables = inspector.get_table_names()
 
-    # Ensure the tables are created
-    assert set(tables) == table_names
+        # Ensure the tables are created
+        assert set(tables) == table_names
 
-    with get_session(engine) as session:
-        # Check if the session is active and able to connect to the database
-        assert session.is_active
-        assert session.connection
-        assert session.bind
-
-    drop_database_if_created(created)
+        with get_session(engine) as session:
+            # Check if the session is active and able to connect to the database
+            assert session.is_active
+            assert session.connection
+            assert session.bind
+    finally:
+        drop_database_if_created(created)
