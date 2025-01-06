@@ -3345,6 +3345,16 @@ files = [
 ]
 
 [[package]]
+name = "shfmt-py"
+version = "3.7.0.1"
+description = "Python wrapper around invoking shfmt (https://github.com/mvdan/sh)"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "shfmt_py-3.7.0.1.tar.gz", hash = "sha256:119403c9325e9853e2e5b9b75b12bd1d35baf4f22dbc4795a459c9152ea2d9d2"},
+]
+
+[[package]]
 name = "shortuuid"
 version = "1.0.13"
 description = "A generator library for concise, unambiguous and URL-safe UUIDs."
@@ -3974,4 +3984,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "623a03f463c5f11bb733b9dc626eb710d4f76b92346f938066373597b018d288"
+content-hash = "1d3d767f353cd3cf95f463ccaf0bdbd5fc7959d25a8cc383f52470a499e6a0e4"
