@@ -37,6 +37,7 @@ bcrypt = "^4.2.1"
 snowflake-id = "^1.0.2"
 email-validator = "^2.2.0"
 ruamel-yaml = "^0.18.9"
+shfmt-py = "^3.7.0.1"
 
 
 
