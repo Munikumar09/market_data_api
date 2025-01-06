@@ -23,4 +23,4 @@ run_mypy_check || mypy_failed=1
 run_pylint_check || pylint_failed=1
 
 # Exit with failure if any check failed
-[ $mypy_failed -eq 0 -a $pylint_failed -eq 0 ] || exit 1
+[ $mypy_failed -eq 0 ] && [ $pylint_failed -eq 0 ] || exit 1

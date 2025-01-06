@@ -33,7 +33,7 @@ start_postgres() {
 		fi
 		echo "Waiting for PostgreSQL to start..."
 
-		for i in {1..30}; do
+		for _ in {1..30}; do
 			if docker exec $POSTGRES_COMPOSE_SERVICE pg_isready -q; then
 				echo "PostgreSQL is ready!"
 				return 0
