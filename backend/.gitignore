@@ -7,3 +7,6 @@ __pycache__
 *outputs
 .DS_Store
 .env
+postgres_data
+pgadmin_data
+kafka1_data

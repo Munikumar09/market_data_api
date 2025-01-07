@@ -7,7 +7,7 @@ connections:
     connection: ${smartsocket_connection}
 
 
-hydra:  
-  output_subdir: null  
-  run:  
+hydra:
+  output_subdir: null
+  run:
     dir: .

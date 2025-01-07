@@ -5,6 +5,32 @@ name: Quality Checks
 env:
   PYTHON_VERSION: 3.12.3
   POETRY_VERSION: 1.8.2
+
+  # Postgres credentials for the test database
+  POSTGRES_USER: ${{ secrets.TEST_DB_USER }}
+  POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
+  POSTGRES_DB: ${{ secrets.TEST_DB_NAME }}
+  POSTGRES_HOST: localhost
+  POSTGRES_PORT: 5432
+
+  # Brevo credentials
+  BREVO_SENDER_NAME: ${{ secrets.BREVO_SENDER_NAME }}
+  BREVO_SENDER_EMAIL: ${{ secrets.BREVO_SENDER_EMAIL }}
+  BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+
+  # JWT credentials
+  JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+  JWT_REFRESH_SECRET_KEY: ${{ secrets.JWT_REFRESH_SECRET_KEY }}
+  JWT_HASHING_ALGO: ${{ secrets.JWT_HASHING_ALGO }}
+  
+  # Snowflake credentials
+  MACHINE_ID: ${{ secrets.MACHINE_ID }}
+
+  # SmartAPI credentials
+  SMARTAPI_API_KEY: ${{ secrets.SMARTAPI_API_KEY }}
+  SMARTAPI_CLIENT_ID: ${{ secrets.SMARTAPI_CLIENT_ID }}
+  SMARTAPI_PWD: ${{ secrets.SMARTAPI_PWD }}
+  SMARTAPI_TOKEN: ${{ secrets.SMARTAPI_TOKEN }}
 on:
   pull_request:
     branches: [ "master" ]
@@ -36,10 +62,13 @@ jobs:
         run: |
           curl -sSL https://install.python-poetry.org | python3 - --version ${{ env.POETRY_VERSION }} -y
           ./scripts/setup
-      - name: Format check
+      - name: Python Format check
         run: ./scripts/format.sh --check
+      - name: Yaml Format check
+        run: ./scripts/yaml_format --check
       - name: Lint check
         run: ./scripts/lint.sh
+      
         
   test:
     runs-on: ubuntu-latest
@@ -47,6 +76,21 @@ jobs:
       run:
         shell: bash -l {0}
         working-directory: backend
+    services:
+      postgres:
+        image: postgres:17  # Use a specific version for consistency
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -55,14 +99,11 @@ jobs:
 
 
 
-      - name: Decode json credentials
-        run: echo ${{ secrets.SMARTAPI_CREDENTIALS }} | jq > smartapi_credentials.json
 
      # Set up an environment variable with value "app"
       - name: Set up environment variable
         run: |
-         echo "APP=app" >> $GITHUB_ENV
-         echo "SMARTAPI_CREDENTIALS=smartapi_credentials.json" >>$GITHUB_ENV
+         echo "APP=app" >> "$GITHUB_ENV"
 
       # Install miniconda and create a new environment with python 3.10
       - name: Install miniconda and create environment

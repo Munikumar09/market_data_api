@@ -7,4 +7,3 @@ NSE_HOLIDAYS_PATH = f"{ROOT_DIR}/data_layer/data/smart_api/nse_holidays.txt"
 DATA_STARTING_DATES_PATH = (
     f"{ROOT_DIR}/data_layer/data/smart_api/data_starting_dates.json"
 )
-SMART_API_CREDENTIALS = "SMARTAPI_CREDENTIALS"
