@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+// import 'package:flutter_svg/flutter_svg.dart';
 
 class CustomIconButton extends StatelessWidget {
   final VoidCallback onPressed;
-  final iconPath;
+  final String iconPath;
 
-  const CustomIconButton({super.key, required this.onPressed, required this.iconPath});
+  const CustomIconButton(
+      {super.key, required this.onPressed, required this.iconPath});
 
   @override
   Widget build(BuildContext context) {
@@ -12,8 +14,8 @@ class CustomIconButton extends StatelessWidget {
       onPressed: onPressed,
       icon: Image.asset(
         iconPath,
-        height: 27.0,
-        width: 27.0,
+        width: 27,
+        height: 27,
       ),
     );
   }

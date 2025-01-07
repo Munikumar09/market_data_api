@@ -4,15 +4,18 @@ class AppColors {
   // Light Theme Colors
   static const lightPrimary = Color(0xFF1F41BB);
   static const lightSecondary = Color(0xFF5C53E9);
-  static const lightBackground = Color(0xFFFFFFFF);
+  static const tertiary = Color(0xFF6B7280);
   static const lightSurface = Color(0xFFFFFFFF);
   static const lightError = Color(0xFFB00020);
   static const lightOnPrimary = Color(0xFFFFFFFF);
   static const lightOnSecondary = Color(0xFF000000);
-  static const lightOnBackground = Color(0xFF000000);
   static const lightOnSurface = Color(0xFF000000);
   static const lightOnError = Color(0xFFFFFFFF);
-
+  static const lightHint = Color(0xFF626262);
+  static const lightDivider = Color(0xFFE5E7EB);
+  static const lightPrimaryLight = Color(0xFFF1F4FF);
+  static const lightOntertiary = Color(0xFF000000);
+  
   // Dark Theme Colors
   static const darkPrimary = Color(0xFFBB86FC);
   static const darkSecondary = Color(0xFF03DAC6);

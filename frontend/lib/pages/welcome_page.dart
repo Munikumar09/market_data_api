@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/components/buttons/custom_button.dart';
+import 'package:frontend/components/common/header_text.dart';
 import 'package:frontend/components/custom_background_widget.dart';
-import 'package:frontend/config/app_text_styles.dart';
+import 'package:frontend/config/app_routes.dart';
+import 'package:frontend/config/app_strings.dart';
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
@@ -18,6 +20,7 @@ class WelcomePage extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Spacer(),
                   Image.asset(
@@ -26,35 +29,27 @@ class WelcomePage extends StatelessWidget {
                     height: MediaQuery.of(context).size.height / 2.5,
                   ),
                   Spacer(),
-                  Text(
-                    'Master the Market\nwith Zero Risk',
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.headline1(
-                        Theme.of(context).colorScheme.primary),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    "Trade stocks and options virtually.\nLearn, practice, and grow risk-free  ",
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.headline2(Colors.black),
-                  ),
+                  HeaderText(
+                      title: AppStrings.welcomeTitle,
+                      subtitle: AppStrings.welcomeSubtitle),
                   Spacer(),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       Expanded(
                         child: CustomButton(
-                            text: "Sign Up",
+                            text: AppStrings.signUp,
                             onPressed: () {
-                              Navigator.of(context).pushNamed('/register');
+                              Navigator.of(context)
+                                  .pushNamed(AppRoutes.register);
                             }),
                       ),
                       const SizedBox(width: 20),
                       Expanded(
                         child: CustomButton(
-                            text: "Login",
+                            text: AppStrings.login,
                             onPressed: () {
-                              Navigator.of(context).pushNamed('/login');
+                              Navigator.of(context).pushNamed(AppRoutes.login);
                             }),
                       ),
                     ],

@@ -5,7 +5,6 @@ class AppTextStyles {
     return TextStyle(
       color: color,
       fontSize: 30,
-      fontFamily: 'Roboto',
       fontWeight: FontWeight.w700,
     );
   }
@@ -14,7 +13,6 @@ class AppTextStyles {
     return TextStyle(
       color: color,
       fontSize: 20,
-      fontFamily: 'Poppins',
       fontWeight: FontWeight.w600,
     );
   }

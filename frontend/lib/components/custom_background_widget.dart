@@ -15,7 +15,7 @@ class CustomBackgroundWidget extends StatelessWidget {
       height: double.infinity,
       clipBehavior: Clip.antiAlias,
       decoration: ShapeDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(50),
         ),
@@ -39,12 +39,14 @@ class CustomBackgroundWidget extends StatelessWidget {
                     0.4,
                     1.3,
                     0.47,
+                    Theme.of(context).primaryColor,
                   ),
                   _buildRectangle(
                     screenWidth,
                     screenHeight,
                     0.14,
                     1.4,
+                    Theme.of(context).primaryColor,
                   ),
                   _buildOval(
                     screenWidth,
@@ -53,15 +55,15 @@ class CustomBackgroundWidget extends StatelessWidget {
                     0.17,
                     2,
                     3,
-                    Color(0xFFF1F4FF),
+                    Theme.of(context).primaryColorLight,
                   ),
                   _buildFilledOval(
                     screenWidth,
                     screenHeight,
                     1.12,
                     0.1,
-                    2 ,
-                    Color(0xFFF1F4FF),
+                    2,
+                    Theme.of(context).primaryColorLight,
                   ),
                 ],
               ),
@@ -97,8 +99,14 @@ class CustomBackgroundWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildRotatedRectangle(double screenWidth, double screenHeight,
-      double left, double top, double angle) {
+  Widget _buildRotatedRectangle(
+    double screenWidth,
+    double screenHeight,
+    double left,
+    double top,
+    double angle,
+    Color color,
+  ) {
     return Positioned(
       left: left * screenWidth,
       top: top * screenHeight,
@@ -111,7 +119,7 @@ class CustomBackgroundWidget extends StatelessWidget {
             shape: RoundedRectangleBorder(
               side: BorderSide(
                 width: 2,
-                color: const Color(0xFF1F41BB).withValues(alpha: 0.2),
+                color: color.withValues(alpha: 0.2),
               ),
             ),
           ),
@@ -121,7 +129,12 @@ class CustomBackgroundWidget extends StatelessWidget {
   }
 
   Widget _buildRectangle(
-      double screenWidth, double screenHeight, double left, double top) {
+    double screenWidth,
+    double screenHeight,
+    double left,
+    double top,
+    Color color,
+  ) {
     return Positioned(
       left: left * screenWidth,
       top: top * screenHeight,
@@ -132,7 +145,7 @@ class CustomBackgroundWidget extends StatelessWidget {
           shape: RoundedRectangleBorder(
             side: BorderSide(
               width: 2,
-              color: const Color(0xFF1F41BB).withValues(alpha: 0.2),
+              color: color.withValues(alpha: 0.2),
             ),
           ),
         ),
@@ -154,7 +167,7 @@ class CustomBackgroundWidget extends StatelessWidget {
           ),
         ),
       ),
-    );  
+    );
   }
 
   Widget _buildFilledOval(double screenWidth, double screenHeight, double left,

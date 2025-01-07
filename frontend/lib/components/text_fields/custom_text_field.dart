@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/app_styles/app_text_styles.dart';
 
 class CustomTextField extends StatefulWidget {
   final String hintText;
   final bool isPassword;
   final TextEditingController? controller;
+  final String? labelText;
+  final String? Function(String?)? validator; // added
+  final TextInputType? keyboardType; // added
 
   const CustomTextField({
     super.key,
     required this.hintText,
     this.isPassword = false,
     this.controller,
+    this.labelText,
+    this.validator, // added
+    this.keyboardType, // added
   });
 
   @override
@@ -21,27 +28,29 @@ class _CustomTextFieldState extends State<CustomTextField> {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return TextFormField(
+      // changed to TextFormField
       controller: widget.controller,
       obscureText: widget.isPassword && !_isPasswordVisible,
+      validator: widget.validator, // added
+      keyboardType: widget.keyboardType, // added
       decoration: InputDecoration(
+        labelText: widget.labelText,
         hintText: widget.hintText,
-        hintStyle: const TextStyle(
-          color: Color(0xFF626262),
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-          fontFamily: 'Roboto',
-        ),
+        hintStyle: AppTextStyles.bodyText1(Theme.of(context).hintColor),
         filled: true,
-        fillColor: const Color(0xFFF1F4FF),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        fillColor: Theme.of(context).primaryColorLight,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 20,
+        ),
         enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide.none, // Removes border when not focused
+          borderSide: BorderSide.none,
           borderRadius: BorderRadius.circular(10),
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(
-            color: Color(0xFF1F41BB),
+          borderSide: BorderSide(
+            color: Theme.of(context).primaryColor,
             width: 2,
           ),
           borderRadius: BorderRadius.circular(10),
@@ -50,7 +59,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
             ? IconButton(
                 icon: Icon(
                   _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                  color: const Color(0xFF1F41BB),
+                  color: Theme.of(context).primaryColor,
                 ),
                 onPressed: () {
                   setState(() {
@@ -60,12 +69,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
               )
             : null,
       ),
-      style: const TextStyle(
-        color: Color(0xFF1F41BB),
-        fontSize: 16,
-        fontWeight: FontWeight.w500,
-        fontFamily: 'Roboto',
-      ),
+      style: AppTextStyles.bodyText1(Theme.of(context).primaryColor),
     );
   }
 }

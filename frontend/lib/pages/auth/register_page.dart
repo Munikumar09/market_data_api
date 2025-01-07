@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/components/buttons/custom_button.dart';
-import 'package:frontend/components/buttons/icon_button.dart';
+import 'package:frontend/components/common/auth_footer.dart';
+import 'package:frontend/components/common/header_text.dart';
 import 'package:frontend/components/custom_background_widget.dart';
-import 'package:frontend/components/text_fields/custom_text_feild.dart';
-import 'package:frontend/config/app_text_styles.dart';
+import 'package:frontend/components/text_fields/custom_text_field.dart';
+import 'package:frontend/app_styles/app_text_styles.dart';
+import 'package:frontend/config/app_routes.dart';
+import 'package:frontend/config/app_strings.dart';
 
 class RegisterPage extends StatelessWidget {
   const RegisterPage({super.key});
@@ -22,47 +25,59 @@ class RegisterPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Spacer(),
-                  Text('Create Account',
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.headline1(Theme.of(context).colorScheme.primary)),
-                  Text(
-                    "Create an account to start your risk-free trading journey today!",
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.headline2(Colors.black),
+                  HeaderText(
+                    title: AppStrings.registerTitle,
+                    subtitle: AppStrings.registerSubtitle,
                   ),
                   Spacer(),
-                  CustomTextField(hintText: "Email"),
+                  CustomTextField(
+                      hintText: AppStrings.email,
+                      labelText: AppStrings.email,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your email';
+                        }
+                        return null;
+                      }),
                   const SizedBox(height: 16),
                   CustomTextField(
-                    hintText: "Password",
+                    hintText: AppStrings.password,
                     isPassword: true,
+                    labelText: AppStrings.password,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your email';
+                      }
+                      return null;
+                    },
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 16),
                   CustomTextField(
-                    hintText: "Confirm password",
+                    hintText: AppStrings.confirmPassword,
                     isPassword: true,
+                    labelText: AppStrings.confirmPassword,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your email';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 30),
-                  CustomButton(text: "Sign Up", onPressed: () {}),
+                  CustomButton(text: AppStrings.signUp, onPressed: () {}),
                   const SizedBox(height: 10),
                   TextButton(
                     onPressed: () {
-                      Navigator.of(context).pushNamed('/login');
+                      Navigator.of(context).pushNamed(AppRoutes.login);
                     },
                     child: Text(
-                      'Already have an account?',
+                      AppStrings.haveAccount,
                       style: AppTextStyles.headline3(Color(0xFF494949)),
                     ),
                   ),
                   Spacer(),
-                  Text('Or continue with',
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.bodyText1(Color(0xFF1F41BB))),
-                  const SizedBox(height: 16),
-                  CustomIconButton(
-                      onPressed: () => {},
-                      iconPath: "assets/images/logos/google.png"),
-                  Spacer(), 
+                  AuthFooter(),
+                  Spacer(),
                 ],
               ),
             ),

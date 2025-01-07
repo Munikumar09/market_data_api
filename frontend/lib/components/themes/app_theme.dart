@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/config/app_colors.dart';
+import 'package:frontend/app_styles/app_colors.dart';
 
 class AppThemes {
   static final ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,
+    hintColor: AppColors.lightHint,
+    primaryColorLight: AppColors.lightPrimaryLight,
+    dividerColor: AppColors.lightDivider,
     colorScheme: ColorScheme(
       primary: AppColors.lightPrimary,
       secondary: AppColors.lightSecondary,
       surface: AppColors.lightSurface,
+      tertiary: AppColors.tertiary,
+      onTertiary: AppColors.lightOntertiary,
       error: AppColors.lightError,
       onPrimary: AppColors.lightOnPrimary,
       onSecondary: AppColors.lightOnSecondary,
@@ -15,7 +20,8 @@ class AppThemes {
       onError: AppColors.lightOnError,
       brightness: Brightness.light,
     ),
-    scaffoldBackgroundColor: AppColors.lightBackground,
+    scaffoldBackgroundColor: AppColors.lightSurface,
+    fontFamily: 'Roboto',
   );
 
   static final ThemeData darkTheme = ThemeData(
