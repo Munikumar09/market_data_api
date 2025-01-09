@@ -9,7 +9,8 @@ import 'package:frontend/config/app_routes.dart';
 import 'package:frontend/config/app_strings.dart';
 
 class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+  LoginPage({super.key});
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -31,23 +32,31 @@ class LoginPage extends StatelessWidget {
                     subtitle: AppStrings.loginSubtitle,
                   ),
                   Spacer(),
-                  CustomTextField(
-                    hintText: AppStrings.email,
-                    labelText: AppStrings.email,
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  const SizedBox(height: 16),
-                  CustomTextField(
-                    hintText: AppStrings.password,
-                    isPassword: true,
-                    labelText: AppStrings.password,
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        CustomTextField(
+                          hintText: AppStrings.email,
+                          labelText: AppStrings.email,
+                          keyboardType: TextInputType.emailAddress,
+                        ),
+                        const SizedBox(height: 16),
+                        CustomTextField(
+                          hintText: AppStrings.password,
+                          isPassword: true,
+                          labelText: AppStrings.password,
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 10),
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
                       onPressed: () => {
-                        Navigator.of(context).pushNamed(AppRoutes.forgotPassword),
+                        Navigator.of(context)
+                            .pushNamed(AppRoutes.forgotPassword),
                       },
                       child: Text(
                         AppStrings.forgotPassword,

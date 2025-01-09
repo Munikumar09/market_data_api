@@ -6,17 +6,22 @@ class CustomTextField extends StatefulWidget {
   final bool isPassword;
   final TextEditingController? controller;
   final String? labelText;
-  final String? Function(String?)? validator; // added
-  final TextInputType? keyboardType; // added
-
+  final String? Function(String?)? validator;
+  final TextInputType? keyboardType;
+  final bool readOnly;
+  final IconData? suffixIcon;
+  final VoidCallback? onSuffixTap;
   const CustomTextField({
     super.key,
     required this.hintText,
     this.isPassword = false,
     this.controller,
     this.labelText,
-    this.validator, // added
-    this.keyboardType, // added
+    this.validator,
+    this.keyboardType,
+    this.readOnly = false,
+    this.suffixIcon,
+    this.onSuffixTap,
   });
 
   @override
@@ -28,48 +33,66 @@ class _CustomTextFieldState extends State<CustomTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    Widget? suffix;
+    if (widget.isPassword) {
+      suffix = IconButton(
+        icon: Icon(
+          _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+          color: theme.primaryColor,
+        ),
+        onPressed: () {
+          setState(() {
+            _isPasswordVisible = !_isPasswordVisible;
+          });
+        },
+      );
+    } else if (widget.suffixIcon != null) {
+      suffix = IconButton(
+        icon: Icon(widget.suffixIcon, color: theme.primaryColor),
+        onPressed: widget.onSuffixTap,
+      );
+    }
+
     return TextFormField(
-      // changed to TextFormField
+      readOnly: widget.readOnly,
       controller: widget.controller,
       obscureText: widget.isPassword && !_isPasswordVisible,
-      validator: widget.validator, // added
-      keyboardType: widget.keyboardType, // added
+      validator: widget.validator ??
+          (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter ${widget.labelText}';
+            }
+            return null;
+          },
+      keyboardType: widget.keyboardType,
       decoration: InputDecoration(
         labelText: widget.labelText,
         hintText: widget.hintText,
-        hintStyle: AppTextStyles.bodyText1(Theme.of(context).hintColor),
+        hintStyle: AppTextStyles.bodyText1(theme.hintColor),
         filled: true,
-        fillColor: Theme.of(context).primaryColorLight,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 20,
-        ),
+        fillColor: theme.primaryColorLight,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         enabledBorder: OutlineInputBorder(
           borderSide: BorderSide.none,
           borderRadius: BorderRadius.circular(10),
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: Theme.of(context).primaryColor,
-            width: 2,
-          ),
+          borderSide: BorderSide(color: theme.primaryColor, width: 2),
           borderRadius: BorderRadius.circular(10),
         ),
-        suffixIcon: widget.isPassword
-            ? IconButton(
-                icon: Icon(
-                  _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                  color: Theme.of(context).primaryColor,
-                ),
-                onPressed: () {
-                  setState(() {
-                    _isPasswordVisible = !_isPasswordVisible;
-                  });
-                },
-              )
-            : null,
+        errorBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: theme.colorScheme.error),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: theme.colorScheme.error, width: 2),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        suffixIcon: suffix,
       ),
-      style: AppTextStyles.bodyText1(Theme.of(context).primaryColor),
+      style: AppTextStyles.bodyText1(theme.primaryColor),
     );
   }
 }

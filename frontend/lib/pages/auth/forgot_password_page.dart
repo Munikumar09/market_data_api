@@ -35,7 +35,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     });
 
     // Basic email validation (you can use a more robust regex)
-    if (!_emailController.text.contains('@')) {
+    final emailRegex = RegExp(r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$');
+    if (!emailRegex.hasMatch(_emailController.text)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter a valid email address')),
       );
@@ -82,6 +83,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 hintText: AppStrings.email,
                 labelText: AppStrings.email,
                 keyboardType: TextInputType.emailAddress,
+                controller: _emailController,
               ),
               const SizedBox(height: 16),
               _isLoading

@@ -20,10 +20,11 @@ class AuthFooter extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           CustomIconButton(
-              onPressed: () => {
-                    // implement login or sign up using the google
-                  },
-              iconPath: "assets/images/logos/google.png"),
+            onPressed: () => {
+              // implement login or sign up using the google
+            },
+            iconPath: "assets/images/logos/google.png",
+          ),
         ],
       ),
     );

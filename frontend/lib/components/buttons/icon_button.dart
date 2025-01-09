@@ -16,6 +16,9 @@ class CustomIconButton extends StatelessWidget {
         iconPath,
         width: 27,
         height: 27,
+        errorBuilder: (context, error, stackTrace) {
+          return const Icon(Icons.error_outline);
+        },
       ),
     );
   }
