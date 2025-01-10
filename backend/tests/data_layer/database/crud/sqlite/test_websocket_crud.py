@@ -9,7 +9,7 @@ from app.data_layer.database.crud.sqlite.websocket_crud import (
     insert_or_ignore,
     upsert,
 )
-from app.data_layer.database.models.websocket_model import InstrumentPrice
+from app.data_layer.database.models import InstrumentPrice
 
 #################### FIXTURES ####################
 

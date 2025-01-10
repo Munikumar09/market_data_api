@@ -10,7 +10,7 @@ import pytest
 from omegaconf import OmegaConf
 from pytest_mock import MockerFixture, MockType
 
-from app.data_layer.database.models.smartapi_model import SmartAPIToken
+from app.data_layer.database.models.instrument_model import Instrument
 from app.sockets.connections import SmartSocketConnection
 from app.utils.common.exceptions import SymbolNotFoundException
 from app.utils.common.types.financial_types import Exchange
@@ -60,17 +60,17 @@ def mock_init_from_cfg(mocker: MockerFixture, mock_streamer) -> MockType:
 
 
 @pytest.fixture
-def smartapi_tokens() -> tuple[list[SmartAPIToken], dict[str, str]]:
+def smartapi_tokens() -> tuple[list[Instrument], dict[str, str]]:
     return (
         [
-            SmartAPIToken(
+            Instrument(
                 token="256265",
                 symbol="INFY",
                 exchange="NSE",
                 instrument_type="EQ",
                 name="Infosys Limited",
             ),
-            SmartAPIToken(
+            Instrument(
                 token="256267",
                 symbol="TCS",
                 exchange="NSE",
@@ -109,7 +109,7 @@ def connection_cfg() -> dict:
 @pytest.fixture
 def connection(
     connection_cfg: dict,
-    smartapi_tokens: tuple[list[SmartAPIToken], dict[str, str]],
+    smartapi_tokens: tuple[list[Instrument], dict[str, str]],
     mock_get_smartapi_tokens_by_all_conditions: MockType,
 ) -> SmartSocketConnection:
     cfg = OmegaConf.create(connection_cfg)
@@ -152,7 +152,7 @@ def test_init_from_cfg_valid_cfg(
     mock_smartsocket: MockType,
     mock_init_from_cfg: MockType,
     mock_streamer: MockType,
-    smartapi_tokens: tuple[list[SmartAPIToken], dict[str, str]],
+    smartapi_tokens: tuple[list[Instrument], dict[str, str]],
     mock_get_smartapi_tokens_by_all_conditions: MockType,
 ):
     """
@@ -241,7 +241,7 @@ def test_get_equity_stock_tokens(
 def test_get_tokens_from_symbols(
     mocker: MockType,
     connection: SmartSocketConnection,
-    smartapi_tokens: tuple[list[SmartAPIToken], dict[str, str]],
+    smartapi_tokens: tuple[list[Instrument], dict[str, str]],
     mock_logger: MockType,
 ):
     """
@@ -278,7 +278,7 @@ def test_get_tokens(
     mock_logger: MockType,
     mock_validate_symbol_and_get_token: MockType,
     mock_get_smartapi_tokens_by_all_conditions: MockType,
-    smartapi_tokens: tuple[list[SmartAPIToken], dict[str, str]],
+    smartapi_tokens: tuple[list[Instrument], dict[str, str]],
 ):
     """
     Test the get_tokens method of the SmartSocketConnection class with all

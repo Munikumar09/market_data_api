@@ -6,7 +6,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from app.data_layer.database.models.smartapi_model import SmartAPIToken
+from app.data_layer.database.models.instrument_model import Instrument
 from app.schemas.stock_model import (
     HistoricalStockDataBundle,
     HistoricalStockPriceInfo,
@@ -264,7 +264,7 @@ def determine_instrument_type(row: dict[str, str]) -> str:
     return symbol.split("-")[1] if "-" in symbol else "EQ"
 
 
-def process_token_data(tokens_data: list[dict[str, str]]) -> list[SmartAPIToken]:
+def process_token_data(tokens_data: list[dict[str, str]]) -> list[Instrument]:
     """
     Processes the token data from the SmartAPI and returns the processed data.
 
@@ -287,7 +287,7 @@ def process_token_data(tokens_data: list[dict[str, str]]) -> list[SmartAPIToken]
     tokens_dict_data = df.to_dict("records")
 
     return [
-        SmartAPIToken(
+        Instrument(
             token=token["token"],
             symbol=token["symbol"],
             name=token["name"],

@@ -9,7 +9,7 @@ from sqlalchemy.dialects.sqlite import insert
 from sqlmodel import Session, select
 
 from app.data_layer.database.db_connections.sqlite import with_session
-from app.data_layer.database.models.websocket_model import InstrumentPrice
+from app.data_layer.database.models import InstrumentPrice
 from app.utils.common.logger import get_logger
 
 logger = get_logger(Path(__file__).name)

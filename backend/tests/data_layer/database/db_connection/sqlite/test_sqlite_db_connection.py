@@ -10,13 +10,13 @@ from app.data_layer.database.db_connections.sqlite import (
 )
 from app.data_layer.database.models import (
     InstrumentPrice,
-    SmartAPIToken,
+    Instrument,
     User,
     UserVerification,
 )
 
 model_classes = {
-    "smartapitoken": SmartAPIToken,
+    "instrument": Instrument,
     "instrumentprice": InstrumentPrice,
     "user": User,
     "userverification": UserVerification,

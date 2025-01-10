@@ -119,7 +119,7 @@ def set_env_vars(monkeypatch: MonkeyPatch):
     monkeypatch.setenv(POSTGRES_DB, "testdb")
 
 
-table_names = {"smartapitoken", "instrumentprice", "user", "userverification"}
+table_names = {"Instrument", "instrumentprice", "user", "userverification"}
 
 
 # Test the creation of the database and tables
