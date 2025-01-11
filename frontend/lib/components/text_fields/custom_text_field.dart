@@ -11,6 +11,7 @@ class CustomTextField extends StatefulWidget {
   final bool readOnly;
   final IconData? suffixIcon;
   final VoidCallback? onSuffixTap;
+
   const CustomTextField({
     super.key,
     required this.hintText,
@@ -35,6 +36,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     Widget? suffix;
+
     if (widget.isPassword) {
       suffix = IconButton(
         icon: Icon(
@@ -65,7 +67,11 @@ class _CustomTextFieldState extends State<CustomTextField> {
             }
             return null;
           },
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       keyboardType: widget.keyboardType,
+      onTap: widget.readOnly && widget.onSuffixTap != null
+          ? widget.onSuffixTap
+          : null,
       decoration: InputDecoration(
         labelText: widget.labelText,
         hintText: widget.hintText,

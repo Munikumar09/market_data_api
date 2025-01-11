@@ -33,16 +33,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     setState(() {
       _isLoading = false;
     });
-
-    // Basic email validation (you can use a more robust regex)
-    final emailRegex = RegExp(r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$');
-    if (!emailRegex.hasMatch(_emailController.text)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid email address')),
-      );
-      return;
-    }
-
     // Show success message or navigate to a confirmation screen
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Password reset email sent!')),

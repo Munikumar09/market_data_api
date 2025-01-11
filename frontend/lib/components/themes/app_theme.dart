@@ -12,7 +12,7 @@ class AppThemes {
       secondary: AppColors.lightSecondary,
       surface: AppColors.lightSurface,
       tertiary: AppColors.tertiary,
-      onTertiary: AppColors.lightOntertiary,
+      onTertiary: AppColors.lightOnTertiary,
       error: AppColors.lightError,
       onPrimary: AppColors.lightOnPrimary,
       onSecondary: AppColors.lightOnSecondary,

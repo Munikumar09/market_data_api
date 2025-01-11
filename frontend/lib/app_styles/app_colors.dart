@@ -14,7 +14,7 @@ class AppColors {
   static const lightHint = Color(0xFF626262);
   static const lightDivider = Color(0xFFE5E7EB);
   static const lightPrimaryLight = Color(0xFFF1F4FF);
-  static const lightOntertiary = Color(0xFF000000);
+  static const lightOnTertiary = Color(0xFF000000);
 
   // Dark Theme Colors
   static const darkPrimary = Color(0xFFBB86FC);

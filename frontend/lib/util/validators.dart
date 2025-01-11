@@ -1,5 +1,5 @@
 class Validators {
-  static String? email(value) {
+  static String? email(String? value) {
     if (value == null || value.isEmpty) {
       return 'Please enter your email';
     }
