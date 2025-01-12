@@ -19,10 +19,17 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
   final _dateController = TextEditingController();
-
+  final _passwordController = TextEditingController();
+  final _phoneNumberController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _emailController = TextEditingController();
   @override
   void dispose() {
     _dateController.dispose();
+    _passwordController.dispose();
+    _phoneNumberController.dispose();
+    _usernameController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
@@ -73,24 +80,28 @@ class _RegisterPageState extends State<RegisterPage> {
                       CustomTextField(
                         hintText: AppStrings.username,
                         labelText: AppStrings.username,
+                        controller: _usernameController,
                       ),
                       const SizedBox(height: 10),
                       CustomTextField(
                         hintText: AppStrings.email,
                         labelText: AppStrings.email,
                         keyboardType: TextInputType.emailAddress,
+                        controller: _emailController,
                       ),
                       const SizedBox(height: 10),
                       CustomTextField(
                         hintText: AppStrings.password,
                         isPassword: true,
                         labelText: AppStrings.password,
+                        controller: _passwordController,
                       ),
                       const SizedBox(height: 10),
                       CustomTextField(
                         hintText: AppStrings.phoneNumber,
                         labelText: AppStrings.phoneNumber,
                         keyboardType: TextInputType.phone,
+                        controller: _phoneNumberController,
                       ),
                       const SizedBox(height: 10),
                       CustomTextField(

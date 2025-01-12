@@ -13,6 +13,7 @@ class ForgotPasswordPage extends StatefulWidget {
 }
 
 class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
+  final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   bool _isLoading = false;
 
@@ -23,6 +24,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   }
 
   void _resetPassword() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
     setState(() {
       _isLoading = true;
     });
@@ -30,14 +34,15 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     // Simulate sending reset email (replace with actual logic)
     await Future.delayed(const Duration(seconds: 2));
 
+    if (!mounted) return;
+
     setState(() {
       _isLoading = false;
     });
-    // Show success message or navigate to a confirmation screen
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Password reset email sent!')),
     );
-    Navigator.pop(context); // Go back to previous screen
+    Navigator.pop(context);
   }
 
   @override
@@ -45,44 +50,45 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Forgot Password',
-        ),
+        title: const Text('Forgot Password'),
       ),
       backgroundColor: theme.colorScheme.surface,
       body: CustomBackgroundWidget(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                AppStrings.resetPassword,
-                style: AppTextStyles.headline1(theme.colorScheme.primary),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                AppStrings.resetPasswordSubtitle,
-                style: AppTextStyles.bodyText1(theme.colorScheme.onSurface),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              CustomTextField(
-                hintText: AppStrings.email,
-                labelText: AppStrings.email,
-                keyboardType: TextInputType.emailAddress,
-                controller: _emailController,
-              ),
-              const SizedBox(height: 16),
-              _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : CustomButton(
-                      text: AppStrings.sendOtp,
-                      onPressed: _resetPassword,
-                    ),
-            ],
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  AppStrings.resetPassword,
+                  style: AppTextStyles.headline1(theme.colorScheme.primary),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  AppStrings.resetPasswordSubtitle,
+                  style: AppTextStyles.bodyText1(theme.colorScheme.onSurface),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+                CustomTextField(
+                  hintText: AppStrings.email,
+                  labelText: AppStrings.email,
+                  keyboardType: TextInputType.emailAddress,
+                  controller: _emailController,
+                ),
+                const SizedBox(height: 16),
+                _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : CustomButton(
+                        text: AppStrings.sendOtp,
+                        onPressed: _resetPassword,
+                      ),
+              ],
+            ),
           ),
         ),
       ),
