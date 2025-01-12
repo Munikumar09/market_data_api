@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/app_styles/app_text_styles.dart';
-import 'package:frontend/components/buttons/custom_button.dart';
-import 'package:frontend/components/custom_background_widget.dart';
-import 'package:frontend/components/text_fields/custom_text_field.dart';
-import 'package:frontend/config/app_strings.dart';
+import 'package:frontend/core/constants/app_strings.dart';
+import 'package:frontend/core/constants/app_text_styles.dart';
+import 'package:frontend/shared/buttons/custom_button.dart';
+import 'package:frontend/shared/inputs/custom_text_field.dart';
+import 'package:frontend/shared/layouts/custom_background_widget.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});

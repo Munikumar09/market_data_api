@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/components/buttons/custom_button.dart';
-import 'package:frontend/components/common/header_text.dart';
-import 'package:frontend/components/custom_background_widget.dart';
-import 'package:frontend/config/app_routes.dart';
-import 'package:frontend/config/app_strings.dart';
+import 'package:frontend/core/constants/app_strings.dart';
+import 'package:frontend/core/routes/app_routes.dart';
+import 'package:frontend/features/auth/presentation/widgets/header_text.dart';
+import 'package:frontend/shared/buttons/custom_button.dart';
+import 'package:frontend/shared/layouts/custom_background_widget.dart';
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});

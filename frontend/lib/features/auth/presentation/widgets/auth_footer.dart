@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/app_styles/app_text_styles.dart';
-import 'package:frontend/components/buttons/icon_button.dart';
-import 'package:frontend/config/app_strings.dart';
+import 'package:frontend/core/constants/app_strings.dart';
+import 'package:frontend/core/constants/app_text_styles.dart';
+import 'package:frontend/shared/buttons/icon_button.dart';
 
 class AuthFooter extends StatelessWidget {
   const AuthFooter({super.key});

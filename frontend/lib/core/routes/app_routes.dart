@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/pages/auth/forgot_password_page.dart';
-import 'package:frontend/pages/auth/login_page.dart';
-import 'package:frontend/pages/auth/register_page.dart';
-import 'package:frontend/pages/welcome_page.dart';
+import 'package:frontend/features/auth/presentation/pages/forgot_password_page.dart';
+import 'package:frontend/features/auth/presentation/pages/login_page.dart';
+import 'package:frontend/features/auth/presentation/pages/register_page.dart';
+import 'package:frontend/features/auth/presentation/pages/welcome_page.dart';
 
 class AppRoutes {
   static const String welcome = '/';

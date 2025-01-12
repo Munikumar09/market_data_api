@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/app_styles/app_text_styles.dart';
+import 'package:frontend/core/constants/app_text_styles.dart';
 
 class CustomTextField extends StatefulWidget {
   final String hintText;
@@ -63,7 +63,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
       validator: widget.validator ??
           (value) {
             if (value == null || value.isEmpty) {
-              return 'Please enter ${widget.labelText}';
+              final fieldName = widget.labelText ?? 'this field';
+              return 'Please enter $fieldName';
             }
             return null;
           },
