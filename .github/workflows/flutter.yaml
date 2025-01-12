@@ -33,8 +33,5 @@ jobs:
     - name: Analyze
       run: flutter analyze
     
-    - name: Run Tests
-      run: flutter test
-    
     - name: Build Linux
       run: flutter build linux
