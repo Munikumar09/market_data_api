@@ -238,7 +238,7 @@ def test_upsert_with_dummy_session():
     mock_session = MagicMock()
     mock_session.bind.dialect.name = "mysql"
     with pytest.raises(ValueError):
-        _upsert([], Instrument, session=mock_session)
+        _upsert(Instrument, [], session=mock_session)
 
 
 # fmt: off

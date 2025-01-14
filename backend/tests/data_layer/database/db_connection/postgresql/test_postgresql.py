@@ -6,11 +6,17 @@ import psycopg2
 import pytest
 from pytest import MonkeyPatch
 from sqlalchemy import inspect
-from sqlmodel import create_engine
+from sqlmodel import create_engine, select
 
 from app.data_layer.database.db_connections.postgresql import (
     create_db_and_tables,
     get_session,
+)
+from app.data_layer.database.models import (
+    Instrument,
+    InstrumentPrice,
+    User,
+    UserVerification,
 )
 from app.utils.common.logger import get_logger
 from app.utils.fetch_data import get_required_env_var
@@ -22,6 +28,13 @@ POSTGRES_PASSWORD = "POSTGRES_PASSWORD"
 POSTGRES_HOST = "POSTGRES_HOST"
 POSTGRES_PORT = "POSTGRES_PORT"
 POSTGRES_DB = "POSTGRES_DB"
+
+model_classes = {
+    "instrument": Instrument,
+    "instrumentprice": InstrumentPrice,
+    "user": User,
+    "userverification": UserVerification,
+}
 
 
 def create_database_if_not_exists() -> bool:
@@ -119,9 +132,6 @@ def set_env_vars(monkeypatch: MonkeyPatch):
     monkeypatch.setenv(POSTGRES_DB, "testdb")
 
 
-table_names = {"Instrument", "instrumentprice", "user", "userverification"}
-
-
 # Test the creation of the database and tables
 def test_create_db_and_tables(set_env_vars):
     """
@@ -148,12 +158,20 @@ def test_create_db_and_tables(set_env_vars):
         tables = inspector.get_table_names()
 
         # Ensure the tables are created
-        assert set(tables) == table_names
+        assert set(tables) == set(model_classes.keys())
 
         with get_session(engine) as session:
             # Check if the session is active and able to connect to the database
             assert session.is_active
             assert session.connection
             assert session.bind
+            try:
+                for model_class in model_classes.values():
+                    assert not session.exec(select(model_class)).all()
+
+            except Exception as e:
+                raise AssertionError(
+                    f"Failed to interact with the database: {e}"
+                ) from e
     finally:
         drop_database_if_created(created)
