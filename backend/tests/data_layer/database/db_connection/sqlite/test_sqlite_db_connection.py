@@ -9,8 +9,8 @@ from app.data_layer.database.db_connections.sqlite import (
     get_session,
 )
 from app.data_layer.database.models import (
-    InstrumentPrice,
     Instrument,
+    InstrumentPrice,
     User,
     UserVerification,
 )

@@ -4,17 +4,15 @@ This script contains the CRUD operations for the Instrument table.
 
 from pathlib import Path
 
-from sqlmodel import delete, select, Session
+from sqlmodel import Session, delete, select
 
 from app.data_layer.database.db_connections.postgresql import get_session
+from app.data_layer.database.db_connections.sqlite import with_session
 from app.data_layer.database.models import Instrument, InstrumentPrice
 from app.utils.common.logger import get_logger
 
-
-from app.data_layer.database.db_connections.sqlite import with_session
-
-
 logger = get_logger(Path(__file__).name)
+
 
 def deleted_all_data():
     """

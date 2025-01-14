@@ -5,7 +5,6 @@ This module contains the schema for the Instrument table and InstrumentPrice tab
 from sqlmodel import Field, SQLModel
 
 
-
 class Instrument(SQLModel, table=True):  # type: ignore
     """
     This class holds the information about the SmartAPI tokens

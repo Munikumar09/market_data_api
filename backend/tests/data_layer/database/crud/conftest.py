@@ -1,12 +1,13 @@
-import pytest
 from typing import Generator
-from app.data_layer.database.db_connections.sqlite import (
-    get_session,
-    create_db_and_tables,
-)
-from sqlmodel import create_engine, Session
-from sqlalchemy.engine import Engine
 
+import pytest
+from sqlalchemy.engine import Engine
+from sqlmodel import Session, create_engine
+
+from app.data_layer.database.db_connections.sqlite import (
+    create_db_and_tables,
+    get_session,
+)
 from app.data_layer.database.models import Instrument, InstrumentPrice
 
 

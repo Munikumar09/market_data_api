@@ -83,7 +83,7 @@ class SqliteDataSaver(DataSaver):
             total_sell_quantity=data.get("total_sell_quantity"),
         )
         with get_session(self.engine) as session:
-            insert_data(InstrumentPrice,instrument_price, session=session)
+            insert_data(InstrumentPrice, instrument_price, session=session)
 
     def save(self, data: bytes) -> None:
         """

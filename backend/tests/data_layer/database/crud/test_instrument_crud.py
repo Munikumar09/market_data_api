@@ -2,32 +2,26 @@
 This module contains tests for the smartapi_crud.py module in the sqlite/crud directory.
 """
 
-from sqlmodel import select
+from unittest.mock import MagicMock
 
 import pytest
 from fastapi import HTTPException
+from sqlalchemy.exc import OperationalError
+from sqlmodel import select
 
 from app.data_layer.database.crud.crud_utils import (
+    _insert_or_ignore,
+    _upsert,
+    get_conditions_list,
+    get_data_by_all_conditions,
+    get_data_by_any_condition,
+    insert_data,
     validate_model_attributes,
 )
-
-from sqlalchemy.exc import OperationalError
-
 from app.data_layer.database.models import Instrument, InstrumentPrice
 
-from unittest.mock import MagicMock
-
-from app.data_layer.database.crud.crud_utils import get_conditions_list
-from app.data_layer.database.crud.crud_utils import get_data_by_any_condition
-from app.data_layer.database.crud.crud_utils import get_data_by_all_conditions
-from app.data_layer.database.crud.crud_utils import _upsert
-from app.data_layer.database.crud.crud_utils import _insert_or_ignore
-from app.data_layer.database.crud.crud_utils import insert_data
-
-
-
 #################### TESTS ####################
-    
+
 
 # fmt: off
 @pytest.mark.parametrize("model, attributes, expected_exception, expected_message",

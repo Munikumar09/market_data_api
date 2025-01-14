@@ -5,19 +5,16 @@ functions are used to perform Insert, Update, Delete and Select operations on th
 """
 
 from pathlib import Path
-from typing import Sequence, cast, Any
-from sqlmodel import SQLModel
-from sqlalchemy.sql.elements import BinaryExpression
-from sqlmodel import or_, select, Session
+from typing import Any, Sequence, cast
 
-from app.utils.common.logger import get_logger
 from fastapi import HTTPException, status
-
-from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.dialects.postgresql import insert as postgres_insert
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+from sqlalchemy.sql.elements import BinaryExpression
+from sqlmodel import Session, SQLModel, or_, select
 
 from app.data_layer.database.db_connections.sqlite import with_session
-
+from app.utils.common.logger import get_logger
 
 logger = get_logger(Path(__file__).name)
 
@@ -163,7 +160,7 @@ def get_data_by_all_conditions(
     exchange 'NSE'.
     """
     validate_model_attributes(model, kwargs)
-    conditions = get_conditions_list(model,kwargs)
+    conditions = get_conditions_list(model, kwargs)
     statement = select(model).where(*conditions)
     result = session.exec(statement).all()
 
@@ -179,7 +176,7 @@ def _upsert(
     """
     Upsert means insert the data into the table if it does not already exist.
     If the data already exists, it will be updated with the new data.
-    
+
     Note
     ----
     This function is a private function and should not be used directly.
@@ -193,8 +190,8 @@ def _upsert(
         The data to upsert into the table
     session: ``Session``
         The SQLAlchemy session object to use for the database operations
-        
-        
+
+
     Example:
     --------
     >>> If the table has the following data:
@@ -289,7 +286,7 @@ def insert_data(
     data: SQLModel | dict[str, Any] | list[SQLModel | dict[str, Any]] | None,
     session: Session,
     update_existing: bool = False,
-)->bool:
+) -> bool:
     """
     Insert the provided data into the SQLModel table in the SQLite database. It
     will handle both single and multiple data objects. If the data already exists in the table,
@@ -311,7 +308,7 @@ def insert_data(
     if not data:
         logger.warning("Provided data is empty. Skipping insertion.")
         return False
-    
+
     if isinstance(data, (SQLModel, dict)):
         data = [data]
 
@@ -325,5 +322,5 @@ def insert_data(
         _upsert(model, data_to_insert, session=session)
     else:
         _insert_or_ignore(model, data_to_insert, session=session)
-    
+
     return True
