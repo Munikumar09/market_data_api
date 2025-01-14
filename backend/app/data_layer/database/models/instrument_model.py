@@ -7,7 +7,7 @@ from sqlmodel import Field, SQLModel
 
 class Instrument(SQLModel, table=True):  # type: ignore
     """
-    This class holds the information about the SmartAPI tokens
+    This class holds the information about financial instruments.
 
     Attributes
     ----------
@@ -69,7 +69,7 @@ class Instrument(SQLModel, table=True):  # type: ignore
 
 class InstrumentPrice(SQLModel, table=True):  # type: ignore
     """
-    This class holds the information about the stock prices received from the SmartAPI socket
+    This class holds the price information of the financial instruments.
 
     Attributes
     ----------
@@ -83,35 +83,35 @@ class InstrumentPrice(SQLModel, table=True):  # type: ignore
     symbol: ``str``
         The symbol of the equity or derivative
         Eg: "Infosys Limited"
-    last_traded_price: ``str``
+    last_traded_price: ``float``
         The price at which the last trade was executed
-        Eg: "1700.0"
-    last_traded_quantity: ``str``
+        Eg: 1700.0
+    last_traded_quantity: ``int``
         The quantity of the last trade executed
-        Eg: "100"
-    average_traded_price: ``str``
+        Eg: 100
+    average_traded_price: ``int``
         The average traded price for the day
-        Eg: "1700.0"
-    volume_trade_for_the_day: ``str``
+        Eg: 1700.0
+    volume_trade_for_the_day: ``int``
         The total volume traded for the day
-        Eg: "1000"
-    total_buy_quantity: ``str``
+        Eg: 1000
+    total_buy_quantity: ``int``
         The total buy quantity for the day
-        Eg: "500"
-    total_sell_quantity: ``str``
+        Eg: 500
+    total_sell_quantity: ``int``
         The total sell quantity for the day
-        Eg: "500"
+        Eg: 500
     """
 
     retrieval_timestamp: str = Field(primary_key=True)
     last_traded_timestamp: str
-    symbol: str = Field(primary_key=True)
-    last_traded_price: str
-    last_traded_quantity: str | None = None
-    average_traded_price: str | None = None
-    volume_trade_for_the_day: str | None = None
-    total_buy_quantity: str | None = None
-    total_sell_quantity: str | None = None
+    symbol: str = Field(primary_key=True, foreign_key="instrument.token")
+    last_traded_price: float
+    last_traded_quantity: int | None = None
+    average_traded_price: int | None = None
+    volume_trade_for_the_day: int | None = None
+    total_buy_quantity: int | None = None
+    total_sell_quantity: int | None = None
 
     def to_dict(self):
         """

@@ -24,139 +24,6 @@ from app.data_layer.database.models import Instrument, InstrumentPrice
 #################### TESTS ####################
 
 
-# fmt: off
-@pytest.mark.parametrize("model, attributes, expected_exception, expected_message",
-                        [
-    (Instrument, {"token": "1594", "symbol": "INFY"}, None, None),
-    (Instrument, {"invalid_attr": "value"}, HTTPException, "Attribute invalid_attr not found in Instrument model"),
-    (Instrument, {"token": 1594}, HTTPException, "Attribute token is not of type <class 'str'> in Instrument model"),
-    (InstrumentPrice, {"symbol": "INFY", "last_traded_price": "1700.0"}, None, None),
-    (InstrumentPrice, {"symbol": "SBI", "invalid_attr": "value"}, HTTPException, "Attribute invalid_attr not found in InstrumentPrice model"),
-    (InstrumentPrice, {"symbol": "256265", "last_traded_price": 1700.0}, HTTPException, "Attribute last_traded_price is not of type <class 'str'> in InstrumentPrice model"),
-])
-# fmt: on
-def test_validate_model_attributes(
-    model, attributes, expected_exception, expected_message
-):
-    """
-    Test the validate_model_attributes function.
-    """
-    if expected_exception:
-        with pytest.raises(expected_exception) as exc_info:
-            validate_model_attributes(model, attributes)
-        assert str(exc_info.value.detail) == expected_message
-    else:
-        validate_model_attributes(model, attributes)
-
-
-# fmt: off
-@pytest.mark.parametrize("model, condition_attributes, expected_conditions", [
-    (Instrument, {"token": "1594"}, [Instrument.token == "1594"]),
-    (Instrument, {"symbol": "INFY", "exchange": "NSE"}, [Instrument.symbol == "INFY", Instrument.exchange == "NSE"]),
-    (InstrumentPrice, {"symbol": "INFY"}, [InstrumentPrice.symbol == "INFY"]),
-    (InstrumentPrice, {"symbol": "SBI", "last_traded_price": "1300.0"}, [InstrumentPrice.symbol == "SBI", InstrumentPrice.last_traded_price == "1300.0"]),
-    (Instrument, {}, []),  # No conditions
-])
-# fmt: on
-def test_get_conditions_list(model, condition_attributes, expected_conditions):
-    """
-    Test the get_conditions_list function.
-    """
-    conditions = get_conditions_list(model, condition_attributes)
-    assert [str(condition) for condition in conditions] == [
-        str(condition) for condition in expected_conditions
-    ]
-
-
-# fmt: off
-@pytest.mark.parametrize("model, condition_attributes, expected_result, num_results", [
-    (Instrument, {"token": "1594"}, True, 1),
-    (Instrument, {"symbol": "INFY"}, True, 2),
-    (Instrument, {"exchange": "NSE"}, True, 1),
-    (Instrument, {"token": "9999"}, False, 0),  # No matching records
-    (Instrument, {}, HTTPException, 0),  # No conditions
-    (InstrumentPrice, {"symbol": "INFY"}, True, 1),
-    (InstrumentPrice, {"symbol": "SBI"}, False, 0),  # No matching records
-    (InstrumentPrice, {}, HTTPException, 0),  # No conditions
-    (InstrumentPrice, {"symbol": "INFY", "last_traded_price": "1700.0"}, True, 1),
-])
-# fmt: on
-def test_get_data_by_any_condition(
-    session,
-    model,
-    condition_attributes,
-    expected_result,
-    num_results,
-    create_insert_sample_data,
-):
-    """
-    Test the get_data_by_any_condition function.
-    """
-    if expected_result is HTTPException:
-        with pytest.raises(expected_result) as exc_info:
-            get_data_by_any_condition(model, session=session, **condition_attributes)
-
-        assert str(exc_info.value.detail) == "No attributes provided for validation"
-        assert exc_info.value.status_code == 400
-    else:
-        results = get_data_by_any_condition(
-            model, session=session, **condition_attributes
-        )
-        if expected_result is True:
-            assert results is not None
-            assert len(results) == num_results
-            for result in results:
-                for key, value in condition_attributes.items():
-                    assert getattr(result, key) == value
-        else:
-            assert results == []
-
-
-# fmt: off
-@pytest.mark.parametrize("model, condition_attributes, expected_result, num_results", [
-    (Instrument, {"token": "1594"}, True, 1),
-    (Instrument, {"symbol": "INFY", "exchange": "NSE"}, True, 1),
-    (Instrument, {"symbol": "INFY", "exchange": "BSE"}, True, 1),
-    (Instrument, {"symbol": "INFY", "exchange": "XYZ"}, False, 0),  # No matching records
-    (Instrument, {"token": "9999"}, False, 0),  # No matching records
-    (Instrument, {}, HTTPException, 0),  # No conditions
-    (InstrumentPrice, {"symbol": "INFY"}, True, 1),
-    (InstrumentPrice, {"symbol": "SBI"}, False, 0),  # No matching records
-    (InstrumentPrice, {}, HTTPException, 0),  # No conditions
-    (InstrumentPrice, {"symbol": "INFY", "last_traded_price": "1700.0"}, True, 1),
-])
-# fmt: on
-def test_get_data_by_all_conditions(
-    session,
-    model,
-    condition_attributes,
-    expected_result,
-    num_results,
-    create_insert_sample_data,
-):
-    """
-    Test the get_data_by_all_conditions function.
-    """
-    if expected_result is HTTPException:
-        with pytest.raises(expected_result) as exc_info:
-            get_data_by_all_conditions(model, session=session, **condition_attributes)
-
-        assert str(exc_info.value.detail) == "No attributes provided for validation"
-        assert exc_info.value.status_code == 400
-    else:
-        results = get_data_by_all_conditions(
-            model, session=session, **condition_attributes
-        )
-        if expected_result is True:
-            assert results is not None
-            assert len(results) == num_results
-            for result in results:
-                for key, value in condition_attributes.items():
-                    assert getattr(result, key) == value
-        else:
-            assert results == []
-
-
 def validate_pre_upsert_data(upsert_data, model, session):
     """
     Validate data before upsert operation.
@@ -205,6 +72,138 @@ def validate_post_insert_or_ignore_data(data_to_insert, model, session, previous
             assert result.model_dump() == previous_data[idx].model_dump()
         else:
             assert result.model_dump() == data
+
+
+# fmt: off
+@pytest.mark.parametrize("model, attributes, expected_exception, expected_message",
+                        [
+    (Instrument, {"token": "1594", "symbol": "INFY"}, None, None),
+    (Instrument, {"invalid_attr": "value"}, HTTPException, "Attribute invalid_attr not found in Instrument model"),
+    (Instrument, {"token": 1594}, HTTPException, "Attribute token is not of type <class 'str'> in Instrument model"),
+    (InstrumentPrice, {"symbol": "INFY", "last_traded_price": 1700.0}, None, None),
+    (InstrumentPrice, {"symbol": "SBI", "invalid_attr": "value"}, HTTPException, "Attribute invalid_attr not found in InstrumentPrice model"),
+    (InstrumentPrice, {"symbol": "256265", "last_traded_price": "1700.0"}, HTTPException, "Attribute last_traded_price is not of type <class 'float'> in InstrumentPrice model"),
+])
+# fmt: on
+def test_validate_model_attributes(
+    model, attributes, expected_exception, expected_message
+):
+    """
+    Test the validate_model_attributes function.
+    """
+    if expected_exception:
+        with pytest.raises(expected_exception) as exc_info:
+            validate_model_attributes(model, attributes)
+        assert str(exc_info.value.detail) == expected_message
+    else:
+        validate_model_attributes(model, attributes)
+
+
+# fmt: off
+@pytest.mark.parametrize("model, condition_attributes, expected_conditions", [
+    (Instrument, {"token": "1594"}, [Instrument.token == "1594"]),
+    (Instrument, {"symbol": "INFY", "exchange": "NSE"}, [Instrument.symbol == "INFY", Instrument.exchange == "NSE"]),
+    (InstrumentPrice, {"symbol": "INFY"}, [InstrumentPrice.symbol == "INFY"]),
+    (InstrumentPrice, {"symbol": "SBI", "last_traded_price": 1300.0}, [InstrumentPrice.symbol == "SBI", InstrumentPrice.last_traded_price == 1300.0]),
+    (Instrument, {}, []),  # No conditions
+])
+# fmt: on
+def test_get_conditions_list(model, condition_attributes, expected_conditions):
+    """
+    Test the get_conditions_list function.
+    """
+    conditions = get_conditions_list(model, condition_attributes)
+    for actual, expected in zip(conditions, expected_conditions):
+        assert actual.compare(expected)
+
+
+# fmt: off
+@pytest.mark.parametrize("model, condition_attributes, expected_result, num_results", [
+    (Instrument, {"token": "1594"}, True, 1),
+    (Instrument, {"symbol": "INFY"}, True, 2),
+    (Instrument, {"exchange": "NSE"}, True, 1),
+    (Instrument, {"token": "9999"}, False, 0),  # No matching records
+    (Instrument, {}, HTTPException, 0),  # No conditions
+    (InstrumentPrice, {"symbol": "INFY"}, True, 1),
+    (InstrumentPrice, {"symbol": "SBI"}, False, 0),  # No matching records
+    (InstrumentPrice, {}, HTTPException, 0),  # No conditions
+    (InstrumentPrice, {"symbol": "INFY", "last_traded_price": 1700.0}, True, 1),
+])
+# fmt: on
+def test_get_data_by_any_condition(
+    session,
+    model,
+    condition_attributes,
+    expected_result,
+    num_results,
+    create_insert_sample_data,
+):
+    """
+    Test the get_data_by_any_condition function.
+    """
+    if expected_result is HTTPException:
+        with pytest.raises(expected_result) as exc_info:
+            get_data_by_any_condition(model, session=session, **condition_attributes)
+
+        assert str(exc_info.value.detail) == "No attributes provided for validation"
+        assert exc_info.value.status_code == 400
+    else:
+        results = get_data_by_any_condition(
+            model, session=session, **condition_attributes
+        )
+        if expected_result is True:
+            assert results is not None
+            assert len(results) == num_results
+            for result in results:
+                for key, value in condition_attributes.items():
+                    assert getattr(result, key) == value
+        else:
+            assert results == []
+
+
+# fmt: off
+@pytest.mark.parametrize("model, condition_attributes, expected_result, num_results", [
+    (Instrument, {"token": "1594"}, True, 1),
+    (Instrument, {"symbol": "INFY", "exchange": "NSE"}, True, 1),
+    (Instrument, {"symbol": "INFY", "exchange": "BSE"}, True, 1),
+    (Instrument, {"symbol": "INFY", "exchange": "XYZ"}, False, 0),  # No matching records
+    (Instrument, {"token": "9999"}, False, 0),  # No matching records
+    (Instrument, {}, HTTPException, 0),  # No conditions
+    (InstrumentPrice, {"symbol": "INFY"}, True, 1),
+    (InstrumentPrice, {"symbol": "SBI"}, False, 0),  # No matching records
+    (InstrumentPrice, {}, HTTPException, 0),  # No conditions
+    (InstrumentPrice, {"symbol": "INFY", "last_traded_price": 1700.0}, True, 1),
+])
+# fmt: on
+def test_get_data_by_all_conditions(
+    session,
+    model,
+    condition_attributes,
+    expected_result,
+    num_results,
+    create_insert_sample_data,
+):
+    """
+    Test the get_data_by_all_conditions function.
+    """
+    if expected_result is HTTPException:
+        with pytest.raises(expected_result) as exc_info:
+            get_data_by_all_conditions(model, session=session, **condition_attributes)
+
+        assert str(exc_info.value.detail) == "No attributes provided for validation"
+        assert exc_info.value.status_code == 400
+    else:
+        results = get_data_by_all_conditions(
+            model, session=session, **condition_attributes
+        )
+        if expected_result is True:
+            assert results is not None
+            assert len(results) == num_results
+            for result in results:
+                for key, value in condition_attributes.items():
+                    assert getattr(result, key) == value
+        else:
+            assert results == []
 
 
 # fmt: off

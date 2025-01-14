@@ -37,7 +37,7 @@ def test_user(sign_up_data: UserSignup) -> User:
         email=sign_up_data.email,
         phone_number=sign_up_data.phone_number,
         password=get_hash_password("Password1!"),
-        date_of_birth=datetime.strptime(sign_up_data.date_of_birth, "%d/%m/%Y"),
+        date_of_birth=datetime.strptime(sign_up_data.date_of_birth, "%d/%m/%Y").date(),
         gender=sign_up_data.gender,
     )
 

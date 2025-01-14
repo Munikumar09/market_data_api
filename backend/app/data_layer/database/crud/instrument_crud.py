@@ -14,14 +14,18 @@ from app.utils.common.logger import get_logger
 logger = get_logger(Path(__file__).name)
 
 
-def deleted_all_data():
+def delete_all_data():
     """
     Deletes all data from the Instrument table.
     """
-    with get_session() as session:
-        statement = delete(Instrument)
-        session.exec(statement)
-        session.commit()
+    try:
+        with get_session() as session:
+            statement = delete(Instrument)
+            session.exec(statement)
+            session.commit()
+    except Exception as e:
+        logger.error("Failed to delete all data from the Instrument table: %s", str(e))
+        raise e
 
 
 @with_session

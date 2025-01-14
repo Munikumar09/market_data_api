@@ -55,15 +55,17 @@ class SmartSocketConnection(WebsocketConnection):
             Eg: {"256265": "INFY",...}
         """
         with get_session() as session:
-            smartapi_tokens = get_data_by_all_conditions(
-                Instrument,
-                session=session,
-                instrument_type=instrument_type,
-                exchange=exchange.name,
-            )
-            tokens = {token.token: token.symbol for token in smartapi_tokens}
-
-            return tokens
+            try:
+                smartapi_tokens = get_data_by_all_conditions(
+                    Instrument,
+                    session=session,
+                    instrument_type=instrument_type,
+                    exchange=exchange.name,
+                )
+                return {token.token: token.symbol for token in smartapi_tokens}
+            except Exception as e:
+                logger.error("Failed to fetch equity stock tokens: %s", str(e))
+                return {}
 
     def get_tokens_from_symbols(
         self, symbols: list[str], exchange: Exchange
