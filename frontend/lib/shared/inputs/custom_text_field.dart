@@ -11,6 +11,8 @@ class CustomTextField extends StatefulWidget {
   final bool readOnly;
   final IconData? suffixIcon;
   final VoidCallback? onSuffixTap;
+  final bool autocorrect;
+  final bool enableSuggestions;
 
   const CustomTextField({
     super.key,
@@ -23,6 +25,8 @@ class CustomTextField extends StatefulWidget {
     this.readOnly = false,
     this.suffixIcon,
     this.onSuffixTap,
+    this.autocorrect = true,
+    this.enableSuggestions = true,
   });
 
   @override
@@ -60,6 +64,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
       readOnly: widget.readOnly,
       controller: widget.controller,
       obscureText: widget.isPassword && !_isPasswordVisible,
+      autocorrect: widget.autocorrect,
+      enableSuggestions: widget.enableSuggestions,
       validator: widget.validator ??
           (value) {
             if (value == null || value.isEmpty) {

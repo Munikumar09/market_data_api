@@ -95,6 +95,8 @@ class _RegisterPageState extends State<RegisterPage> {
                         isPassword: true,
                         labelText: AppStrings.password,
                         controller: _passwordController,
+                        autocorrect: false,
+                        enableSuggestions: false,
                       ),
                       const SizedBox(height: 10),
                       CustomTextField(
