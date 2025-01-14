@@ -10,7 +10,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from snowflake import SnowflakeGenerator
 
-from app.data_layer.database.crud.postgresql.user_crud import (
+from app.data_layer.database.crud.user_crud import (
     create_user,
     get_user,
     get_user_by_attr,

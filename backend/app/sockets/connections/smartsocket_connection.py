@@ -4,9 +4,7 @@ from typing import Optional
 
 from omegaconf import DictConfig
 
-from app.data_layer.database.crud.sqlite.instrument_crud import (
-    get_smartapi_tokens_by_all_conditions,
-)
+from app.data_layer.database.crud.crud_utils import get_data_by_all_conditions
 from app.data_layer.streaming.streamer import Streamer
 from app.sockets.connections.websocket_connection import WebsocketConnection
 from app.sockets.twisted_sockets import SmartSocket
@@ -14,8 +12,10 @@ from app.utils.common import init_from_cfg
 from app.utils.common.exceptions import SymbolNotFoundException
 from app.utils.common.logger import get_logger
 from app.utils.common.types.financial_types import Exchange
+from app.data_layer.database.models import Instrument
 from app.utils.smartapi.smartsocket_types import ExchangeType
 from app.utils.smartapi.validator import validate_symbol_and_get_token
+from app.data_layer.database.db_connections.sqlite import get_session
 
 logger = get_logger(Path(__file__).name)
 
@@ -54,12 +54,16 @@ class SmartSocketConnection(WebsocketConnection):
             A dictionary containing the tokens as keys and the symbols as values.
             Eg: {"256265": "INFY",...}
         """
-        smartapi_tokens = get_smartapi_tokens_by_all_conditions(
-            instrument_type=instrument_type, exchange=exchange.name
-        )
-        tokens = {token.token: token.symbol for token in smartapi_tokens}
+        with get_session() as session:
+            smartapi_tokens = get_data_by_all_conditions(
+                Instrument,
+                session=session,
+                instrument_type=instrument_type,
+                exchange=exchange.name,
+            )
+            tokens = {token.token: token.symbol for token in smartapi_tokens}
 
-        return tokens
+            return tokens
 
     def get_tokens_from_symbols(
         self, symbols: list[str], exchange: Exchange

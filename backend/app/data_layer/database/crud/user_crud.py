@@ -203,8 +203,6 @@ def delete_user(user_id: int, session: Session) -> None:
 
 
 #### UserVerification CRUD operations ####
-
-
 @with_session
 def get_user_verification(recipient: str, session: Session) -> UserVerification | None:
     """

@@ -6,7 +6,7 @@ import hydra
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app import ROOT_DIR
-from app.data_layer.database.crud.postgresql.user_crud import (
+from app.data_layer.database.crud.user_crud import (
     create_or_update_user_verification,
     get_user_by_attr,
     get_user_verification,

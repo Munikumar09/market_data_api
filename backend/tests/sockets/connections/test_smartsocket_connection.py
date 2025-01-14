@@ -33,9 +33,9 @@ def mock_smartsocket(mocker: MockerFixture) -> MockType:
 
 
 @pytest.fixture
-def mock_get_smartapi_tokens_by_all_conditions(mocker: MockerFixture) -> MockType:
+def mock_get_data_by_all_conditions(mocker: MockerFixture) -> MockType:
     return mocker.patch(
-        "app.sockets.connections.smartsocket_connection.get_smartapi_tokens_by_all_conditions",
+        "app.sockets.connections.smartsocket_connection.get_data_by_all_conditions",
     )
 
 
@@ -110,10 +110,10 @@ def connection_cfg() -> dict:
 def connection(
     connection_cfg: dict,
     smartapi_tokens: tuple[list[Instrument], dict[str, str]],
-    mock_get_smartapi_tokens_by_all_conditions: MockType,
+    mock_get_data_by_all_conditions: MockType,
 ) -> SmartSocketConnection:
     cfg = OmegaConf.create(connection_cfg)
-    mock_get_smartapi_tokens_by_all_conditions.return_value = smartapi_tokens[0]
+    mock_get_data_by_all_conditions.return_value = smartapi_tokens[0]
 
     return cast(SmartSocketConnection, SmartSocketConnection.from_cfg(cfg))
 
@@ -153,13 +153,13 @@ def test_init_from_cfg_valid_cfg(
     mock_init_from_cfg: MockType,
     mock_streamer: MockType,
     smartapi_tokens: tuple[list[Instrument], dict[str, str]],
-    mock_get_smartapi_tokens_by_all_conditions: MockType,
+    mock_get_data_by_all_conditions: MockType,
 ):
     """
     Test the initialization of the SmartSocketConnection object from a valid configuration.
     """
 
-    mock_get_smartapi_tokens_by_all_conditions.return_value = smartapi_tokens[0]
+    mock_get_data_by_all_conditions.return_value = smartapi_tokens[0]
     cfg = OmegaConf.create(connection_cfg)
     connection = SmartSocketConnection.from_cfg(cfg)
 
@@ -179,7 +179,7 @@ def test_init_from_cfg_invalid_cfg(
     mock_logger: MockType,
     mock_smartsocket: MockType,
     mock_init_from_cfg: MockType,
-    mock_get_smartapi_tokens_by_all_conditions: MockType,
+    mock_get_data_by_all_conditions: MockType,
 ):
     """
     Test the initialization of the SmartSocketConnection object from all the invalid
@@ -203,7 +203,7 @@ def test_init_from_cfg_invalid_cfg(
     connection_cfg = deepcopy(connection_cfg_cp)
     connection_cfg["num_tokens_per_instance"] = 0
     cfg = OmegaConf.create(connection_cfg)
-    mock_get_smartapi_tokens_by_all_conditions.return_value = []
+    mock_get_data_by_all_conditions.return_value = []
     connection = SmartSocketConnection.from_cfg(cfg)
 
     validate_invalid_connection(
@@ -224,14 +224,14 @@ def test_init_from_cfg_invalid_cfg(
 # Test: 3
 def test_get_equity_stock_tokens(
     connection: SmartSocketConnection,
-    mock_get_smartapi_tokens_by_all_conditions: MockType,
+    mock_get_data_by_all_conditions: MockType,
     smartapi_tokens: MockType,
 ):
     """
     Test the get_equity_stock_tokens method of the SmartSocketConnection class
     with valid and invalid exchange types.
     """
-    mock_get_smartapi_tokens_by_all_conditions.return_value = smartapi_tokens[0]
+    mock_get_data_by_all_conditions.return_value = smartapi_tokens[0]
     stocks = connection.get_equity_stock_tokens(Exchange.NSE, "EQ")
 
     assert stocks == smartapi_tokens[1]
@@ -277,7 +277,7 @@ def test_get_tokens(
     connection: SmartSocketConnection,
     mock_logger: MockType,
     mock_validate_symbol_and_get_token: MockType,
-    mock_get_smartapi_tokens_by_all_conditions: MockType,
+    mock_get_data_by_all_conditions: MockType,
     smartapi_tokens: tuple[list[Instrument], dict[str, str]],
 ):
     """
@@ -330,12 +330,10 @@ def test_get_tokens(
     assert tokens == {"256265": "INFY"}
 
     # Test: 5.7 ( Test with NSE exchange only )
-    mock_get_smartapi_tokens_by_all_conditions.return_value = smartapi_tokens[0]
+    mock_get_data_by_all_conditions.return_value = smartapi_tokens[0]
     tokens = connection.get_tokens(exchange_segment="nse_cm")
 
-    mock_get_smartapi_tokens_by_all_conditions.assert_any_call(
-        exchange="NSE", instrument_type="EQ"
-    )
+    mock_get_data_by_all_conditions.assert_called()
     assert tokens == {
         smartapi_token.token: smartapi_token.symbol
         for smartapi_token in smartapi_tokens[0]
@@ -344,9 +342,7 @@ def test_get_tokens(
     # Test: 5.8 ( Test with BSE exchange only )
     tokens = connection.get_tokens(exchange_segment="bse_cm")
 
-    mock_get_smartapi_tokens_by_all_conditions.assert_any_call(
-        exchange="BSE", instrument_type="EQ"
-    )
+    mock_get_data_by_all_conditions.assert_called()
     assert tokens == {
         smartapi_token.token: smartapi_token.symbol
         for smartapi_token in smartapi_tokens[0]

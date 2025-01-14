@@ -9,9 +9,7 @@ from omegaconf import DictConfig
 from sqlalchemy import create_engine
 
 from app.data_layer.data_saver.data_saver import DataSaver
-from app.data_layer.database.crud.sqlite.instrument_crud import (
-    instrumentprice_insert_data,
-)
+from app.data_layer.database.crud.crud_utils import insert_data
 from app.data_layer.database.db_connections.sqlite import (
     create_db_and_tables,
     get_session,
@@ -85,7 +83,7 @@ class SqliteDataSaver(DataSaver):
             total_sell_quantity=data.get("total_sell_quantity"),
         )
         with get_session(self.engine) as session:
-            instrumentprice_insert_data(instrument_price, session=session)
+            insert_data(InstrumentPrice,instrument_price, session=session)
 
     def save(self, data: bytes) -> None:
         """

@@ -8,7 +8,7 @@ import pytest
 from fastapi import HTTPException
 from sqlmodel import SQLModel, create_engine
 
-from app.data_layer.database.crud.postgresql.user_crud import (
+from app.data_layer.database.crud.user_crud import (
     create_or_update_user_verification,
     create_user,
     delete_user,
