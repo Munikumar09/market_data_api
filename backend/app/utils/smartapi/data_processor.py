@@ -291,11 +291,11 @@ def process_token_data(tokens_data: list[dict[str, str]]) -> list[Instrument]:
             token=token["token"],
             symbol=token["symbol"],
             name=token["name"],
+            instrument_type=token["instrumenttype"],
+            exchange=token["exch_seg"],
             expiry_date=token["expiry"],
             strike_price=token["strike"],
             lot_size=token["lotsize"],
-            instrument_type=token["instrumenttype"],
-            exchange=token["exch_seg"],
             tick_size=token["tick_size"],
         )
         for token in tokens_dict_data

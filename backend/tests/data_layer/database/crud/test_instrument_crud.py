@@ -1,3 +1,4 @@
+# pylint: disable=missing-function-docstring line-too-long unused-argument
 """" 
 This module contains tests for the smartapi_crud.py module in the sqlite/crud directory.
 """
@@ -37,6 +38,9 @@ from app.data_layer.database.models import Instrument, InstrumentPrice
 def test_validate_model_attributes(
     model, attributes, expected_exception, expected_message
 ):
+    """
+    Test the validate_model_attributes function.
+    """
     if expected_exception:
         with pytest.raises(expected_exception) as exc_info:
             validate_model_attributes(model, attributes)
@@ -55,6 +59,9 @@ def test_validate_model_attributes(
 ])
 # fmt: on
 def test_get_conditions_list(model, condition_attributes, expected_conditions):
+    """
+    Test the get_conditions_list function.
+    """
     conditions = get_conditions_list(model, condition_attributes)
     assert [str(condition) for condition in conditions] == [
         str(condition) for condition in expected_conditions
@@ -82,7 +89,9 @@ def test_get_data_by_any_condition(
     num_results,
     create_insert_sample_data,
 ):
-
+    """
+    Test the get_data_by_any_condition function.
+    """
     if expected_result is HTTPException:
         with pytest.raises(expected_result) as exc_info:
             get_data_by_any_condition(model, session=session, **condition_attributes)
@@ -125,7 +134,9 @@ def test_get_data_by_all_conditions(
     num_results,
     create_insert_sample_data,
 ):
-
+    """
+    Test the get_data_by_all_conditions function.
+    """
     if expected_result is HTTPException:
         with pytest.raises(expected_result) as exc_info:
             get_data_by_all_conditions(model, session=session, **condition_attributes)
@@ -147,6 +158,9 @@ def test_get_data_by_all_conditions(
 
 
 def validate_pre_upsert_data(upsert_data, model, session):
+    """
+    Validate data before upsert operation.
+    """
     for data in upsert_data:
         prev_data = session.exec(
             select(model).where(model.token == data["token"])
@@ -156,6 +170,9 @@ def validate_pre_upsert_data(upsert_data, model, session):
 
 
 def validate_post_upset_data(upsert_data, model, session):
+    """
+    Validate data after upsert operation.
+    """
     for data in upsert_data:
         result = session.exec(select(model).where(model.token == data["token"])).first()
         assert result is not None
@@ -163,7 +180,9 @@ def validate_post_upset_data(upsert_data, model, session):
 
 
 def validate_pre_insert_or_ignore_data(data_to_insert, model, session):
-    # Check the previous data is not equal to the new data
+    """
+    Validate data before insert or ignore operation.
+    """
     previous_data = []
     for data in data_to_insert:
         prev_data = session.exec(
@@ -176,6 +195,9 @@ def validate_pre_insert_or_ignore_data(data_to_insert, model, session):
 
 
 def validate_post_insert_or_ignore_data(data_to_insert, model, session, previous_data):
+    """
+    Validate data after insert or ignore operation.
+    """
     for idx, data in enumerate(data_to_insert):
         result = session.exec(select(model).where(model.token == data["token"])).first()
         assert result is not None
@@ -196,12 +218,14 @@ def validate_post_insert_or_ignore_data(data_to_insert, model, session, previous
 def test_upsert(
     session, model, upsert_data, expected_result, create_insert_sample_data
 ):
-    # TODO: Write cases for postgres
+    """
+    Test the _upsert function.
+    """
+
     if not expected_result:
         with pytest.raises(OperationalError):
             _upsert(model, upsert_data, session=session)
     else:
-        # Check the previous data is not equal to the new data
         validate_pre_upsert_data(upsert_data, model, session)
         _upsert(model, upsert_data, session=session)
         validate_post_upset_data(upsert_data, model, session)
@@ -209,7 +233,7 @@ def test_upsert(
 
 def test_upsert_with_dummy_session():
     """
-    Test the upsert function with a dummy session object
+    Test the upsert function with a dummy session object.
     """
     mock_session = MagicMock()
     mock_session.bind.dialect.name = "mysql"
@@ -229,11 +253,13 @@ def test_upsert_with_dummy_session():
 def test_insert_or_ignore(
     session, model, data_to_insert, expected_result, create_insert_sample_data
 ):
+    """
+    Test the _insert_or_ignore function.
+    """
     if not expected_result:
         with pytest.raises(OperationalError):
             _insert_or_ignore(model, data_to_insert, session=session)
     else:
-        # Check the previous data is not equal to the new data
         previous_data = validate_pre_insert_or_ignore_data(
             data_to_insert, model, session
         )
@@ -245,7 +271,7 @@ def test_insert_or_ignore(
 
 def test_insert_or_ignore_with_dummy_session():
     """
-    Test the _insert_or_ignore function with a dummy session object
+    Test the _insert_or_ignore function with a dummy session object.
     """
     mock_session = MagicMock()
     mock_session.bind.dialect.name = "mysql"
@@ -271,10 +297,16 @@ def test_insert_data(
     expected_result,
     create_insert_sample_data,
 ):
+    """
+    Test the insert_data function.
+    """
     if not expected_result:
-        insert_data(
-            model, data_to_insert, session=session, update_existing=update_existing
-        ) is False
+        assert (
+            insert_data(
+                model, data_to_insert, session=session, update_existing=update_existing
+            )
+            is False
+        )
     else:
         data_to_insert_cp = data_to_insert
         previous_data = None
@@ -287,12 +319,13 @@ def test_insert_data(
                 data_to_insert_cp, model, session
             )
 
-        # Insert the data
-        insert_data(
-            model, data_to_insert, session=session, update_existing=update_existing
-        ) is True
+        assert (
+            insert_data(
+                model, data_to_insert, session=session, update_existing=update_existing
+            )
+            is True
+        )
 
-        # Check the new data is equal to the upserted data
         if isinstance(data_to_insert, dict):
             data_to_insert = [data_to_insert]
 
@@ -306,7 +339,7 @@ def test_insert_data(
 
 def test_insert_data_with_dummy_session():
     """
-    Test the insert_data function with a dummy session object
+    Test the insert_data function with a dummy session object.
     """
     mock_session = MagicMock()
     mock_session.bind.dialect.name = "mysql"

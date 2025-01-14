@@ -8,8 +8,11 @@ from pathlib import Path
 from typing import Any, Sequence, cast
 
 from fastapi import HTTPException, status
+from sqlalchemy import Table
 from sqlalchemy.dialects.postgresql import insert as postgres_insert
+from sqlalchemy.dialects.postgresql.dml import Insert as PostgresInsert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+from sqlalchemy.dialects.sqlite.dml import Insert as SQLiteInsert
 from sqlalchemy.sql.elements import BinaryExpression
 from sqlmodel import Session, SQLModel, or_, select
 
@@ -21,7 +24,7 @@ logger = get_logger(Path(__file__).name)
 ################### CRUD Operations ###################
 
 
-def validate_model_attributes(model: SQLModel, attributes: dict[str, Any]):
+def validate_model_attributes(model: type[SQLModel], attributes: dict[str, Any]):
     """
     Validate the attributes of the model against the provided attributes.
 
@@ -59,7 +62,7 @@ def validate_model_attributes(model: SQLModel, attributes: dict[str, Any]):
 
 
 def get_conditions_list(
-    model: SQLModel, condition_attributes: dict[str, str]
+    model: type[SQLModel], condition_attributes: dict[str, str]
 ) -> list[BinaryExpression]:
     """
     Generate a list of conditions based on the provided attributes. This function takes
@@ -84,7 +87,7 @@ def get_conditions_list(
 
 @with_session
 def get_data_by_any_condition(
-    model: SQLModel, session: Session, **kwargs
+    model: type[SQLModel], session: Session, **kwargs
 ) -> Sequence[SQLModel]:
     """
     Retrieve a list of SQLModel objects based on the specified conditions.
@@ -117,9 +120,7 @@ def get_data_by_any_condition(
     validate_model_attributes(model, kwargs)
     conditions = get_conditions_list(model, kwargs)
 
-    statement = select(model).where(
-        or_(*conditions)  # pylint: disable=no-value-for-parameter
-    )
+    statement = select(model).where(or_(*conditions))
     result = session.exec(statement).all()
 
     return result
@@ -127,8 +128,8 @@ def get_data_by_any_condition(
 
 @with_session
 def get_data_by_all_conditions(
-    model: SQLModel = None,
-    session: Session = None,
+    model: type[SQLModel],
+    session: Session,
     **kwargs,
 ) -> Sequence[SQLModel]:
     """
@@ -169,7 +170,7 @@ def get_data_by_all_conditions(
 
 @with_session
 def _upsert(
-    model: SQLModel,
+    model: type[SQLModel],
     upsert_data: list[dict[str, Any]],
     session: Session,
 ):
@@ -213,44 +214,50 @@ def _upsert(
     | 2  | MSFT   | 200   |
     | 3  | GOOGL  | 300   |
     """
-    db_type = session.bind.dialect.name
+    if session.bind is None:
+        raise HTTPException(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            "Session is not bound to a database connection",
+        )
 
+    db_type = session.bind.dialect.name
+    table: Table = model.__table__  # type: ignore
+    upsert_stmt: SQLiteInsert | PostgresInsert
     # Handle database-specific logic
     if db_type == "sqlite":
-        upsert_stmt = sqlite_insert(model).values(upsert_data)
+        upsert_stmt = sqlite_insert(table).values(upsert_data)
         # SQLite requires `DO UPDATE SET` without `index_elements`
         columns = {
             column.name: getattr(upsert_stmt.excluded, column.name)
-            for column in model.__table__.columns
+            for column in table.columns
         }
         upsert_stmt = upsert_stmt.on_conflict_do_update(
-            index_elements=[key.name for key in model.__table__.primary_key],
+            index_elements=[key.name for key in table.primary_key],
             set_=columns,
         )
     elif db_type == "postgres":
         # PostgreSQL supports `ON CONFLICT DO UPDATE`
-        upsert_stmt = postgres_insert(model).values(upsert_data)
+        upsert_stmt = postgres_insert(table).values(upsert_data)
         columns = {
             column.name: getattr(upsert_stmt.excluded, column.name)
-            for column in model.__table__.columns
-            if column.name
-            not in model.__table__.primary_key  # Exclude primary key columns
+            for column in table.columns
+            if column.name not in table.primary_key  # Exclude primary key columns
         }
         upsert_stmt = upsert_stmt.on_conflict_do_update(
-            index_elements=[key.name for key in model.__table__.primary_key],
+            index_elements=[key.name for key in table.primary_key],
             set_=columns,
         )
     else:
         raise ValueError(f"Unsupported database type: {db_type}")
 
     # Execute the statement and commit the transaction
-    session.exec(upsert_stmt)
+    session.execute(upsert_stmt)  # Use execute instead of exec
     session.commit()
 
 
 @with_session
 def _insert_or_ignore(
-    model: SQLModel,
+    model: type[SQLModel],
     stock_price_info: dict[str, Any] | list[dict[str, Any]],
     session: Session,
 ):
@@ -267,22 +274,30 @@ def _insert_or_ignore(
     session: ``Session``
         The SQLModel session object to use for the database operations
     """
+    if session.bind is None:
+        raise HTTPException(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            "Session is not bound to a database connection",
+        )
     db_name = session.bind.dialect.name
+    table: Table = model.__table__  # type: ignore
+    insert_stmt: PostgresInsert | SQLiteInsert
+
     if db_name == "sqlite":
-        insert_stmt = sqlite_insert(model).values(stock_price_info)
+        insert_stmt = sqlite_insert(table).values(stock_price_info)
     elif db_name == "postgres":
-        insert_stmt = postgres_insert(model).values(stock_price_info)
+        insert_stmt = postgres_insert(table).values(stock_price_info)
     else:
         raise ValueError(f"Unsupported database type: {db_name}")
     insert_stmt = insert_stmt.on_conflict_do_nothing()
 
-    session.exec(insert_stmt)  # type: ignore
+    session.execute(insert_stmt)  # Use execute instead of exec
     session.commit()
 
 
 @with_session
 def insert_data(
-    model: SQLModel,
+    model: type[SQLModel],
     data: SQLModel | dict[str, Any] | list[SQLModel | dict[str, Any]] | None,
     session: Session,
     update_existing: bool = False,
@@ -315,7 +330,7 @@ def insert_data(
     # Convert list of SQLModel to a list of dicts
     data_to_insert = cast(
         list[dict[str, Any]],
-        [item.to_dict() if isinstance(item, SQLModel) else item for item in data],
+        [item.model_dump() if isinstance(item, SQLModel) else item for item in data],
     )
 
     if update_existing:
