@@ -89,7 +89,7 @@ class InstrumentPrice(SQLModel, table=True):  # type: ignore
     last_traded_quantity: ``int``
         The quantity of the last trade executed
         Eg: 100
-    average_traded_price: ``int``
+    average_traded_price: ``float``
         The average traded price for the day
         Eg: 1700.0
     volume_trade_for_the_day: ``int``
@@ -103,15 +103,15 @@ class InstrumentPrice(SQLModel, table=True):  # type: ignore
         Eg: 500
     """
 
-    retrieval_timestamp: str = Field(primary_key=True)
-    last_traded_timestamp: str
-    symbol: str = Field(primary_key=True, foreign_key="instrument.token")
-    last_traded_price: float
-    last_traded_quantity: int | None = None
-    average_traded_price: int | None = None
-    volume_trade_for_the_day: int | None = None
-    total_buy_quantity: int | None = None
-    total_sell_quantity: int | None = None
+    retrieval_timestamp: str = Field(primary_key=True, max_length=30)
+    last_traded_timestamp: str = Field(max_length=30)
+    symbol: str = Field(primary_key=True, foreign_key="instrument.token", max_length=20)
+    last_traded_price: float = Field(ge=0)
+    last_traded_quantity: int | None = Field(default=None, ge=0)
+    average_traded_price: float | None = Field(default=None, ge=0)
+    volume_trade_for_the_day: int | None = Field(default=None, ge=0)
+    total_buy_quantity: int | None = Field(default=None, ge=0)
+    total_sell_quantity: int | None = Field(default=None, ge=0)
 
     def to_dict(self):
         """

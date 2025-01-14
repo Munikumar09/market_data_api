@@ -3,6 +3,7 @@
 This module contains tests for the smartapi_crud.py module in the sqlite/crud directory.
 """
 
+from copy import deepcopy
 from unittest.mock import MagicMock
 
 import pytest
@@ -307,7 +308,7 @@ def test_insert_data(
             is False
         )
     else:
-        data_to_insert_cp = data_to_insert
+        data_to_insert_cp = deepcopy(data_to_insert)
         previous_data = None
         if isinstance(data_to_insert, dict):
             data_to_insert_cp = [data_to_insert]

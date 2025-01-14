@@ -223,10 +223,13 @@ def _upsert(
     db_type = session.bind.dialect.name
     table: Table = model.__table__  # type: ignore
     upsert_stmt: SQLiteInsert | PostgresInsert
+
     # Handle database-specific logic
     if db_type == "sqlite":
         upsert_stmt = sqlite_insert(table).values(upsert_data)
+
         # SQLite requires `DO UPDATE SET` without `index_elements`
+        # SQLite automatically updates the row based on the primary key
         columns = {
             column.name: getattr(upsert_stmt.excluded, column.name)
             for column in table.columns
@@ -251,7 +254,7 @@ def _upsert(
         raise ValueError(f"Unsupported database type: {db_type}")
 
     # Execute the statement and commit the transaction
-    session.execute(upsert_stmt)  # Use execute instead of exec
+    session.exec(upsert_stmt)  # type: ignore
     session.commit()
 
 
@@ -291,7 +294,7 @@ def _insert_or_ignore(
         raise ValueError(f"Unsupported database type: {db_name}")
     insert_stmt = insert_stmt.on_conflict_do_nothing()
 
-    session.execute(insert_stmt)  # Use execute instead of exec
+    session.exec(insert_stmt)  # type: ignore
     session.commit()
 
 
