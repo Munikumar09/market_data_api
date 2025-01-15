@@ -9,14 +9,14 @@ from app.data_layer.database.db_connections.sqlite import (
     get_session,
 )
 from app.data_layer.database.models import (
+    Instrument,
     InstrumentPrice,
-    SmartAPIToken,
     User,
     UserVerification,
 )
 
 model_classes = {
-    "smartapitoken": SmartAPIToken,
+    "instrument": Instrument,
     "instrumentprice": InstrumentPrice,
     "user": User,
     "userverification": UserVerification,

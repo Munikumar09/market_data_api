@@ -4,9 +4,9 @@ from typing import Optional
 
 from omegaconf import DictConfig
 
-from app.data_layer.database.crud.sqlite.smartapi_crud import (
-    get_smartapi_tokens_by_all_conditions,
-)
+from app.data_layer.database.crud.crud_utils import get_data_by_all_conditions
+from app.data_layer.database.db_connections.sqlite import get_session
+from app.data_layer.database.models import Instrument
 from app.data_layer.streaming.streamer import Streamer
 from app.sockets.connections.websocket_connection import WebsocketConnection
 from app.sockets.twisted_sockets import SmartSocket
@@ -54,12 +54,18 @@ class SmartSocketConnection(WebsocketConnection):
             A dictionary containing the tokens as keys and the symbols as values.
             Eg: {"256265": "INFY",...}
         """
-        smartapi_tokens = get_smartapi_tokens_by_all_conditions(
-            instrument_type=instrument_type, exchange=exchange.name
-        )
-        tokens = {token.token: token.symbol for token in smartapi_tokens}
-
-        return tokens
+        with get_session() as session:
+            try:
+                smartapi_tokens = get_data_by_all_conditions(
+                    Instrument,
+                    session=session,
+                    instrument_type=instrument_type,
+                    exchange=exchange.name,
+                )
+                return {token.token: token.symbol for token in smartapi_tokens}
+            except Exception as e:
+                logger.error("Failed to fetch equity stock tokens: %s", str(e))
+                return {}
 
     def get_tokens_from_symbols(
         self, symbols: list[str], exchange: Exchange
