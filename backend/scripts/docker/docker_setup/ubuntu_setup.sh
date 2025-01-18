@@ -77,6 +77,18 @@ install_docker() {
 
 # Function to uninstall Docker
 uninstall_docker() {
+	echo_info "Backing up Docker data..."
+	backup_dir="/root/docker_backup_$(date +%Y%m%d_%H%M%S)"
+	mkdir -p "$backup_dir"
+
+	if systemctl is-active --quiet docker; then
+		echo_info "Backing up Docker data..."
+		if ! cp -r /var/lib/docker "$backup_dir/"; then
+			echo_error "Failed to backup Docker data."
+			exit 1
+		fi
+	fi
+
 	echo_info "Stopping Docker service..."
 	if ! systemctl stop docker; then
 		echo_error "Failed to stop Docker service."

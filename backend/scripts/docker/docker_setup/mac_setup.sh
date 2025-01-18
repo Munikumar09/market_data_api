@@ -74,6 +74,18 @@ install_docker() {
 
 # Function to uninstall Colima, Docker, and Docker Compose
 uninstall_docker() {
+	echo_info "Backing up Docker data..."
+	backup_dir="docker_backup_$(date +%Y%m%d_%H%M%S)"
+	mkdir -p "$backup_dir"
+
+	if colima status >/dev/null 2>&1; then
+		echo_info "Backing up Colima data..."
+		if ! cp -r ~/.colima "$backup_dir/"; then
+			echo_error "Failed to backup Colima data."
+			exit 1
+		fi
+	fi
+
 	echo_info "Stopping Colima..."
 	if ! colima stop; then
 		echo_error "Failed to stop Colima."
