@@ -30,7 +30,7 @@ check_java_version() {
     java_ver=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
     echo_info "Current Java version: $java_ver"
     
-    if [[ "$java_ver" < "17" ]]; then
+    if [[ $(echo "$java_ver" | cut -d'.' -f1) -lt 17 ]]; then
         echo_error "Java version must be 17 or higher"
         return 1
     fi
