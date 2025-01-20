@@ -18,7 +18,7 @@ class AuthFooter extends StatelessWidget {
               Theme.of(context).primaryColor,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           CustomIconButton(
             onPressed: () => {
               // implement login or sign up using the google
