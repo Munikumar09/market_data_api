@@ -18,6 +18,7 @@ from sqlmodel import Session, SQLModel, or_, select
 
 from app.data_layer.database.db_connections.sqlite import with_session
 from app.utils.common.logger import get_logger
+from app.utils.constants import INSERTION_BATCH_SIZE
 
 logger = get_logger(Path(__file__).name)
 
@@ -226,19 +227,27 @@ def _upsert(
 
     # Handle database-specific logic
     if db_type == "sqlite":
-        upsert_stmt = sqlite_insert(table).values(upsert_data)
 
-        # SQLite requires `DO UPDATE SET` without `index_elements`
-        # SQLite automatically updates the row based on the primary key
-        columns = {
-            column.name: getattr(upsert_stmt.excluded, column.name)
-            for column in table.columns
-        }
-        upsert_stmt = upsert_stmt.on_conflict_do_update(
-            index_elements=[key.name for key in table.primary_key],
-            set_=columns,
-        )
-    elif db_type == "postgres":
+        # Using batch insertion due to SQLite's limitation to handle large data
+        # in a single transaction
+        for i in range(0, len(upsert_data), INSERTION_BATCH_SIZE):
+            batch_data = upsert_data[i : i + INSERTION_BATCH_SIZE]
+            upsert_stmt = sqlite_insert(table).values(batch_data)
+
+            # SQLite requires `DO UPDATE SET` without `index_elements`
+            # SQLite automatically updates the row based on the primary key
+            columns = {
+                column.name: getattr(upsert_stmt.excluded, column.name)
+                for column in table.columns
+            }
+            upsert_stmt = upsert_stmt.on_conflict_do_update(
+                index_elements=[key.name for key in table.primary_key],
+                set_=columns,
+            )
+            # Execute the statement and commit the transaction
+            session.exec(upsert_stmt)  # type: ignore
+            session.commit()
+    elif db_type == "postgresql":
         # PostgreSQL supports `ON CONFLICT DO UPDATE`
         upsert_stmt = postgres_insert(table).values(upsert_data)
         columns = {
@@ -250,12 +259,10 @@ def _upsert(
             index_elements=[key.name for key in table.primary_key],
             set_=columns,
         )
+        session.exec(upsert_stmt)  # type: ignore
+        session.commit()
     else:
         raise ValueError(f"Unsupported database type: {db_type}")
-
-    # Execute the statement and commit the transaction
-    session.exec(upsert_stmt)  # type: ignore
-    session.commit()
 
 
 @with_session
@@ -288,7 +295,7 @@ def _insert_or_ignore(
 
     if db_name == "sqlite":
         insert_stmt = sqlite_insert(table).values(stock_price_info)
-    elif db_name == "postgres":
+    elif db_name == "postgresql":
         insert_stmt = postgres_insert(table).values(stock_price_info)
     else:
         raise ValueError(f"Unsupported database type: {db_name}")
