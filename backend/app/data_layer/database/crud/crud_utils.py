@@ -246,7 +246,6 @@ def _upsert(
             )
             # Execute the statement and commit the transaction
             session.exec(upsert_stmt)  # type: ignore
-
     elif db_type == "postgresql":
         # PostgreSQL supports `ON CONFLICT DO UPDATE`
         upsert_stmt = postgres_insert(table).values(upsert_data)
