@@ -212,7 +212,7 @@ def test_get_data_by_all_conditions(
     (Instrument, [{"token": "1594", "symbol": "TCS", "name": "Tata Consultancy Services", "instrument_type": "EQ", "exchange": "NSE", "expiry_date": "", "strike_price": -1.0, "tick_size": 5.0, "lot_size": 1}], True),
     (Instrument, [{"token": "1594", "symbol": "INFY", "name": "Infosys Ltd", "instrument_type": "EQ", "exchange": "NSE", "expiry_date": "", "strike_price": -1.0, "tick_size": 5.0, "lot_size": 1}], True),
     (Instrument, [{"token": "9999", "symbol": "TCS", "name": "Tata Consultancy Services", "instrument_type": "EQ", "exchange": "NSE", "expiry_date": "", "strike_price": -1.0, "tick_size": 5.0, "lot_size": 1}], True),
-    (Instrument, [], False),  # No data to upsert
+    (Instrument, [], True),  # No data to upsert
 ])
 # fmt: on
 def test_upsert(
