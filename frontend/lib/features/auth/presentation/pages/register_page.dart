@@ -59,90 +59,100 @@ class _RegisterPageState extends State<RegisterPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: CustomBackgroundWidget(
-        child: SingleChildScrollView(
-          child: Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-            height: MediaQuery.of(context).size.height,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Spacer(),
-                HeaderText(
-                  title: AppStrings.registerTitle,
-                  subtitle: AppStrings.registerSubtitle,
-                ),
-                Spacer(),
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      CustomTextField(
-                        hintText: AppStrings.username,
-                        labelText: AppStrings.username,
-                        controller: _usernameController,
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: IntrinsicHeight(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: Column(
+                        children: [
+                          Spacer(),
+                          HeaderText(
+                            title: AppStrings.registerTitle,
+                            subtitle: AppStrings.registerSubtitle,
+                          ),
+                          SizedBox(height: 15),
+                          Spacer(),
+                          Form(
+                            key: _formKey,
+                            child: Column(
+                              children: [
+                                CustomTextField(
+                                  hintText: AppStrings.username,
+                                  labelText: AppStrings.username,
+                                  controller: _usernameController,
+                                ),
+                                const SizedBox(height: 10),
+                                CustomTextField(
+                                  hintText: AppStrings.email,
+                                  labelText: AppStrings.email,
+                                  keyboardType: TextInputType.emailAddress,
+                                  controller: _emailController,
+                                ),
+                                const SizedBox(height: 10),
+                                CustomTextField(
+                                  hintText: AppStrings.password,
+                                  isPassword: true,
+                                  labelText: AppStrings.password,
+                                  controller: _passwordController,
+                                  autocorrect: false,
+                                  enableSuggestions: false,
+                                ),
+                                const SizedBox(height: 10),
+                                CustomTextField(
+                                  hintText: AppStrings.phoneNumber,
+                                  labelText: AppStrings.phoneNumber,
+                                  keyboardType: TextInputType.phone,
+                                  controller: _phoneNumberController,
+                                ),
+                                const SizedBox(height: 10),
+                                CustomTextField(
+                                  readOnly: true,
+                                  labelText: AppStrings.dateOfBirth,
+                                  hintText: AppStrings.dateOfBirth,
+                                  suffixIcon: Icons.calendar_today,
+                                  controller: _dateController,
+                                  onSuffixTap: () => _selectDate(context),
+                                ),
+                                const SizedBox(height: 10),
+                                CustomDropdown(
+                                  labelText: AppStrings.gender,
+                                  options: ["Male", "Female", "Other"],
+                                  onChanged: (value) {},
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          CustomButton(
+                            text: AppStrings.signUp,
+                            onPressed: _submit,
+                          ),
+                          const SizedBox(height: 10),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pushNamed(AppRoutes.login);
+                            },
+                            child: Text(
+                              AppStrings.haveAccount,
+                              style: AppTextStyles.headline3(
+                                  const Color(0xFF494949)),
+                            ),
+                          ),
+                          const SizedBox(height: 15),
+                          const AuthFooter(),
+                          Spacer(),
+                        ],
                       ),
-                      const SizedBox(height: 10),
-                      CustomTextField(
-                        hintText: AppStrings.email,
-                        labelText: AppStrings.email,
-                        keyboardType: TextInputType.emailAddress,
-                        controller: _emailController,
-                      ),
-                      const SizedBox(height: 10),
-                      CustomTextField(
-                        hintText: AppStrings.password,
-                        isPassword: true,
-                        labelText: AppStrings.password,
-                        controller: _passwordController,
-                        autocorrect: false,
-                        enableSuggestions: false,
-                      ),
-                      const SizedBox(height: 10),
-                      CustomTextField(
-                        hintText: AppStrings.phoneNumber,
-                        labelText: AppStrings.phoneNumber,
-                        keyboardType: TextInputType.phone,
-                        controller: _phoneNumberController,
-                      ),
-                      const SizedBox(height: 10),
-                      CustomTextField(
-                        readOnly: true,
-                        labelText: AppStrings.dateOfBirth,
-                        hintText: AppStrings.dateOfBirth,
-                        suffixIcon: Icons.calendar_today,
-                        controller: _dateController,
-                        onSuffixTap: () => _selectDate(context),
-                      ),
-                      const SizedBox(height: 10),
-                      CustomDropdown(
-                        labelText: AppStrings.gender,
-                        options: ["Male", "Female", "Other"],
-                        onChanged: (value) {},
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-                const SizedBox(height: 30),
-                CustomButton(
-                  text: AppStrings.signUp,
-                  onPressed: _submit,
-                ),
-                const SizedBox(height: 10),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pushNamed(AppRoutes.login);
-                  },
-                  child: Text(
-                    AppStrings.haveAccount,
-                    style: AppTextStyles.headline3(const Color(0xFF494949)),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                const AuthFooter(),
-                Spacer(),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),
