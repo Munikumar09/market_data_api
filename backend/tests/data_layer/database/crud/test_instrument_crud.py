@@ -21,6 +21,7 @@ from app.data_layer.database.crud.crud_utils import (
     validate_model_attributes,
 )
 from app.data_layer.database.models import Instrument, InstrumentPrice
+from app.utils.constants import INSERTION_BATCH_SIZE
 
 #################### TESTS ####################
 
@@ -282,6 +283,80 @@ def test_insert_or_ignore(
         validate_post_insert_or_ignore_data(
             data_to_insert, model, session, previous_data
         )
+
+
+# fmt: off
+@pytest.mark.parametrize(
+    "model, data_size, expected_result",
+    [
+        (Instrument, INSERTION_BATCH_SIZE * 2 + 100, True),  # Test multiple complete batches plus remainder
+        (Instrument, INSERTION_BATCH_SIZE - 1, True),  # Test single incomplete batch
+    ],
+)
+# fmt: on
+def test_insert_or_ignore_batch_processing(session, model, data_size, expected_result):
+    """
+    Test batch processing with large datasets.
+    """
+    # Generate test data
+    data = [
+        {
+            "token": str(i),
+            "symbol": f"SYMBOL_{i}",
+            "name": f"Company {i}",
+            "instrument_type": "EQ",
+            "exchange": "NSE",
+            "expiry_date": "",
+            "strike_price": -1.0,
+            "tick_size": 5.0,
+            "lot_size": 1,
+        }
+        for i in range(data_size)
+    ]
+
+    # Test batch insertion
+    _insert_or_ignore(model, data, session=session)
+
+    # Verify all records were inserted
+    results = session.exec(select(model)).all()
+    assert len(results) == data_size
+
+
+# fmt: off
+@pytest.mark.parametrize(
+    "model, data_size, expected_result",
+    [
+        (Instrument, INSERTION_BATCH_SIZE * 2 + 100, True),  # Test multiple complete batches plus remainder
+        (Instrument, INSERTION_BATCH_SIZE - 1, True),  # Test single incomplete batch
+    ],
+)
+# fmt: on
+def test_upsert_batch_processing(session, model, data_size, expected_result):
+    """
+    Test batch processing with large datasets.
+    """
+    # Generate test data
+    data = [
+        {
+            "token": str(i),
+            "symbol": f"SYMBOL_{i}",
+            "name": f"Company {i}",
+            "instrument_type": "EQ",
+            "exchange": "NSE",
+            "expiry_date": "",
+            "strike_price": -1.0,
+            "tick_size": 5.0,
+            "lot_size": 1,
+        }
+        for i in range(data_size)
+    ]
+
+    # Test batch insertion
+    _upsert(model, data, session=session)
+
+    # Verify all records were inserted
+    results = session.exec(select(model)).all()
+    assert len(results) == data_size
 
 
 def test_insert_or_ignore_with_dummy_session():
