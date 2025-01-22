@@ -247,7 +247,7 @@ def test_upsert_with_dummy_session():
     (Instrument, [{"token": "1594", "symbol": "SBI", "name": "State Bank Of India", "instrument_type": "EQ", "exchange": "NSE", "expiry_date": "", "strike_price": -1.0, "tick_size": 44.0, "lot_size": 1}], True),
     (Instrument, [{"token": "9999", "symbol": "LT", "name": "Larsen & Toubro", "instrument_type": "EQ", "exchange": "BSE", "expiry_date": "", "strike_price": -1.0, "tick_size": 5.0, "lot_size": 1}], True),
     (Instrument, [{"token": "1594", "symbol": "Zomato", "name": "Zomato Ltd", "instrument_type": "EQ", "exchange": "NSE", "expiry_date": "", "strike_price": -1.0, "tick_size": 53.0, "lot_size": 1}, {"token": "1020", "symbol": "Swiggy", "name": "Swiggy Ltd", "instrument_type": "EQ", "exchange": "BSE", "expiry_date": "", "strike_price": -1.0, "tick_size": 10.0, "lot_size": 1}], True),
-    (Instrument, [], False),  # No data to insert
+    (Instrument, [], True),  # No data to insert
 ])
 # fmt: on
 def test_insert_or_ignore(

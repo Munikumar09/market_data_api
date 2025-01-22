@@ -246,7 +246,7 @@ def _upsert(
             )
             # Execute the statement and commit the transaction
             session.exec(upsert_stmt)  # type: ignore
-            session.commit()
+
     elif db_type == "postgresql":
         # PostgreSQL supports `ON CONFLICT DO UPDATE`
         upsert_stmt = postgres_insert(table).values(upsert_data)
@@ -260,15 +260,16 @@ def _upsert(
             set_=columns,
         )
         session.exec(upsert_stmt)  # type: ignore
-        session.commit()
     else:
         raise ValueError(f"Unsupported database type: {db_type}")
+
+    session.commit()
 
 
 @with_session
 def _insert_or_ignore(
     model: type[SQLModel],
-    stock_price_info: dict[str, Any] | list[dict[str, Any]],
+    data_to_insert: dict[str, Any] | list[dict[str, Any]],
     session: Session,
 ):
     """
@@ -279,7 +280,7 @@ def _insert_or_ignore(
     ----------
     model: ``SQLModel``
         The SQLAlchemy model class to use for the insert operation
-    stock_price_info: ``dict[str, Any] | list[dict[str, Any]]``
+    data_to_insert: ``dict[str, Any] | list[dict[str, Any]]``
         The data to insert into the table
     session: ``Session``
         The SQLModel session object to use for the database operations
@@ -294,14 +295,19 @@ def _insert_or_ignore(
     insert_stmt: PostgresInsert | SQLiteInsert
 
     if db_name == "sqlite":
-        insert_stmt = sqlite_insert(table).values(stock_price_info)
+        for i in range(0, len(data_to_insert), INSERTION_BATCH_SIZE):
+            batch_data = data_to_insert[i : i + INSERTION_BATCH_SIZE]
+            insert_stmt = sqlite_insert(table).values(batch_data)
+            insert_stmt = insert_stmt.on_conflict_do_nothing()
+            session.exec(insert_stmt) # type: ignore
     elif db_name == "postgresql":
-        insert_stmt = postgres_insert(table).values(stock_price_info)
+        insert_stmt = postgres_insert(table).values(data_to_insert)
+        insert_stmt = insert_stmt.on_conflict_do_nothing()
+        session.exec(insert_stmt)  # type: ignore
+
     else:
         raise ValueError(f"Unsupported database type: {db_name}")
-    insert_stmt = insert_stmt.on_conflict_do_nothing()
 
-    session.exec(insert_stmt)  # type: ignore
     session.commit()
 
 
