@@ -270,7 +270,6 @@ def _upsert(
         )
         session.exec(upsert_stmt)  # type: ignore
         session.commit()
-
     else:
         raise ValueError(f"Unsupported database type: {db_type}")
 
