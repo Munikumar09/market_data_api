@@ -196,8 +196,25 @@ def _upsert(
         - Commits the transaction after successful upsert
     
     Example:
-        Upserts stock price data, updating existing records or inserting new ones
-        based on the primary key (e.g., stock symbol)
+    --------
+        >>> If the table has the following data:
+        | id | symbol | price |
+        |----|--------|-------|
+        | 1  | AAPL   | 100   |
+        | 2  | MSFT   | 200   |
+
+        >>> If the following data is upserted:
+        | id | symbol | price |
+        |----|--------|-------|
+        | 1  | AAPL   | 150   |
+        | 3  | GOOGL  | 300   |
+
+        >>> The table will be updated as:
+        | id | symbol | price |
+        |----|--------|-------|
+        | 1  | AAPL   | 150   |
+        | 2  | MSFT   | 200   |
+        | 3  | GOOGL  | 300   |
     """
     if session.bind is None:
         raise HTTPException(
