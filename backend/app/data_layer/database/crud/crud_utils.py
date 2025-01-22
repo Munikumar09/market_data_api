@@ -231,21 +231,31 @@ def _upsert(
         # Using batch insertion due to SQLite's limitation to handle large data
         # in a single transaction
         for i in range(0, len(upsert_data), INSERTION_BATCH_SIZE):
-            batch_data = upsert_data[i : i + INSERTION_BATCH_SIZE]
-            upsert_stmt = sqlite_insert(table).values(batch_data)
 
-            # SQLite requires `DO UPDATE SET` without `index_elements`
-            # SQLite automatically updates the row based on the primary key
-            columns = {
-                column.name: getattr(upsert_stmt.excluded, column.name)
-                for column in table.columns
-            }
-            upsert_stmt = upsert_stmt.on_conflict_do_update(
-                index_elements=[key.name for key in table.primary_key],
-                set_=columns,
-            )
-            # Execute the statement and commit the transaction
-            session.exec(upsert_stmt)  # type: ignore
+            try:
+                batch_data = upsert_data[i : i + INSERTION_BATCH_SIZE]
+                upsert_stmt = sqlite_insert(table).values(batch_data)
+
+                # SQLite requires `DO UPDATE SET` without `index_elements`
+                # SQLite automatically updates the row based on the primary key
+                columns = {
+                    column.name: getattr(upsert_stmt.excluded, column.name)
+                    for column in table.columns
+                }
+                upsert_stmt = upsert_stmt.on_conflict_do_update(
+                    index_elements=[key.name for key in table.primary_key],
+                    set_=columns,
+                )
+                # Execute the statement and commit the transaction
+                session.exec(upsert_stmt)  # type: ignore
+                session.commit()  # Commit after each successful batch
+            except Exception as e:
+                session.rollback()  # Rollback failed batch
+                logger.error(
+                    "Failed to upsert batch %s due to error: %s",
+                    (i // INSERTION_BATCH_SIZE + 1),
+                    e,
+                )
     elif db_type == "postgresql":
         # PostgreSQL supports `ON CONFLICT DO UPDATE`
         upsert_stmt = postgres_insert(table).values(upsert_data)
@@ -259,27 +269,27 @@ def _upsert(
             set_=columns,
         )
         session.exec(upsert_stmt)  # type: ignore
+        session.commit()
+
     else:
         raise ValueError(f"Unsupported database type: {db_type}")
-
-    session.commit()
 
 
 @with_session
 def _insert_or_ignore(
     model: type[SQLModel],
-    data_to_insert: dict[str, Any] | list[dict[str, Any]],
+    data_to_insert: list[dict[str, Any]],
     session: Session,
 ):
     """
-    Add the provided data into the StockPriceInfo table if the data does not already exist.
+    Add the provided data into the given table if the data does not already exist.
     If the data already exists, it will be ignored.
 
     Parameters
     ----------
     model: ``SQLModel``
         The SQLAlchemy model class to use for the insert operation
-    data_to_insert: ``dict[str, Any] | list[dict[str, Any]]``
+    data_to_insert: ``list[dict[str, Any]]``
         The data to insert into the table
     session: ``Session``
         The SQLModel session object to use for the database operations
@@ -295,10 +305,20 @@ def _insert_or_ignore(
 
     if db_name == "sqlite":
         for i in range(0, len(data_to_insert), INSERTION_BATCH_SIZE):
-            batch_data = data_to_insert[i : i + INSERTION_BATCH_SIZE]
-            insert_stmt = sqlite_insert(table).values(batch_data)
-            insert_stmt = insert_stmt.on_conflict_do_nothing()
-            session.exec(insert_stmt) # type: ignore
+            try:
+                batch_data = data_to_insert[i : i + INSERTION_BATCH_SIZE]
+                insert_stmt = sqlite_insert(table).values(batch_data)
+                insert_stmt = insert_stmt.on_conflict_do_nothing()
+                session.exec(insert_stmt)  # type: ignore
+                session.commit()  # Commit after each successful batch
+            except Exception as e:
+                session.rollback()
+                logger.error(
+                    "Failed to insert batch %s due to error: %s",
+                    (i // INSERTION_BATCH_SIZE + 1),
+                    e,
+                )
+
     elif db_name == "postgresql":
         insert_stmt = postgres_insert(table).values(data_to_insert)
         insert_stmt = insert_stmt.on_conflict_do_nothing()
