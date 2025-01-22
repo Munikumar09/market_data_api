@@ -176,44 +176,28 @@ def _upsert(
     session: Session,
 ):
     """
-    Upsert means insert the data into the table if it does not already exist.
-    If the data already exists, it will be updated with the new data.
-
-    Note
-    ----
-    This function is a private function and should not be used directly.
-    Use the `insert_data` function to upsert data into the table.
-
-    Parameters
-    ----------
-    model: ``SQLModel``
-        The SQLAlchemy model class to use for the upsert operation
-    upsert_data: ``list[dict[str, Any]]``
-        The data to upsert into the table
-    session: ``Session``
-        The SQLAlchemy session object to use for the database operations
-
-
+    Perform an upsert operation on a database table using SQLAlchemy.
+    
+    Inserts new records or updates existing records based on primary key conflicts. Supports both SQLite and PostgreSQL databases with batch processing for SQLite to handle large datasets efficiently.
+    
+    Parameters:
+        model (type[SQLModel]): SQLAlchemy model class for the target table
+        upsert_data (list[dict[str, Any]]): List of dictionaries containing data to upsert
+        session (Session): Active SQLAlchemy database session
+    
+    Raises:
+        HTTPException: If the session is not bound to a database connection
+        ValueError: If an unsupported database type is encountered
+    
+    Notes:
+        - Private function, intended to be called via `insert_data`
+        - Handles database-specific upsert logic
+        - Uses batch processing for SQLite to manage large data volumes
+        - Commits the transaction after successful upsert
+    
     Example:
-    --------
-    >>> If the table has the following data:
-    | id | symbol | price |
-    |----|--------|-------|
-    | 1  | AAPL   | 100   |
-    | 2  | MSFT   | 200   |
-
-    >>> If the following data is upserted:
-    | id | symbol | price |
-    |----|--------|-------|
-    | 1  | AAPL   | 150   |
-    | 3  | GOOGL  | 300   |
-
-    >>> The table will be updated as:
-    | id | symbol | price |
-    |----|--------|-------|
-    | 1  | AAPL   | 150   |
-    | 2  | MSFT   | 200   |
-    | 3  | GOOGL  | 300   |
+        Upserts stock price data, updating existing records or inserting new ones
+        based on the primary key (e.g., stock symbol)
     """
     if session.bind is None:
         raise HTTPException(
@@ -273,17 +257,23 @@ def _insert_or_ignore(
     session: Session,
 ):
     """
-    Add the provided data into the StockPriceInfo table if the data does not already exist.
-    If the data already exists, it will be ignored.
-
-    Parameters
-    ----------
-    model: ``SQLModel``
-        The SQLAlchemy model class to use for the insert operation
-    data_to_insert: ``dict[str, Any] | list[dict[str, Any]]``
-        The data to insert into the table
-    session: ``Session``
-        The SQLModel session object to use for the database operations
+    Insert data into a table while ignoring conflicts with existing entries.
+    
+    Performs a database insert operation that skips entries which would cause unique constraint violations. Supports batch processing for SQLite and handles both single and multiple data entries.
+    
+    Parameters:
+        model (type[SQLModel]): The SQLAlchemy model class for the target table
+        data_to_insert (dict[str, Any] | list[dict[str, Any]]): Data to be inserted into the table
+        session (Session): Active database session for executing the insert operation
+    
+    Raises:
+        HTTPException: If the database session is not properly bound
+        ValueError: If an unsupported database type is encountered
+    
+    Notes:
+        - For SQLite, data is processed in batches defined by INSERTION_BATCH_SIZE
+        - Uses database-specific insert strategies (sqlite_insert or postgres_insert)
+        - Automatically handles unique constraint conflicts by ignoring duplicate entries
     """
     if session.bind is None:
         raise HTTPException(

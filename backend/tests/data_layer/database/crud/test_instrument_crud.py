@@ -219,7 +219,28 @@ def test_upsert(
     session, model, upsert_data, expected_result, create_insert_sample_data
 ):
     """
-    Test the _upsert function.
+    Test the upsert operation for a given database model.
+    
+    This test function verifies the behavior of the _upsert function under different scenarios, 
+    including successful upserts and error conditions.
+    
+    Parameters:
+        session (Session): SQLAlchemy database session for performing the operation
+        model (Type[Base]): SQLAlchemy database model class to be upserted
+        upsert_data (list): List of data dictionaries to be upserted into the database
+        expected_result (bool): Flag indicating whether the upsert operation is expected to succeed
+        create_insert_sample_data (fixture): Pytest fixture for preparing initial test data
+    
+    Raises:
+        OperationalError: If the upsert operation fails and is expected to do so
+        AssertionError: If pre or post upsert data validation fails
+    
+    Behavior:
+        - If expected_result is False, expects an OperationalError to be raised
+        - If expected_result is True:
+            1. Validates data before upsert using validate_pre_upsert_data
+            2. Performs the upsert operation
+            3. Validates data after upsert using validate_post_upset_data
     """
 
     if not expected_result:
@@ -254,7 +275,24 @@ def test_insert_or_ignore(
     session, model, data_to_insert, expected_result, create_insert_sample_data
 ):
     """
-    Test the _insert_or_ignore function.
+    Test the _insert_or_ignore database operation for a given model and dataset.
+    
+    This test function validates the behavior of the _insert_or_ignore function under different scenarios, ensuring proper data insertion or ignoring of existing records.
+    
+    Parameters:
+        session (Session): Active SQLAlchemy database session
+        model (Type[Base]): SQLAlchemy database model class
+        data_to_insert (List[Dict]): List of data dictionaries to be inserted
+        expected_result (bool): Flag indicating whether the insert operation is expected to succeed
+        create_insert_sample_data (Fixture): Pytest fixture for creating sample data
+    
+    Raises:
+        OperationalError: If the insert operation fails and is not expected to succeed
+        AssertionError: If data validation before or after insertion fails
+    
+    Notes:
+        - When expected_result is False, the function expects an OperationalError to be raised
+        - When expected_result is True, the function performs pre and post insertion data validation
     """
     if not expected_result:
         with pytest.raises(OperationalError):
