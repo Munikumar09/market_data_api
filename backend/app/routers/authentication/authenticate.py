@@ -323,6 +323,8 @@ def signup_user(user: UserSignup):
     if reason := validate_user_exists(user):
         raise UserSignupError(reason)
 
+    validate_user_data(user)
+
     user_model = User(
         **user.dict(exclude={"password", "date_of_birth", "gender"}),
         password=get_hash_password(user.password),
