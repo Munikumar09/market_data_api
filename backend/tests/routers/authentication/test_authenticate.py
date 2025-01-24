@@ -229,6 +229,10 @@ def test_signup_user(mock_session: MockType, sign_up_data: UserSignup):
 
     assert signup_error.value.detail == "email already exists"
 
+    sign_up_data.confirm_password = "wrong_password"
+    with pytest.raises(UserSignupError) as signup_error:
+        signup_user(sign_up_data)
+
 
 # Test: 10
 def test_signin_user(mock_session: MockType, test_user: User, sign_up_data: UserSignup):
