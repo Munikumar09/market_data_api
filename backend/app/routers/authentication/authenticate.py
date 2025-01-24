@@ -322,6 +322,8 @@ def signup_user(user: UserSignup):
     # Check whether the user is already exists with the given details
     if reason := validate_user_exists(user):
         raise UserSignupError(reason)
+    
+    validate_user_data(user)
 
     user_model = User(
         **user.dict(exclude={"password", "date_of_birth", "gender"}),
