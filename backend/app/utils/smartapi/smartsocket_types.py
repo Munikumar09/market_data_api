@@ -87,7 +87,7 @@ class SubscriptionMode(Enum):
         return get_enum_member(SubscriptionMode, subscription_mode)
 
 
-class ExchangeType(Enum):
+class SmartAPIExchnageSegment(Enum):
     """
     This enumeration class is used to define the exchange type for the WebSocket client.
     """
@@ -96,7 +96,7 @@ class ExchangeType(Enum):
     BSE_CM = 2
 
     @staticmethod
-    def get_exchange(exchange_symbol: str | int) -> "ExchangeType":
+    def get_exchange(exchange_symbol: str | int) -> "SmartAPIExchnageSegment":
         """
         This method is used to get the exchange type based on the exchange symbol or value.
 
@@ -110,7 +110,7 @@ class ExchangeType(Enum):
         ``ExchangeType``
             The exchange type based on the exchange symbol or value
         """
-        return get_enum_member(ExchangeType, exchange_symbol)
+        return get_enum_member(SmartAPIExchnageSegment, exchange_symbol)
 
 
 class SubscriptionAction(Enum):

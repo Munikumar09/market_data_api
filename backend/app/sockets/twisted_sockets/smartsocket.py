@@ -10,7 +10,7 @@ from app.sockets.websocket_client_protocol import MarketDataWebSocketClientProto
 from app.utils.common.logger import get_logger
 from app.utils.smartapi.connection import SmartApiConnection
 from app.utils.smartapi.smartsocket_types import (
-    ExchangeType,
+    SmartAPIExchnageSegment,
     SubscriptionAction,
     SubscriptionMode,
 )
@@ -76,7 +76,7 @@ class SmartSocket(MarketDataTwistedSocket):
 
         self.websocket_url = "wss://smartapisocket.angelone.in/smart-stream"
         self.little_endian_byte_order = "<"
-        self.token_map: dict[str, tuple[str, ExchangeType]] = {}
+        self.token_map: dict[str, tuple[str, SmartAPIExchnageSegment]] = {}
 
         self.headers = {
             "Authorization": auth_token,
@@ -132,7 +132,7 @@ class SmartSocket(MarketDataTwistedSocket):
                 )
                 continue
 
-            exchange_type = ExchangeType.get_exchange(
+            exchange_type = SmartAPIExchnageSegment.get_exchange(
                 cast(int, token_exchange_info["exchangeType"])
             )
 
