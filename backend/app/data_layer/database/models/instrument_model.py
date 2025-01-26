@@ -19,13 +19,13 @@ class Exchange(SQLModel, table=True):  # type: ignore
     id: ``int``
         The unique identifier of the exchange
         Eg: 1
-    name: ``str``
-        The name of the exchange
+    symbol: ``str``
+        The symbol of the exchange
         Eg: "NSE"
     """
 
     id: int = Field(sa_column=Column(SmallInteger(), primary_key=True))
-    name: str = Field(min_length=3, max_length=10)
+    symbol: str = Field(min_length=3, max_length=10)
 
     def to_dict(self):
         """
@@ -33,7 +33,7 @@ class Exchange(SQLModel, table=True):  # type: ignore
         """
         return {
             "id": self.id,
-            "name": self.name,
+            "symbol": self.symbol,
         }
 
 
@@ -52,7 +52,7 @@ class DataProvider(SQLModel, table=True):  # type: ignore
     """
 
     id: int = Field(sa_column=Column(SmallInteger(), primary_key=True))
-    name: str = Field(min_length=3, max_length=10)
+    name: str = Field(min_length=3, max_length=30)
 
     def to_dict(self):
         """

@@ -330,5 +330,5 @@ def process_token_data(
         The processed token data as a list of Instrument objects
     """
     if provider == DataProviderType.SMARTAPI:
-        return process_smartapi_token_data(tokens_data)[:100]
+        return process_smartapi_token_data(tokens_data)
     return []

@@ -15,7 +15,7 @@ def insert_exchange_data():
     Inserts the exchange data into the database.
     """
     exchange_data = [
-        Exchange(name=exchange.name, id=exchange.value) for exchange in ExchangeType
+        Exchange(symbol=exchange.name, id=exchange.value) for exchange in ExchangeType
     ]
     with get_session() as session:
         insert_data(Exchange, exchange_data, session=session)
