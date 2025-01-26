@@ -25,4 +25,10 @@ class AppStrings {
   static const String phoneNumber = 'Phone Number';
   static const String dateOfBirth = 'Date of Birth';
   static const String gender = 'Gender';
+  static const String verifyAccount = 'Verify Your Account';
+  static const String verifyAccountSubtitle =
+      'Enter the OTP sent to your email address and phone number to verify your account.';
+  static const String emailOtp = 'Enter Email OTP';
+  static const String phoneOtp = 'Enter Phone OTP';
+  static const String verify = 'Verify';
 }

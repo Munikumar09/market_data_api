@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:frontend/core/constants/app_strings.dart';
 import 'package:frontend/core/constants/app_text_styles.dart';
 import 'package:frontend/core/routes/app_routes.dart';
+import 'package:frontend/features/auth/functionality/model/signup_request.dart';
+import 'package:frontend/features/auth/functionality/repository/auth_repository.dart';
 import 'package:frontend/features/auth/presentation/widgets/auth_footer.dart';
 import 'package:frontend/features/auth/presentation/widgets/header_text.dart';
 import 'package:frontend/shared/buttons/custom_button.dart';
@@ -23,6 +25,8 @@ class _RegisterPageState extends State<RegisterPage> {
   final _phoneNumberController = TextEditingController();
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  String? selectedGender;
   @override
   void dispose() {
     _dateController.dispose();
@@ -48,9 +52,34 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
-  void _submit() {
+  void _submit() async {
     if (_formKey.currentState!.validate()) {
-      // Handle submission logic
+      SignupRequest request = SignupRequest(
+        username: _usernameController.text,
+        email: _emailController.text,
+        password: _passwordController.text,
+        confirmPassword: _confirmPasswordController.text,
+        phoneNumber: _phoneNumberController.text,
+        dateOfBirth: _dateController.text,
+        gender: selectedGender!,
+      );
+      print(request);
+      try {
+        await AuthRepository().signup(request);
+        Navigator.of(context).pushNamed(AppRoutes.verifyAccount, arguments: {
+          'email': request.email,
+          'phone': request.phoneNumber,
+        });
+      } catch (e) {
+        // if (e is String) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString()),
+              backgroundColor: Colors.red,
+            ),
+          );
+        // }
+      }
     }
   }
 
@@ -104,6 +133,15 @@ class _RegisterPageState extends State<RegisterPage> {
                                 ),
                                 const SizedBox(height: 10),
                                 CustomTextField(
+                                  hintText: AppStrings.confirmPassword,
+                                  isPassword: true,
+                                  labelText: AppStrings.confirmPassword,
+                                  controller: _confirmPasswordController,
+                                  autocorrect: false,
+                                  enableSuggestions: false,
+                                ),
+                                const SizedBox(height: 10),
+                                CustomTextField(
                                   hintText: AppStrings.phoneNumber,
                                   labelText: AppStrings.phoneNumber,
                                   keyboardType: TextInputType.phone,
@@ -122,7 +160,11 @@ class _RegisterPageState extends State<RegisterPage> {
                                 CustomDropdown(
                                   labelText: AppStrings.gender,
                                   options: ["Male", "Female", "Other"],
-                                  onChanged: (value) {},
+                                  onChanged: (value) {
+                                    setState(() {
+                                      selectedGender = value;
+                                    });
+                                  },
                                 ),
                               ],
                             ),
