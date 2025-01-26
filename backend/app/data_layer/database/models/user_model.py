@@ -97,10 +97,8 @@ class UserVerification(SQLModel, table=True):  # type: ignore
 
     Attributes:
     ----------
-    recipient: ``str``
-        The email or phone number of the user
-    verification_medium: ``str``
-        The medium used for verification (email/phone)
+    email: ``str``
+        The email address of the user
     verification_code: ``str``
         The verification code sent to the user
     expiration_time: ``int``
@@ -112,8 +110,7 @@ class UserVerification(SQLModel, table=True):  # type: ignore
         password reset process
     """
 
-    recipient: str = Field(primary_key=True)
-    verification_medium: str
+    email: str = Field(primary_key=True)
     verification_code: str = Field(max_length=6, min_length=6)
     expiration_time: int
     verification_datetime: datetime | None = Field(
