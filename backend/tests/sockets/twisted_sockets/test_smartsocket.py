@@ -8,7 +8,7 @@ from pytest_mock import MockerFixture, MockType
 
 from app.sockets.twisted_sockets import SmartSocket
 from app.utils.smartapi.smartsocket_types import (
-    SmartAPIExchnageSegment,
+    SmartAPIExchangeSegment,
     SubscriptionAction,
     SubscriptionMode,
 )
@@ -212,10 +212,10 @@ def test_set_tokens(mock_logger: MockType):
     smartsocket.set_tokens(subscription_tokens)
 
     assert len(smartsocket._tokens) == 2
-    assert smartsocket.token_map["token1"] == ("name1", SmartAPIExchnageSegment.NSE_CM)
-    assert smartsocket.token_map["token2"] == ("name2", SmartAPIExchnageSegment.NSE_CM)
-    assert smartsocket.token_map["token3"] == ("name3", SmartAPIExchnageSegment.BSE_CM)
-    assert smartsocket.token_map["token4"] == ("name4", SmartAPIExchnageSegment.BSE_CM)
+    assert smartsocket.token_map["token1"] == ("name1", SmartAPIExchangeSegment.NSE_CM)
+    assert smartsocket.token_map["token2"] == ("name2", SmartAPIExchangeSegment.NSE_CM)
+    assert smartsocket.token_map["token3"] == ("name3", SmartAPIExchangeSegment.BSE_CM)
+    assert smartsocket.token_map["token4"] == ("name4", SmartAPIExchangeSegment.BSE_CM)
 
     assert smartsocket._tokens == [
         {"exchangeType": 1, "tokens": ["token1", "token2"]},
@@ -227,8 +227,8 @@ def test_set_tokens(mock_logger: MockType):
     tokens = {"exchangeType": 1, "tokens": {"token1": "name1", "token2": "name2"}}
     smartsocket.set_tokens(tokens)
     assert len(smartsocket._tokens) == 1
-    assert smartsocket.token_map["token1"] == ("name1", SmartAPIExchnageSegment.NSE_CM)
-    assert smartsocket.token_map["token2"] == ("name2", SmartAPIExchnageSegment.NSE_CM)
+    assert smartsocket.token_map["token1"] == ("name1", SmartAPIExchangeSegment.NSE_CM)
+    assert smartsocket.token_map["token2"] == ("name2", SmartAPIExchangeSegment.NSE_CM)
 
     assert smartsocket._tokens == [{"exchangeType": 1, "tokens": ["token1", "token2"]}]
 

@@ -12,7 +12,7 @@ from app.utils.common.types.financial_types import DataProviderType
 from app.utils.smartapi.connection import SmartApiConnection
 from app.utils.smartapi.smartsocket_types import (
     SMARTAPI_EXCHANGETYPE_MAP,
-    SmartAPIExchnageSegment,
+    SmartAPIExchangeSegment,
     SubscriptionAction,
     SubscriptionMode,
 )
@@ -78,7 +78,7 @@ class SmartSocket(MarketDataTwistedSocket):
 
         self.websocket_url = "wss://smartapisocket.angelone.in/smart-stream"
         self.little_endian_byte_order = "<"
-        self.token_map: dict[str, tuple[str, SmartAPIExchnageSegment]] = {}
+        self.token_map: dict[str, tuple[str, SmartAPIExchangeSegment]] = {}
 
         self.headers = {
             "Authorization": auth_token,
@@ -134,7 +134,7 @@ class SmartSocket(MarketDataTwistedSocket):
                 )
                 continue
 
-            exchange_type = SmartAPIExchnageSegment.get_exchange(
+            exchange_type = SmartAPIExchangeSegment.get_exchange(
                 cast(int, token_exchange_info["exchangeType"])
             )
 

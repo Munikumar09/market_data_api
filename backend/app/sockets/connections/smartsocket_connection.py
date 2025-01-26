@@ -14,7 +14,7 @@ from app.utils.common import init_from_cfg
 from app.utils.common.exceptions import SymbolNotFoundException
 from app.utils.common.logger import get_logger
 from app.utils.common.types.financial_types import ExchangeType
-from app.utils.smartapi.smartsocket_types import SmartAPIExchnageSegment
+from app.utils.smartapi.smartsocket_types import SmartAPIExchangeSegment
 from app.utils.smartapi.validator import validate_symbol_and_get_token
 
 logger = get_logger(Path(__file__).name)
@@ -144,7 +144,7 @@ class SmartSocketConnection(WebsocketConnection):
 
         if exchange_segment:
             try:
-                exchange_segment = SmartAPIExchnageSegment.get_exchange(
+                exchange_segment = SmartAPIExchangeSegment.get_exchange(
                     exchange_segment.lower()
                 ).name
                 exchange = (
@@ -202,7 +202,7 @@ class SmartSocketConnection(WebsocketConnection):
 
         tokens_list = [
             {
-                "exchangeType": SmartAPIExchnageSegment.get_exchange(
+                "exchangeType": SmartAPIExchangeSegment.get_exchange(
                     cfg.exchange_type
                 ).value,
                 "tokens": tokens,
