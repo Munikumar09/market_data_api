@@ -24,10 +24,10 @@ class UserSignIn(BaseModel):
     password: str
 
 
-class UserVerificationRequest(BaseModel):
+class EmailVerificationRequest(BaseModel):
     """
     UserVerification schema for user verification
     """
 
     verification_code: str
-    email_or_phone: str
+    email: str

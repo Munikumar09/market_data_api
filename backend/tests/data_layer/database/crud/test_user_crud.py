@@ -22,6 +22,7 @@ from app.data_layer.database.db_connections.postgresql import get_session
 from app.data_layer.database.models.user_model import Gender, User, UserVerification
 
 #################### Fixtures ####################
+TEST_EMAIL = "testuser@gmail.com"
 
 
 @pytest.fixture(scope="module")
@@ -58,7 +59,7 @@ def test_user():
     return User(
         user_id=12356789012,
         username="testuser",
-        email="testuser@gmail.com",
+        email=TEST_EMAIL,
         password="password123",
         date_of_birth=date(1990, 1, 1),
         phone_number="1234567890",
@@ -110,7 +111,7 @@ def test_is_attr_data_in_db(session):
     Verifies that `is_attr_data_in_db` detects existing attributes.
     """
     # Test: 3.1 ( Verify the email already exists )
-    result = is_attr_data_in_db(User, {"email": "testuser@gmail.com"}, session=session)
+    result = is_attr_data_in_db(User, {"email": TEST_EMAIL}, session=session)
     assert result == "email already exists"
 
     # Test: 3.2 ( Verify the email does not exist )
@@ -130,15 +131,15 @@ def test_get_user_by_attr(session):
     Checks that `get_user_by_attr` returns the correct user.
     """
     # Test: 4.1 ( Verify the user is present in the database with the given email )
-    user = get_user_by_attr("email", "testuser@gmail.com", session=session)
+    user = get_user_by_attr("email", TEST_EMAIL, session=session)
 
-    assert user.email == "testuser@gmail.com"
+    assert user.email == TEST_EMAIL
 
     # Test: 4.2 ( Verify raising exception when user does not exist )
     with pytest.raises(HTTPException) as exc:
         get_user_by_attr("email", "sampleuser@example.com", session=session)
 
-    assert exc.value.detail == "User not found"
+    assert exc.value.detail == "User not found with given email sampleuser@example.com"
 
 
 # Test: 5
@@ -192,38 +193,35 @@ def test_create_or_update_user_verification(session):
     """
     # Test: 7.1 ( Verify the user verification is created )
     user_verification = UserVerification(
-        recipient="testuser@gmail.com",
+        email=TEST_EMAIL,
         verification_code="123456",
         expiration_time=datetime.now(timezone.utc).timestamp(),
         reverified_datetime="2023-12-01T12:00:00",
-        verification_medium="email",
     )
     create_or_update_user_verification(user_verification, session=session)
-    result = get_user_verification("testuser@gmail.com", session=session)
+    result = get_user_verification(TEST_EMAIL, session=session)
     assert result.model_dump() == user_verification.model_dump()
 
     # Test: 7.2 ( Verify the user verification is updated )
     updated_verification = UserVerification(
-        recipient="testuser@gmail.com",
+        email=TEST_EMAIL,
         verification_code="654321",
         expiration_time=datetime.now(timezone.utc).timestamp(),
         reverified_datetime="2024-12-01T12:00:00",
-        verification_medium="email",
     )
     create_or_update_user_verification(updated_verification, session=session)
-    result = get_user_verification("testuser@gmail.com", session=session)
+    result = get_user_verification(TEST_EMAIL, session=session)
 
     assert result.verification_code == "654321"
 
     # Test: 7.2 ( Verify the user verification is updated )
     updated_verification = UserVerification(
-        recipient="testuser@gmail.com",
+        email=TEST_EMAIL,
         verification_code="654322",
         expiration_time=datetime.now(timezone.utc).timestamp(),
-        verification_medium="email",
     )
     create_or_update_user_verification(updated_verification, session=session)
-    result = get_user_verification("testuser@gmail.com", session=session)
+    result = get_user_verification(TEST_EMAIL, session=session)
 
     assert result.verification_code == "654322"
     assert result.reverified_datetime is not None
@@ -236,8 +234,8 @@ def test_get_user_verification(session):
     Ensures `get_user_verification` retrieves the correct verification.
     """
     # Test: 8.1 ( Verify the user verification is retrieved )
-    result = get_user_verification("testuser@gmail.com", session=session)
-    assert result.recipient == "testuser@gmail.com"
+    result = get_user_verification(TEST_EMAIL, session=session)
+    assert result.email == TEST_EMAIL
 
     # Test: 8.2 ( Check if the user verification does not exist )
     assert get_user_verification("sampleuser@gmail.com", session=session) is None

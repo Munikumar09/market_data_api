@@ -244,7 +244,7 @@ def test_signin_user(mock_session: MockType, test_user: User, sign_up_data: User
     with pytest.raises(HTTPException) as http_exe:
         signin_user(sign_up_data.email, sign_up_data.password)
     assert http_exe.value.status_code == status.HTTP_404_NOT_FOUND
-    assert http_exe.value.detail == "User not found"
+    assert http_exe.value.detail == "User not found with given email test@gmail.com"
 
     # Test: 10.2 ( Incorrect password )
     mock_session.first.return_value = test_user
@@ -281,7 +281,7 @@ def test_update_user_verification_status(mock_session: MockType, test_user: User
         update_user_verification_status(test_user.email)
 
     assert http_exe.value.status_code == status.HTTP_404_NOT_FOUND
-    assert http_exe.value.detail == "User not found"
+    assert http_exe.value.detail == "User not found with given email test@gmail.com"
     assert test_user.is_verified is False
 
     # Test: 11.2 ( Verify user )

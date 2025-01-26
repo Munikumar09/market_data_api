@@ -1,8 +1,15 @@
 import uuid
 from datetime import datetime
+from typing import Generator
 
 import pytest
+from sqlalchemy.engine import Engine
+from sqlmodel import Session, create_engine
 
+from app.data_layer.database.db_connections.sqlite import (
+    create_db_and_tables,
+    get_session,
+)
 from app.data_layer.database.models.user_model import User
 from app.routers.authentication.authenticate import get_hash_password
 from app.schemas.user_model import UserSignup
@@ -48,3 +55,28 @@ def token_data(test_user) -> dict[str, str]:
     Fixture to provide mock token data.
     """
     return {"user_id": test_user.user_id, "email": test_user.email}
+
+
+@pytest.fixture(scope="function")
+def engine() -> Generator[Engine, None, None]:
+    """
+    Using sqlite in-memory database instead of PostgreSQL for testing.
+    Because it is faster and does not require a separate database server.
+    Also, the operations are similar to PostgreSQL.
+    """
+    engine = create_engine("sqlite:///:memory:")
+    create_db_and_tables(engine)
+
+    yield engine
+
+    engine.dispose()
+
+
+@pytest.fixture(scope="function")
+def session(engine) -> Generator[Session, None, None]:
+    """
+    Fixture to provide a new database session for each test function.
+    Ensures each test runs in isolation with a clean database state.
+    """
+    with get_session(engine) as session:
+        yield session
