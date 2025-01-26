@@ -8,8 +8,10 @@ from typing import Any, cast
 from app.sockets.twisted_socket import MarketDataTwistedSocket
 from app.sockets.websocket_client_protocol import MarketDataWebSocketClientProtocol
 from app.utils.common.logger import get_logger
+from app.utils.common.types.financial_types import DataProviderType
 from app.utils.smartapi.connection import SmartApiConnection
 from app.utils.smartapi.smartsocket_types import (
+    SMARTAPI_EXCHANGETYPE_MAP,
     SmartAPIExchnageSegment,
     SubscriptionAction,
     SubscriptionMode,
@@ -425,6 +427,10 @@ class SmartSocket(MarketDataTwistedSocket):
 
         data["symbol"] = self.token_map[data["token"]][0]
         data["retrieval_timestamp"] = str(time.time())
+        data["data_provider_id"] = DataProviderType.SMARTAPI.value
+        data["exchange_id"] = SMARTAPI_EXCHANGETYPE_MAP[
+            self.token_map[data["token"]][1]
+        ].value
 
         if self.debug:
             logger.debug("Received data: %s", data)

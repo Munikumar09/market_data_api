@@ -60,7 +60,7 @@ class SmartSocketConnection(WebsocketConnection):
                     Instrument,
                     session=session,
                     instrument_type=instrument_type,
-                    exchange=exchange.name,
+                    exchange_id=exchange.value,
                 )
                 return {token.token: token.symbol for token in smartapi_tokens}
             except Exception as e:
@@ -139,9 +139,7 @@ class SmartSocketConnection(WebsocketConnection):
             exchange_segment = "nse_cm"
             symbols = symbols if isinstance(symbols, list) else [symbols]
         elif exchange_segment is None:
-            logger.error(
-                "ExchangeType type not provided in the configuration, exiting..."
-            )
+            logger.error("ExchangeType not provided in the configuration, exiting...")
             return tokens
 
         if exchange_segment:

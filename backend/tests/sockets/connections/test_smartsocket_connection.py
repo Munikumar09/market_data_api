@@ -287,7 +287,7 @@ def test_get_tokens(
     # Test: 5.1 ( Test with exchange type as None and symbols as None )
     tokens = connection.get_tokens(exchange_segment=None, symbols=None)  # type: ignore
     mock_logger.error.assert_called_once_with(
-        "ExchangeType type not provided in the configuration, exiting..."
+        "ExchangeType not provided in the configuration, exiting..."
     )
     mock_logger.reset_mock()
     assert tokens == {}

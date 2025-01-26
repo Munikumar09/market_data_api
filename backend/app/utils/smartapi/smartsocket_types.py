@@ -1,6 +1,8 @@
 from enum import Enum
 from typing import Type, TypeVar
 
+from app.utils.common.types.financial_types import ExchangeType
+
 # Declare a TypeVar for enum types
 E = TypeVar("E", bound=Enum)
 
@@ -120,3 +122,9 @@ class SubscriptionAction(Enum):
 
     SUBSCRIBE = 1
     UNSUBSCRIBE = 2
+
+
+SMARTAPI_EXCHANGETYPE_MAP = {
+    SmartAPIExchnageSegment.NSE_CM: ExchangeType.NSE,
+    SmartAPIExchnageSegment.BSE_CM: ExchangeType.BSE,
+}
