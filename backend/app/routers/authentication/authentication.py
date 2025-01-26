@@ -146,7 +146,7 @@ async def verify_user(request: EmailVerificationRequest) -> dict:
     if user_verification is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="User does not exist with this email or phone",
+            detail="User does not exist with this email",
         )
 
     # Check if verification code matches

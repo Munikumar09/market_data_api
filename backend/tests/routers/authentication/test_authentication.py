@@ -317,7 +317,7 @@ def test_verify_code(
             },
         )
     assert exc.value.status_code == status.HTTP_404_NOT_FOUND
-    assert exc.value.detail == "User does not exist with this email or phone"
+    assert exc.value.detail == "User does not exist with this email"
 
     # Test: 4.3 ( Invalid verification code )
     mock_get_user_verification.return_value = user_verification
