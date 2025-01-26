@@ -13,8 +13,8 @@ from app.sockets.twisted_sockets import SmartSocket
 from app.utils.common import init_from_cfg
 from app.utils.common.exceptions import SymbolNotFoundException
 from app.utils.common.logger import get_logger
-from app.utils.common.types.financial_types import Exchange
-from app.utils.smartapi.smartsocket_types import ExchangeType
+from app.utils.common.types.financial_types import ExchangeType
+from app.utils.smartapi.smartsocket_types import SmartAPIExchangeSegment
 from app.utils.smartapi.validator import validate_symbol_and_get_token
 
 logger = get_logger(Path(__file__).name)
@@ -30,7 +30,7 @@ class SmartSocketConnection(WebsocketConnection):
 
     def get_equity_stock_tokens(
         self,
-        exchange: Exchange,
+        exchange: ExchangeType,
         instrument_type: str,
     ) -> dict[str, str]:
         """
@@ -41,7 +41,7 @@ class SmartSocketConnection(WebsocketConnection):
 
         Parameters
         ----------
-        exchange: ``Exchange``
+        exchange: ``ExchangeType``
             The exchange for which the tokens are required.
             Eg: "NSE" or "BSE"
         instrument_type: ``str``
@@ -60,7 +60,7 @@ class SmartSocketConnection(WebsocketConnection):
                     Instrument,
                     session=session,
                     instrument_type=instrument_type,
-                    exchange=exchange.name,
+                    exchange_id=exchange.value,
                 )
                 return {token.token: token.symbol for token in smartapi_tokens}
             except Exception as e:
@@ -68,7 +68,7 @@ class SmartSocketConnection(WebsocketConnection):
                 return {}
 
     def get_tokens_from_symbols(
-        self, symbols: list[str], exchange: Exchange
+        self, symbols: list[str], exchange: ExchangeType
     ) -> dict[str, str]:
         """
         Validate the symbols and get the tokens for the valid symbols. For example,
@@ -80,7 +80,7 @@ class SmartSocketConnection(WebsocketConnection):
         symbols: ``list[str]``
             The list of symbols to validate and get the tokens for.
             Eg: ["INFY", "RELIANCE"]
-        exchange: ``Exchange``
+        exchange: ``ExchangeType``
             The exchange for which the symbols are to be validated.
 
         Returns
@@ -130,25 +130,27 @@ class SmartSocketConnection(WebsocketConnection):
             Eg: {"256265": "INFY"}
         """
         tokens: dict[str, str] = {}
-        exchange: Exchange = Exchange.NSE
+        exchange: ExchangeType = ExchangeType.NSE
 
         if symbols and exchange_segment is None:
             logger.info(
-                "Exchange type not provided in the configuration, considering the NSE exchange type"
+                "ExchangeType type not provided in the configuration, considering the NSE exchange type"
             )
             exchange_segment = "nse_cm"
             symbols = symbols if isinstance(symbols, list) else [symbols]
         elif exchange_segment is None:
-            logger.error("Exchange type not provided in the configuration, exiting...")
+            logger.error("ExchangeType not provided in the configuration, exiting...")
             return tokens
 
         if exchange_segment:
             try:
-                exchange_segment = ExchangeType.get_exchange(
+                exchange_segment = SmartAPIExchangeSegment.get_exchange(
                     exchange_segment.lower()
                 ).name
                 exchange = (
-                    Exchange.NSE if "nse" in exchange_segment.lower() else Exchange.BSE
+                    ExchangeType.NSE
+                    if "nse" in exchange_segment.lower()
+                    else ExchangeType.BSE
                 )
             except ValueError:
                 logger.error(
@@ -200,7 +202,9 @@ class SmartSocketConnection(WebsocketConnection):
 
         tokens_list = [
             {
-                "exchangeType": ExchangeType.get_exchange(cfg.exchange_type).value,
+                "exchangeType": SmartAPIExchangeSegment.get_exchange(
+                    cfg.exchange_type
+                ).value,
                 "tokens": tokens,
             }
         ]

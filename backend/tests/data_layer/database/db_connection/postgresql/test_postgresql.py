@@ -13,6 +13,8 @@ from app.data_layer.database.db_connections.postgresql import (
     get_session,
 )
 from app.data_layer.database.models import (
+    DataProvider,
+    Exchange,
     Instrument,
     InstrumentPrice,
     User,
@@ -34,6 +36,8 @@ model_classes = {
     "instrumentprice": InstrumentPrice,
     "user": User,
     "userverification": UserVerification,
+    "dataprovider": DataProvider,
+    "exchange": Exchange,
 }
 
 
@@ -129,7 +133,7 @@ def set_env_vars(monkeypatch: MonkeyPatch):
     monkeypatch.setenv(POSTGRES_PASSWORD, "testuser123")
     monkeypatch.setenv(POSTGRES_HOST, "localhost")
     monkeypatch.setenv(POSTGRES_PORT, "5432")
-    monkeypatch.setenv(POSTGRES_DB, "testdb")
+    monkeypatch.setenv(POSTGRES_DB, "test_db")
 
 
 # Test the creation of the database and tables
@@ -174,4 +178,5 @@ def test_create_db_and_tables(set_env_vars):
                     f"Failed to interact with the database: {e}"
                 ) from e
     finally:
+
         drop_database_if_created(created)

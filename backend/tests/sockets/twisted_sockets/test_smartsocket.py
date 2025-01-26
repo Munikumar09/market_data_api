@@ -8,7 +8,7 @@ from pytest_mock import MockerFixture, MockType
 
 from app.sockets.twisted_sockets import SmartSocket
 from app.utils.smartapi.smartsocket_types import (
-    ExchangeType,
+    SmartAPIExchangeSegment,
     SubscriptionAction,
     SubscriptionMode,
 )
@@ -89,6 +89,8 @@ def binary_data_io() -> tuple[bytes, dict]:
             "last_traded_timestamp": 1728642580,
             "open_interest": 0,
             "open_interest_change_percentage": 0,
+            "exchange_id": 1,
+            "data_provider_id": 1,
         },
     )
 
@@ -210,10 +212,10 @@ def test_set_tokens(mock_logger: MockType):
     smartsocket.set_tokens(subscription_tokens)
 
     assert len(smartsocket._tokens) == 2
-    assert smartsocket.token_map["token1"] == ("name1", ExchangeType.NSE_CM)
-    assert smartsocket.token_map["token2"] == ("name2", ExchangeType.NSE_CM)
-    assert smartsocket.token_map["token3"] == ("name3", ExchangeType.BSE_CM)
-    assert smartsocket.token_map["token4"] == ("name4", ExchangeType.BSE_CM)
+    assert smartsocket.token_map["token1"] == ("name1", SmartAPIExchangeSegment.NSE_CM)
+    assert smartsocket.token_map["token2"] == ("name2", SmartAPIExchangeSegment.NSE_CM)
+    assert smartsocket.token_map["token3"] == ("name3", SmartAPIExchangeSegment.BSE_CM)
+    assert smartsocket.token_map["token4"] == ("name4", SmartAPIExchangeSegment.BSE_CM)
 
     assert smartsocket._tokens == [
         {"exchangeType": 1, "tokens": ["token1", "token2"]},
@@ -225,8 +227,8 @@ def test_set_tokens(mock_logger: MockType):
     tokens = {"exchangeType": 1, "tokens": {"token1": "name1", "token2": "name2"}}
     smartsocket.set_tokens(tokens)
     assert len(smartsocket._tokens) == 1
-    assert smartsocket.token_map["token1"] == ("name1", ExchangeType.NSE_CM)
-    assert smartsocket.token_map["token2"] == ("name2", ExchangeType.NSE_CM)
+    assert smartsocket.token_map["token1"] == ("name1", SmartAPIExchangeSegment.NSE_CM)
+    assert smartsocket.token_map["token2"] == ("name2", SmartAPIExchangeSegment.NSE_CM)
 
     assert smartsocket._tokens == [{"exchangeType": 1, "tokens": ["token1", "token2"]}]
 
@@ -438,6 +440,9 @@ def test_decode_data(binary_data_io: tuple[bytes, dict]):
     smartsocket = get_smartsocket()
     result = smartsocket.decode_data(binary_data)
     expected_result = binary_data_io[1]
+    expected_result.pop("exchange_id")
+    expected_result.pop("data_provider_id")
+
     assert result == expected_result
 
     # Test 7.2: Test decoding binary data with subscription mode as `LTP`
@@ -486,6 +491,8 @@ def test_on_message_callback(binary_data_io: tuple[bytes, dict]):
     assert actual_call_args.pop("retrieval_timestamp")
 
     assert smartsocket.on_data_save_callback.call_count == 1
+    print(f"actual_call_args: {actual_call_args}")
+    print(f"exptected_data: {exptected_data}")
     assert actual_call_args == exptected_data
 
 

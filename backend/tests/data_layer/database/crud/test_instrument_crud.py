@@ -21,6 +21,7 @@ from app.data_layer.database.crud.crud_utils import (
     validate_model_attributes,
 )
 from app.data_layer.database.models import Instrument, InstrumentPrice
+from app.utils.common.types.financial_types import DataProviderType, ExchangeType
 from app.utils.constants import INSERTION_BATCH_SIZE
 
 #################### TESTS ####################
@@ -43,7 +44,9 @@ def validate_post_upset_data(upsert_data, model, session):
     Validate data after upsert operation.
     """
     for data in upsert_data:
-        result = session.exec(select(model).where(model.token == data["token"])).first()
+        result = session.exec(
+            select(model).where(model.symbol == data["symbol"])
+        ).first()
         assert result is not None
         assert result.model_dump() == data
 
@@ -55,7 +58,7 @@ def validate_pre_insert_or_ignore_data(data_to_insert, model, session):
     previous_data = []
     for data in data_to_insert:
         prev_data = session.exec(
-            select(model).where(model.token == data["token"])
+            select(model).where(model.symbol == data["symbol"])
         ).first()
         previous_data.append(prev_data)
         if prev_data:
@@ -68,7 +71,9 @@ def validate_post_insert_or_ignore_data(data_to_insert, model, session, previous
     Validate data after insert or ignore operation.
     """
     for idx, data in enumerate(data_to_insert):
-        result = session.exec(select(model).where(model.token == data["token"])).first()
+        result = session.exec(
+            select(model).where(model.symbol == data["symbol"])
+        ).first()
         assert result is not None
         if previous_data[idx]:
             assert result.model_dump() == previous_data[idx].model_dump()
@@ -104,7 +109,7 @@ def test_validate_model_attributes(
 # fmt: off
 @pytest.mark.parametrize("model, condition_attributes, expected_conditions", [
     (Instrument, {"token": "1594"}, [Instrument.token == "1594"]),
-    (Instrument, {"symbol": "INFY", "exchange": "NSE"}, [Instrument.symbol == "INFY", Instrument.exchange == "NSE"]),
+    (Instrument, {"symbol": "INFY", "exchange_id": ExchangeType.NSE.value}, [Instrument.symbol == "INFY", Instrument.exchange_id == ExchangeType.NSE.value]),
     (InstrumentPrice, {"symbol": "INFY"}, [InstrumentPrice.symbol == "INFY"]),
     (InstrumentPrice, {"symbol": "SBI", "last_traded_price": 1300.0}, [InstrumentPrice.symbol == "SBI", InstrumentPrice.last_traded_price == 1300.0]),
     (Instrument, {}, []),  # No conditions
@@ -123,7 +128,7 @@ def test_get_conditions_list(model, condition_attributes, expected_conditions):
 @pytest.mark.parametrize("model, condition_attributes, expected_result, num_results", [
     (Instrument, {"token": "1594"}, True, 1),
     (Instrument, {"symbol": "INFY"}, True, 2),
-    (Instrument, {"exchange": "NSE"}, True, 1),
+    (Instrument, {"exchange_id": ExchangeType.NSE.value}, True, 1),
     (Instrument, {"token": "9999"}, False, 0),  # No matching records
     (Instrument, {}, HTTPException, 0),  # No conditions
     (InstrumentPrice, {"symbol": "INFY"}, True, 1),
@@ -166,9 +171,9 @@ def test_get_data_by_any_condition(
 # fmt: off
 @pytest.mark.parametrize("model, condition_attributes, expected_result, num_results", [
     (Instrument, {"token": "1594"}, True, 1),
-    (Instrument, {"symbol": "INFY", "exchange": "NSE"}, True, 1),
-    (Instrument, {"symbol": "INFY", "exchange": "BSE"}, True, 1),
-    (Instrument, {"symbol": "INFY", "exchange": "XYZ"}, False, 0),  # No matching records
+    (Instrument, {"symbol": "INFY", "exchange_id": ExchangeType.NSE.value}, True, 1),
+    (Instrument, {"symbol": "INFY", "exchange_id": ExchangeType.BSE.value}, True, 1),
+    (Instrument, {"symbol": "INFY", "exchange_id": -1}, False, 0),  # No matching records
     (Instrument, {"token": "9999"}, False, 0),  # No matching records
     (Instrument, {}, HTTPException, 0),  # No conditions
     (InstrumentPrice, {"symbol": "INFY"}, True, 1),
@@ -210,9 +215,9 @@ def test_get_data_by_all_conditions(
 
 # fmt: off
 @pytest.mark.parametrize("model, upsert_data, expected_result", [
-    (Instrument, [{"token": "1594", "symbol": "TCS", "name": "Tata Consultancy Services", "instrument_type": "EQ", "exchange": "NSE", "expiry_date": "", "strike_price": -1.0, "tick_size": 5.0, "lot_size": 1}], True),
-    (Instrument, [{"token": "1594", "symbol": "INFY", "name": "Infosys Ltd", "instrument_type": "EQ", "exchange": "NSE", "expiry_date": "", "strike_price": -1.0, "tick_size": 5.0, "lot_size": 1}], True),
-    (Instrument, [{"token": "9999", "symbol": "TCS", "name": "Tata Consultancy Services", "instrument_type": "EQ", "exchange": "NSE", "expiry_date": "", "strike_price": -1.0, "tick_size": 5.0, "lot_size": 1}], True),
+    (Instrument, [{"token": "1594", "symbol": "TCS", "name": "Tata Consultancy Services", "instrument_type": "EQ", "exchange_id": ExchangeType.NSE.value,"data_provider_id":DataProviderType.SMARTAPI.value, "expiry_date": "", "strike_price": -1.0, "tick_size": 5.0, "lot_size": 1}], True),
+    (Instrument, [{"token": "1599", "symbol": "TCS", "name": "Infosys Ltd", "instrument_type": "EQ", "exchange_id": ExchangeType.NSE.value,"data_provider_id":DataProviderType.SMARTAPI.value, "expiry_date": "", "strike_price": -1.0, "tick_size": 5.0, "lot_size": 1}], True),
+    (Instrument, [{"token": "9999", "symbol": "INFY", "name": "Infosys Ltd", "instrument_type": "EQ", "exchange_id": ExchangeType.NSE.value,"data_provider_id":DataProviderType.SMARTAPI.value, "expiry_date": "", "strike_price": -1.0, "tick_size": 5.0, "lot_size": 1}], True),
     (Instrument, [], True),  # No data to upsert
 ])
 # fmt: on
@@ -244,10 +249,10 @@ def test_upsert_with_dummy_session():
 
 # fmt: off
 @pytest.mark.parametrize("model, data_to_insert, expected_result", [
-    (Instrument, [{"token": "1594", "symbol": "TCS", "name": "Tata Consultancy Services", "instrument_type": "EQ", "exchange": "NSE", "expiry_date": "", "strike_price": -1.0, "tick_size": 52.0, "lot_size": 1}], True),
-    (Instrument, [{"token": "1594", "symbol": "SBI", "name": "State Bank Of India", "instrument_type": "EQ", "exchange": "NSE", "expiry_date": "", "strike_price": -1.0, "tick_size": 44.0, "lot_size": 1}], True),
-    (Instrument, [{"token": "9999", "symbol": "LT", "name": "Larsen & Toubro", "instrument_type": "EQ", "exchange": "BSE", "expiry_date": "", "strike_price": -1.0, "tick_size": 5.0, "lot_size": 1}], True),
-    (Instrument, [{"token": "1594", "symbol": "Zomato", "name": "Zomato Ltd", "instrument_type": "EQ", "exchange": "NSE", "expiry_date": "", "strike_price": -1.0, "tick_size": 53.0, "lot_size": 1}, {"token": "1020", "symbol": "Swiggy", "name": "Swiggy Ltd", "instrument_type": "EQ", "exchange": "BSE", "expiry_date": "", "strike_price": -1.0, "tick_size": 10.0, "lot_size": 1}], True),
+    (Instrument, [{"token": "1594", "symbol": "TCS", "name": "Tata Consultancy Services", "instrument_type": "EQ", "exchange_id": ExchangeType.NSE.value, "data_provider_id":DataProviderType.SMARTAPI.value,"expiry_date": "", "strike_price": -1.0, "tick_size": 52.0, "lot_size": 1}], True),
+    (Instrument, [{"token": "159", "symbol": "SBI", "name": "State Bank Of India", "instrument_type": "EQ", "exchange_id": ExchangeType.NSE.value, "data_provider_id":DataProviderType.SMARTAPI.value,"expiry_date": "", "strike_price": -1.0, "tick_size": 44.0, "lot_size": 1}], True),
+    (Instrument, [{"token": "9999", "symbol": "LT", "name": "Larsen & Toubro", "instrument_type": "EQ", "exchange_id": ExchangeType.BSE.value, "data_provider_id":DataProviderType.SMARTAPI.value,"expiry_date": "", "strike_price": -1.0, "tick_size": 5.0, "lot_size": 1}], True),
+    (Instrument, [{"token": "1594", "symbol": "Zomato", "name": "Zomato Ltd", "instrument_type": "EQ", "exchange_id": ExchangeType.NSE.value, "data_provider_id":DataProviderType.SMARTAPI.value,"expiry_date": "", "strike_price": -1.0, "tick_size": 53.0, "lot_size": 1}, {"token": "1020", "symbol": "Swiggy", "name": "Swiggy Ltd", "instrument_type": "EQ", "exchange_id": ExchangeType.BSE.value,"data_provider_id":DataProviderType.SMARTAPI.value,"expiry_date": "", "strike_price": -1.0, "tick_size": 10.0, "lot_size": 1}], True),
     (Instrument, [], True),  # No data to insert
 ])
 # fmt: on
@@ -290,7 +295,8 @@ def test_insert_or_ignore_batch_processing(session, model, data_size, expected_r
             "symbol": f"SYMBOL_{i}",
             "name": f"Company {i}",
             "instrument_type": "EQ",
-            "exchange": "NSE",
+            "exchange_id": ExchangeType.NSE.value,
+            "data_provider_id": DataProviderType.SMARTAPI.value,
             "expiry_date": "",
             "strike_price": -1.0,
             "tick_size": 5.0,
@@ -327,7 +333,8 @@ def test_upsert_batch_processing(session, model, data_size, expected_result):
             "symbol": f"SYMBOL_{i}",
             "name": f"Company {i}",
             "instrument_type": "EQ",
-            "exchange": "NSE",
+            "exchange_id": ExchangeType.NSE.value,
+            "data_provider_id": DataProviderType.SMARTAPI.value,
             "expiry_date": "",
             "strike_price": -1.0,
             "tick_size": 5.0,
@@ -356,10 +363,10 @@ def test_insert_or_ignore_with_dummy_session():
 
 # fmt: off
 @pytest.mark.parametrize("model, data_to_insert, update_existing, expected_result", [
-    (Instrument, {"token": "1594", "symbol": "TCS", "name": "Tata Consultancy Services", "instrument_type": "EQ", "exchange": "NSE", "expiry_date": "", "strike_price": -1.0, "tick_size": 52.0, "lot_size": 1}, False, True),
-    (Instrument, {"token": "1594", "symbol": "SBI", "name": "State Bank Of India", "instrument_type": "EQ", "exchange": "NSE", "expiry_date": "", "strike_price": -1.0, "tick_size": 44.0, "lot_size": 1}, True, True),
-    (Instrument, {"token": "9999", "symbol": "LT", "name": "Larsen & Toubro", "instrument_type": "EQ", "exchange": "BSE", "expiry_date": "", "strike_price": -1.0, "tick_size": 5.0, "lot_size": 1}, False, True),
-    (Instrument, [{"token": "1594", "symbol": "Zomato", "name": "Zomato Ltd", "instrument_type": "EQ", "exchange": "NSE", "expiry_date": "", "strike_price": -1.0, "tick_size": 53.0, "lot_size": 1}, {"token": "1020", "symbol": "Swiggy", "name": "Swiggy Ltd", "instrument_type": "EQ", "exchange": "BSE", "expiry_date": "", "strike_price": -1.0, "tick_size": 10.0, "lot_size": 1}], True, True),
+    (Instrument, {"token": "1594", "symbol": "TCS", "name": "Tata Consultancy Services", "instrument_type": "EQ", "exchange_id": ExchangeType.NSE.value, "data_provider_id":DataProviderType.SMARTAPI.value,"expiry_date": "", "strike_price": -1.0, "tick_size": 52.0, "lot_size": 1}, False, True),
+    (Instrument, {"token": "1594", "symbol": "SBI", "name": "State Bank Of India", "instrument_type": "EQ", "exchange_id": ExchangeType.NSE.value, "data_provider_id":DataProviderType.SMARTAPI.value,"expiry_date": "", "strike_price": -1.0, "tick_size": 44.0, "lot_size": 1}, True, True),
+    (Instrument, {"token": "9999", "symbol": "LT", "name": "Larsen & Toubro", "instrument_type": "EQ", "exchange_id": ExchangeType.BSE.value, "data_provider_id":DataProviderType.SMARTAPI.value,"expiry_date": "", "strike_price": -1.0, "tick_size": 5.0, "lot_size": 1}, False, True),
+    (Instrument, [{"token": "1594", "symbol": "Zomato", "name": "Zomato Ltd", "instrument_type": "EQ", "exchange_id": ExchangeType.NSE.value, "data_provider_id":DataProviderType.SMARTAPI.value,"expiry_date": "", "strike_price": -1.0, "tick_size": 53.0, "lot_size": 1}, {"token": "1020", "symbol": "Swiggy", "name": "Swiggy Ltd", "instrument_type": "EQ", "exchange_id": ExchangeType.BSE.value, "data_provider_id":DataProviderType.SMARTAPI.value,"expiry_date": "", "strike_price": -1.0, "tick_size": 10.0, "lot_size": 1}], True, True),
     (Instrument, None, False, False),  # No data to insert
     (Instrument, [], False, False),  # No data to insert
 ])

@@ -20,8 +20,8 @@ app.include_router(authentication.router)
 
 @app.on_event("startup")
 async def startup_event():
-    create_smartapi_tokens_db()
     postgresql.create_db_and_tables()
+    create_smartapi_tokens_db()
 
 
 @app.get("/", response_model=str)
