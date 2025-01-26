@@ -1,7 +1,7 @@
 import calendar
 from datetime import date, datetime, timedelta
 
-from app.utils.common.exceptions import InvalidDateTimeFormatException
+from app.utils.common.exceptions.historical_data import InvalidDateTimeFormatException
 from app.utils.fetch_data import fetch_data
 from app.utils.type_utils import SymbolType
 from app.utils.urls import INDEX_OPTION_CHAIN_URL, STOCK_OPTION_CHAIN_URL

@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from app.utils.common.exceptions import (
+from app.utils.common.exceptions.historical_data import (
     AllDaysHolidayException,
     DataUnavailableException,
     InvalidDateRangeBoundsException,

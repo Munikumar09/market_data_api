@@ -2,7 +2,7 @@
 from bisect import bisect_left
 from datetime import datetime, time, timedelta
 
-from app.utils.common.exceptions import (
+from app.utils.common.exceptions.historical_data import (
     AllDaysHolidayException,
     DataUnavailableException,
     InvalidDateRangeBoundsException,

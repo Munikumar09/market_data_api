@@ -168,6 +168,51 @@ async def verify_user(request: EmailVerificationRequest) -> dict:
     return {"message": "Email verified successfully"}
 
 
+@router.get("/send-password-reset-code", status_code=status.HTTP_200_OK)
+async def send_password_reset_code(email: str) -> dict:
+    """
+    Send a password reset code to the user's email.
+
+    Parameters:
+    -----------
+    - **email** (str): The email to send the password reset code to.
+
+    Returns:
+    --------
+    - JSON response indicating whether the code was sent successfully.
+    """
+
+    logger.info(
+        "Sending password reset code to %s using %s", email, email_notification_provider
+    )
+
+    # Fetch the user by email address
+    user = get_user_by_attr(EMAIL, email)
+
+    # Generate and save the verification code
+    verification_code = generate_verification_code()
+    expiration_time = int(
+        (datetime.now(timezone.utc) + timedelta(minutes=10)).timestamp()
+    )
+
+    create_or_update_user_verification(
+        UserVerification(
+            email=email,
+            verification_code=verification_code,
+            expiration_time=expiration_time,
+        )
+    )
+
+    # Send the notification
+    email_notification_provider.send_notification(
+        code=verification_code,
+        recipient_email=email,
+        recipient_name=user.username,
+    )
+
+    return {"message": f"Password reset code sent to {email}. Valid for 10 minutes."}
+
+
 @router.get(
     "/protected-endpoint",
     response_model=dict,
