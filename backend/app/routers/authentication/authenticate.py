@@ -3,6 +3,7 @@
 import random
 from datetime import datetime, timedelta, timezone
 
+from dateutil.parser import parse
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from snowflake import SnowflakeGenerator
@@ -80,7 +81,7 @@ def signup_user(user: UserSignup):
         **user.dict(exclude={"password", "date_of_birth", "gender"}),
         password=get_hash_password(user.password),
         user_id=get_snowflake_id(),
-        date_of_birth=datetime.strptime(user.date_of_birth, "%d/%m/%Y"),
+        date_of_birth=parse(user.date_of_birth).date(),
         gender=Gender.get_gender_enum(
             gender=user.gender, raise_exception=UserSignupError
         ),

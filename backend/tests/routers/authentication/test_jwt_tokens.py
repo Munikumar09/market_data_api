@@ -12,7 +12,7 @@ from app.routers.authentication.jwt_tokens import (
 from app.utils.constants import JWT_REFRESH_SECRET, JWT_SECRET
 
 
-# Test: 7
+# Test: 1
 def test_create_token(token_data: dict[str, str]):
     """
     Test create_token function
@@ -23,7 +23,7 @@ def test_create_token(token_data: dict[str, str]):
     assert decoded_data["email"] == token_data["email"]
 
 
-# Test: 8
+# Test: 2
 def test_access_token_from_refresh_token(
     token_data: dict[str, str], mock_session: MockType
 ):
@@ -46,25 +46,25 @@ def test_access_token_from_refresh_token(
     assert exc.value.detail == "User not found"
 
 
-# Test: 14
+# Test: 3
 def test_decode_token(token_data: dict[str, str]):
     """
     Test decode_token function
     """
-    # Test: 14.1 ( Valid token )
+    # Test: 3.1 ( Valid token )
     token = create_token(token_data, JWT_SECRET, 0.05)
 
     decoded_data = decode_token(token, JWT_SECRET)
     assert decoded_data["user_id"] == token_data["user_id"]
     assert decoded_data["email"] == token_data["email"]
 
-    # Test: 14.2 ( Expired token )
+    # Test: 3.2 ( Expired token )
     sleep(5)
     with pytest.raises(HTTPException) as exc:
         decode_token(token, JWT_SECRET)
     assert exc.value.detail == "Token has expired"
 
-    # Test: 14.3 ( Invalid token )
+    # Test: 3.3 ( Invalid token )
     with pytest.raises(HTTPException) as exc:
         decode_token("invalid_token", JWT_SECRET)
     assert exc.value.detail == "Invalid token"

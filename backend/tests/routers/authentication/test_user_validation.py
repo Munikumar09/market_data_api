@@ -126,6 +126,7 @@ def test_validate_date_of_birth():
     """
     # Test: 6.1 ( Valid date of birth )
     assert validate_date_of_birth("01/01/2000") is None
+    assert validate_date_of_birth("01-01-2000") is None
 
     # Test: 6.2 ( Test with future date )
     with pytest.raises(HTTPException) as exc:
@@ -134,8 +135,8 @@ def test_validate_date_of_birth():
 
     # Test: 6.3 ( Test with invalid date format )
     with pytest.raises(HTTPException) as exc:
-        validate_date_of_birth("01-01-2000")
+        validate_date_of_birth("00-01-2000")
     assert (
         exc.value.detail
-        == "Invalid date format for date of birth. Expected format: dd/mm/yyyy"
+        == f"Invalid date of birth 00-01-2000. Please provide a valid date."
     )

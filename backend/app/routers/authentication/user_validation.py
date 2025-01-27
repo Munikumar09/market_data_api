@@ -1,8 +1,10 @@
 # pylint: disable=no-value-for-parameter
 import re
-from datetime import datetime
+from datetime import date
 
 import bcrypt
+from dateutil.parser import parse
+from dateutil.parser._parser import ParserError
 from fastapi import HTTPException, status
 
 from app.data_layer.database.crud.user_crud import is_attr_data_in_db
@@ -102,8 +104,7 @@ def verify_password(password: str, hash_password: str) -> None:
 
 def validate_date_of_birth(date_of_birth: str) -> None:
     """
-    Validates the date of birth format. The date of birth must be in the format
-    'dd/mm/yyyy' and cannot be in the future.
+    Validates the date of birth format. The date of birth cannot be in the future.
 
     Parameters:
     -----------
@@ -111,14 +112,14 @@ def validate_date_of_birth(date_of_birth: str) -> None:
         The date of birth to be validated
     """
     try:
-        dob = datetime.strptime(date_of_birth, "%d/%m/%Y")
+        dob = parse(date_of_birth, dayfirst=True).date()
 
-        if dob >= datetime.now():
+        if dob >= date.today():
             raise UserSignupError("Date of birth cannot be in the future")
 
-    except ValueError as exc:
+    except ParserError as exc:
         raise UserSignupError(
-            "Invalid date format for date of birth. Expected format: dd/mm/yyyy",
+            f"Invalid date of birth {date_of_birth}. Please provide a valid date."
         ) from exc
 
 
