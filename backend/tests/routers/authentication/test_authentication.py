@@ -53,7 +53,7 @@ def mock_generate_verification_code(mocker: MockFixture):
     Mock the generate_verification_code function
     """
     return mocker.patch(
-        "app.routers.authentication.authentication.generate_verification_code",
+        "app.routers.authentication.authenticate.generate_verification_code",
     )
 
 
@@ -63,7 +63,7 @@ def mock_create_or_update_user_verification(mocker: MockFixture):
     Mock the create_or_update_user_verification function
     """
     return mocker.patch(
-        "app.routers.authentication.authentication.create_or_update_user_verification",
+        "app.routers.authentication.authenticate.create_or_update_user_verification",
     )
 
 
@@ -101,9 +101,7 @@ def mock_get_user_verification(mocker: MockFixture):
     """
     Mock the get_user_verification function
     """
-    return mocker.patch(
-        "app.routers.authentication.authentication.get_user_verification"
-    )
+    return mocker.patch("app.routers.authentication.authenticate.get_user_verification")
 
 
 @pytest.fixture

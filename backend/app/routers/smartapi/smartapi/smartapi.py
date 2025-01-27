@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Path, Query
 
 from app.schemas.stock_model import HistoricalStockDataBundle, SmartAPIStockPriceInfo
-from app.utils.common.exceptions import UnkownException
+from app.utils.common.exceptions.historical_data import UnkownException
 from app.utils.common.types.financial_types import ExchangeType
 from app.utils.common.types.reques_types import CandlestickInterval, RequestType
 from app.utils.smartapi.connection import get_endpoint_connection

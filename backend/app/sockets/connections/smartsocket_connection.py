@@ -11,7 +11,7 @@ from app.data_layer.streaming.streamer import Streamer
 from app.sockets.connections.websocket_connection import WebsocketConnection
 from app.sockets.twisted_sockets import SmartSocket
 from app.utils.common import init_from_cfg
-from app.utils.common.exceptions import SymbolNotFoundException
+from app.utils.common.exceptions.historical_data import SymbolNotFoundException
 from app.utils.common.logger import get_logger
 from app.utils.common.types.financial_types import ExchangeType
 from app.utils.smartapi.smartsocket_types import SmartAPIExchangeSegment

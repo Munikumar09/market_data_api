@@ -1,5 +1,4 @@
 # pylint: disable=no-value-for-parameter
-from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import cast
 
@@ -7,12 +6,8 @@ import hydra
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app import ROOT_DIR
-from app.data_layer.database.crud.user_crud import (
-    create_or_update_user_verification,
-    get_user_by_attr,
-    get_user_verification,
-)
-from app.data_layer.database.models.user_model import User, UserVerification
+from app.data_layer.database.crud.user_crud import get_user_by_attr
+from app.data_layer.database.models.user_model import User
 from app.notification.email.email_provider import EmailProvider
 from app.notification.provider import NotificationProvider
 from app.schemas.user_model import EmailVerificationRequest, UserSignIn, UserSignup
@@ -21,11 +16,12 @@ from app.utils.common.logger import get_logger
 from app.utils.constants import EMAIL
 
 from .authenticate import (
-    generate_verification_code,
     get_current_user,
+    send_and_save_code,
     signin_user,
     signup_user,
     update_user_verification_status,
+    validate_verification_code,
 )
 
 # Initialize logging
@@ -99,28 +95,7 @@ async def send_verification_code(email: str) -> dict:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email is already verified.",
         )
-
-    # Generate and save the verification code
-    verification_code = generate_verification_code()
-    expiration_time = int(
-        (datetime.now(timezone.utc) + timedelta(minutes=10)).timestamp()
-    )
-
-    create_or_update_user_verification(
-        UserVerification(
-            email=email,
-            verification_code=verification_code,
-            expiration_time=expiration_time,
-        )
-    )
-
-    # Send the notification
-    email_notification_provider.send_notification(
-        code=verification_code,
-        recipient_email=email,
-        recipient_name=user.username,
-    )
-
+    send_and_save_code(email, user.username, email_notification_provider)
     return {"message": f"Verification code sent to {email}. Valid for 10 minutes."}
 
 
@@ -139,28 +114,7 @@ async def verify_user(request: EmailVerificationRequest) -> dict:
     - JSON response indicating success or failure of the verification.
     """
     logger.info("Verification attempt for %s", request.email)
-
-    # Fetch user verification details
-    user_verification = get_user_verification(request.email)
-
-    if user_verification is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User does not exist with this email",
-        )
-
-    # Check if verification code matches
-    if user_verification.verification_code != request.verification_code:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid verification code"
-        )
-
-    # Check if the verification code has expired
-    if user_verification.expiration_time < int(datetime.now(timezone.utc).timestamp()):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Verification code has expired. Try again",
-        )
+    validate_verification_code(request.email, request.verification_code)
 
     # Update verification status
     update_user_verification_status(request.email)

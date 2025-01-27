@@ -12,7 +12,7 @@ from pytest_mock import MockerFixture, MockType
 
 from app.data_layer.database.models.instrument_model import Instrument
 from app.sockets.connections import SmartSocketConnection
-from app.utils.common.exceptions import SymbolNotFoundException
+from app.utils.common.exceptions.historical_data import SymbolNotFoundException
 from app.utils.common.types.financial_types import ExchangeType
 
 

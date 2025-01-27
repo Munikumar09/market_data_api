@@ -2,6 +2,7 @@ from app.utils.fetch_data import get_required_env_var
 
 # Authentication Constants
 EMAIL = "email"
+USER_ID = "user_id"
 
 
 # Secret keys for JWT tokens
