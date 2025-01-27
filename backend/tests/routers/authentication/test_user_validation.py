@@ -138,5 +138,5 @@ def test_validate_date_of_birth():
         validate_date_of_birth("00-01-2000")
     assert (
         exc.value.detail
-        == f"Invalid date of birth 00-01-2000. Please provide a valid date."
+        == "Invalid date of birth 00-01-2000. Please provide a valid date."
     )
