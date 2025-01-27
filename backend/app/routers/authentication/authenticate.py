@@ -1,19 +1,22 @@
 # pylint: disable=no-value-for-parameter
 
 import random
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from snowflake import SnowflakeGenerator
 
 from app.data_layer.database.crud.user_crud import (
+    create_or_update_user_verification,
     create_user,
     get_user,
     get_user_by_attr,
+    get_user_verification,
     update_user,
 )
-from app.data_layer.database.models.user_model import Gender, User
+from app.data_layer.database.models.user_model import Gender, User, UserVerification
+from app.notification.email.email_provider import EmailProvider
 from app.schemas.user_model import UserSignup
 from app.utils.common.exceptions.authentication import UserSignupError
 from app.utils.constants import (
@@ -184,6 +187,83 @@ def generate_verification_code(length: int = 6) -> str:
         The generated verification code
     """
     return "".join([str(random.randint(0, 9)) for _ in range(length)])
+
+
+def send_and_save_code(email: str, user_name: str, provider: EmailProvider):
+    """
+    Send a verification code to the user's email and save the verification code in the
+    database. If the user does not exist, it raises an error message.
+
+    Parameters:
+    -----------
+    email: ``str``
+        The email address of the user
+    user_name: ``str``
+        The name of the user
+    provider: ``EmailProvider``
+        The email provider to send the verification code
+    """
+    # Generate and save the verification code
+    verification_code = generate_verification_code()
+    expiration_time = int(
+        (datetime.now(timezone.utc) + timedelta(minutes=10)).timestamp()
+    )
+
+    create_or_update_user_verification(
+        UserVerification(
+            email=email,
+            verification_code=verification_code,
+            expiration_time=expiration_time,
+        )
+    )
+
+    # Send the notification
+    provider.send_notification(
+        code=verification_code,
+        recipient_email=email,
+        recipient_name=user_name,
+    )
+
+
+def validate_verification_code(email: str, verification_code: str):
+    """
+    Validate the verification code sent by the user. If the verification code does not
+    match the one stored in the database, or if the verification code has expired, it
+    raises an error message.
+
+    Parameters:
+    -----------
+    email: ``str``
+        The email address of the user
+    verification_code: ``str``
+        The verification code sent by the user
+
+    Raises:
+    -------
+    ``HTTPException``
+        If the verification code does not match or has expired
+    """
+    # Fetch user verification details
+    user_verification = get_user_verification(email)
+
+    if user_verification is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User does not exist with this email",
+        )
+
+    # Check if verification code matches
+    if user_verification.verification_code != verification_code:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid verification code"
+        )
+
+    # Check if the verification code has expired
+    if user_verification.expiration_time < int(datetime.now(timezone.utc).timestamp()):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Verification code has expired. Try again",
+        )
 
 
 def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
