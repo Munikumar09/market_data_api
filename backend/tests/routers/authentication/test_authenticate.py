@@ -14,6 +14,7 @@ from app.routers.authentication.authenticate import (
     get_current_user,
     signin_user,
     signup_user,
+    update_password,
     update_user_verification_status,
 )
 from app.schemas.user_model import UserSignup
@@ -131,3 +132,43 @@ def test_get_current_user(
     mock_session.first.return_value = test_user
     user = get_current_user(token)
     assert user.model_dump() == test_user.model_dump()
+
+
+# Test: 6
+def test_update_password(
+    mock_session: MockType,
+    test_user: User,
+):
+    """
+    Test update_password function
+    """
+    new_password = "NewPassword1!"
+
+    # Test: 6.1 ( User not found )
+    mock_session.first.return_value = None
+    with pytest.raises(HTTPException) as http_exe:
+        update_password(test_user.user_id, test_user.password, new_password)
+    assert http_exe.value.status_code == status.HTTP_404_NOT_FOUND
+    assert http_exe.value.detail == "User not found"
+
+    # Test: 6.2 ( Password validation failure )
+    invalid_password = "short"
+    mock_session.first.return_value = test_user
+    with pytest.raises(HTTPException) as http_exe:
+        update_password(test_user.user_id, test_user.password, invalid_password)
+    assert http_exe.value.status_code == status.HTTP_400_BAD_REQUEST
+    assert (
+        http_exe.value.detail
+        == "Password must be at least 8 characters long and include an uppercase letter, "
+        "lowercase letter, digit, and special character"
+    )
+
+    # Test: 6.3 ( Password same as previous password )
+    mock_session.first.return_value = test_user
+
+    with pytest.raises(HTTPException) as http_exe:
+        update_password(test_user.user_id, test_user.password, "Password1!")
+    assert http_exe.value.status_code == status.HTTP_400_BAD_REQUEST
+    assert (
+        http_exe.value.detail == "New password cannot be the same as the old password"
+    )

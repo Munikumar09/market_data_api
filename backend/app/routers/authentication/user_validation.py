@@ -87,7 +87,7 @@ def validate_password(password: str):
         )
 
 
-def verify_password(password: str, hash_password: str) -> None:
+def verify_password(password: str, hash_password: str, raise_exception=True) -> bool:
     """
     Verifies the password by comparing the hashed password with the password.
 
@@ -97,9 +97,19 @@ def verify_password(password: str, hash_password: str) -> None:
         The password to be verified
     hash_password: ``str``
         The hashed password to be compared with the password
+    raise_exception: ``bool``
+        If True, it raises an exception if the passwords do not match
+
+    Returns:
+    --------
+    ``bool``
+        True if the passwords match, otherwise False
     """
     if not bcrypt.checkpw(password.encode("utf-8"), hash_password.encode("utf-8")):
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Passwords do not match")
+        if raise_exception:
+            raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Passwords do not match")
+        return False
+    return True
 
 
 def validate_date_of_birth(date_of_birth: str) -> None:

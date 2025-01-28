@@ -491,8 +491,6 @@ def test_on_message_callback(binary_data_io: tuple[bytes, dict]):
     assert actual_call_args.pop("retrieval_timestamp")
 
     assert smartsocket.on_data_save_callback.call_count == 1
-    print(f"actual_call_args: {actual_call_args}")
-    print(f"exptected_data: {exptected_data}")
     assert actual_call_args == exptected_data
 
 
