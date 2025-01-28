@@ -128,3 +128,15 @@ class UserVerification(SQLModel, table=True):  # type: ignore
             onupdate=text("CURRENT_TIMESTAMP"),
         )
     )
+
+    def to_dict(self):
+        """
+        Converts the UserVerification model to a dictionary
+        """
+        return {
+            "email": self.email,
+            "verification_code": self.verification_code,
+            "expiration_time": self.expiration_time,
+            "verification_datetime": self.verification_datetime,
+            "reverified_datetime": self.reverified_datetime,
+        }

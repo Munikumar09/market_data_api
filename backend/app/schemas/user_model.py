@@ -31,3 +31,23 @@ class EmailVerificationRequest(BaseModel):
 
     verification_code: str
     email: str
+
+
+class UserResetPassword(BaseModel):
+    """
+    UserResetPassword schema for user password reset
+    """
+
+    email: str
+    password: str
+    verification_code: str
+
+
+class UserChangePassword(BaseModel):
+    """
+    UserChangePassword schema for user password change
+    """
+
+    email: str
+    old_password: str
+    new_password: str
