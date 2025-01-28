@@ -1,21 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/core/constants/app_strings.dart';
 import 'package:frontend/core/constants/app_text_styles.dart';
 import 'package:frontend/core/routes/app_routes.dart';
+import 'package:frontend/core/utils/validators.dart';
+import 'package:frontend/features/auth/functionality/providers/auth_providers.dart';
+import 'package:frontend/features/auth/functionality/state/auth_notifier.dart';
 import 'package:frontend/features/auth/presentation/widgets/header_text.dart';
 import 'package:frontend/features/auth/presentation/widgets/auth_footer.dart';
 import 'package:frontend/shared/buttons/custom_button.dart';
 import 'package:frontend/shared/inputs/custom_text_field.dart';
 import 'package:frontend/shared/layouts/custom_background_widget.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -27,9 +31,34 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
+  void _login(AuthNotifier authNotifier) async {
+    if (_formKey.currentState!.validate()) {
+      authNotifier
+          .login(_emailController.text, _passwordController.text)
+          .then((_) {
+        final authState = ref.read(authNotifierProvider);
+        if (!authState.isLoading && authState.errorMessage == null) {
+          // Navigate to the home page after successful login
+          Navigator.of(context).pushNamed(AppRoutes.home);
+        } else if (authState.errorMessage != null) {
+          // Display error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(authState.errorMessage!),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final authState = ref.watch(authNotifierProvider);
+    final authNotifier = ref.read(authNotifierProvider.notifier);
+
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       body: CustomBackgroundWidget(
@@ -55,6 +84,7 @@ class _LoginPageState extends State<LoginPage> {
                         labelText: AppStrings.email,
                         keyboardType: TextInputType.emailAddress,
                         controller: _emailController,
+                        validator: (value) => Validators.email(value),
                       ),
                       const SizedBox(height: 16),
                       CustomTextField(
@@ -63,7 +93,7 @@ class _LoginPageState extends State<LoginPage> {
                         labelText: AppStrings.password,
                         controller: _passwordController,
                         autocorrect: false,
-                        enableSuggestions: false, 
+                        enableSuggestions: false,
                       ),
                     ],
                   ),
@@ -84,12 +114,10 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 10),
                 CustomButton(
-                  text: AppStrings.login,
-                  onPressed: () {
-                    if (_formKey.currentState?.validate() ?? false) {
-                      // Handle login
-                    }
-                  },
+                  text:
+                      authState.isLoading ? "Logging in..." : AppStrings.login,
+                  onPressed:
+                      authState.isLoading ? () {} : () => _login(authNotifier),
                 ),
                 const SizedBox(height: 10),
                 TextButton(

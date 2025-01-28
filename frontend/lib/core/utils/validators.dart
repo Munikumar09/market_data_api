@@ -32,4 +32,24 @@ class Validators {
     }
     return null;
   }
+
+  static String? confirmPassword(String? password, String? confirmPassword) {
+    if (confirmPassword == null || confirmPassword.isEmpty) {
+      return 'Please confirm your password';
+    }
+    if (password != confirmPassword) {
+      return 'Passwords do not match';
+    }
+    return null;
+  }
+  static String? phoneNumber(String? value) {
+  if (value == null || value.isEmpty) {
+    return 'Please enter your phone number';
+  }
+  final phoneRegExp = RegExp(r'^\+?\d{10,15}$');
+  if (!phoneRegExp.hasMatch(value)) {
+    return 'Please enter a valid phone number';
+  }
+  return null;
+}
 }

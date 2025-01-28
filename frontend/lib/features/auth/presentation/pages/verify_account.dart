@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/core/constants/app_strings.dart';
 import 'package:frontend/core/routes/app_routes.dart';
-import 'package:frontend/features/auth/functionality/repository/auth_repository.dart';
+import 'package:frontend/features/auth/functionality/providers/auth_providers.dart';
+import 'package:frontend/features/auth/functionality/state/auth_notifier.dart';
 import 'package:frontend/features/auth/presentation/widgets/header_text.dart';
 import 'package:frontend/shared/buttons/custom_button.dart';
 import 'package:frontend/shared/inputs/custom_text_field.dart';
 import 'package:frontend/shared/layouts/custom_background_widget.dart';
 
-class VerifyAccount extends StatefulWidget {
+class VerifyAccount extends ConsumerStatefulWidget {
   const VerifyAccount({super.key});
 
   @override
-  State<VerifyAccount> createState() => _VerifyAccountState();
+  ConsumerState<VerifyAccount> createState() => _VerifyAccountState();
 }
 
-class _VerifyAccountState extends State<VerifyAccount> {
+class _VerifyAccountState extends ConsumerState<VerifyAccount> {
   final _formKey = GlobalKey<FormState>();
   final _emailOtpController = TextEditingController();
-  // final _phoneOtpController = TextEditingController();
   late String email;
 
   @override
@@ -32,12 +33,40 @@ class _VerifyAccountState extends State<VerifyAccount> {
     final args =
         ModalRoute.of(context)?.settings.arguments as Map<String, String>;
     email = args['email'] ?? '';
-    // phone = args['phone_number'] ?? '';
+  }
+
+  void _verifyOtp(AuthNotifier authNotifier) async {
+    if (_formKey.currentState?.validate() ?? false) {
+      authNotifier.verifyOtp(email, _emailOtpController.text).then((_) {
+        final authState = ref.read(authNotifierProvider);
+        if (!authState.isLoading && authState.errorMessage == null) {
+          // Navigate to the home page after successful verification
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Account verified!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.of(context).pushNamed(AppRoutes.login);
+        } else if (authState.errorMessage != null) {
+          // Display error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(authState.errorMessage!),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final authState = ref.watch(authNotifierProvider);
+    final authNotifier = ref.read(authNotifierProvider.notifier);
+
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       body: CustomBackgroundWidget(
@@ -58,58 +87,25 @@ class _VerifyAccountState extends State<VerifyAccount> {
                   key: _formKey,
                   child: Column(
                     children: [
-                      //email authentication input field
+                      // Email OTP input field
                       CustomTextField(
                         hintText: AppStrings.emailOtp,
                         labelText: AppStrings.emailOtp,
                         keyboardType: TextInputType.number,
                         controller: _emailOtpController,
                       ),
-                      //phone authentication field for future use
-                      // const SizedBox(height: 16),
-                      // CustomTextField(
-                      //   hintText: AppStrings.phoneOtp,
-                      //   labelText: AppStrings.phoneOtp,
-                      //   keyboardType: TextInputType.number,
-                      //   controller: _phoneOtpController,
-                      // ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 30),
                 CustomButton(
-                  text: AppStrings.verify,
-                  onPressed: () {
-                    if (_formKey.currentState?.validate() ?? false) {
-                      // Handle OTP verification
-                      try {
-                        AuthRepository().verifyOtp(
-                          email,
-                          _emailOtpController.text,
-                          // phone,
-                          // _phoneOtpController.text,
-                        );
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Account verified!'),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                        Navigator.of(context).pushNamed(AppRoutes.home);
-                      } catch (e) {
-                        if (e is String) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(e),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        }
-                      }
-                    }
-                  },
+                  text:
+                      authState.isLoading ? "Verifying..." : AppStrings.verify,
+                  onPressed: authState.isLoading
+                      ? () {}
+                      : () => _verifyOtp(authNotifier),
                 ),
-                Spacer(),
+                const Spacer(),
               ],
             ),
           ),

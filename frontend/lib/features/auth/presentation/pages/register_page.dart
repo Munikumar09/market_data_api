@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/core/constants/app_strings.dart';
 import 'package:frontend/core/constants/app_text_styles.dart';
 import 'package:frontend/core/routes/app_routes.dart';
+import 'package:frontend/core/utils/validators.dart';
 import 'package:frontend/features/auth/functionality/model/signup_request.dart';
-import 'package:frontend/features/auth/functionality/repository/auth_repository.dart';
+import 'package:frontend/features/auth/functionality/providers/auth_providers.dart';
+import 'package:frontend/features/auth/functionality/state/auth_notifier.dart';
 import 'package:frontend/features/auth/presentation/widgets/auth_footer.dart';
 import 'package:frontend/features/auth/presentation/widgets/header_text.dart';
 import 'package:frontend/shared/buttons/custom_button.dart';
@@ -11,14 +14,14 @@ import 'package:frontend/shared/inputs/custom_drop_down_box.dart';
 import 'package:frontend/shared/inputs/custom_text_field.dart';
 import 'package:frontend/shared/layouts/custom_background_widget.dart';
 
-class RegisterPage extends StatefulWidget {
+class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  ConsumerState<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
   final _dateController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -27,6 +30,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _emailController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   String? selectedGender;
+
   @override
   void dispose() {
     _dateController.dispose();
@@ -34,6 +38,7 @@ class _RegisterPageState extends State<RegisterPage> {
     _phoneNumberController.dispose();
     _usernameController.dispose();
     _emailController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -52,9 +57,9 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
-  void _submit() async {
+  void _submit(BuildContext context, AuthNotifier authNotifier) {
     if (_formKey.currentState!.validate()) {
-      SignupRequest request = SignupRequest(
+      final signupRequest = SignupRequest(
         username: _usernameController.text,
         email: _emailController.text,
         password: _passwordController.text,
@@ -63,28 +68,33 @@ class _RegisterPageState extends State<RegisterPage> {
         dateOfBirth: _dateController.text,
         gender: selectedGender!,
       );
-      print(request);
-      try {
-        await AuthRepository().signup(request);
-        Navigator.of(context).pushNamed(AppRoutes.verifyAccount, arguments: {
-          'email': request.email,
-          'phone': request.phoneNumber,
-        });
-      } catch (e) {
-        // if (e is String) {
+      authNotifier.signup(signupRequest).then((_) {
+        final authState = ref.read(authNotifierProvider);
+        if (!authState.isLoading && authState.errorMessage == null) {
+          Navigator.of(context).pushNamed(
+            AppRoutes.verifyAccount,
+            arguments: {
+              'email': signupRequest.email,
+              'phone': signupRequest.phoneNumber,
+            },
+          );
+        } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(e.toString()),
+              content: Text(authState.errorMessage!),
               backgroundColor: Colors.red,
             ),
           );
-        // }
-      }
+        }
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authNotifierProvider);
+    final authNotifier = ref.read(authNotifierProvider.notifier);
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: CustomBackgroundWidget(
@@ -99,13 +109,13 @@ class _RegisterPageState extends State<RegisterPage> {
                       padding: const EdgeInsets.symmetric(horizontal: 24.0),
                       child: Column(
                         children: [
-                          Spacer(),
+                          const Spacer(),
                           HeaderText(
                             title: AppStrings.registerTitle,
                             subtitle: AppStrings.registerSubtitle,
                           ),
-                          SizedBox(height: 15),
-                          Spacer(),
+                          const SizedBox(height: 15),
+                          const Spacer(),
                           Form(
                             key: _formKey,
                             child: Column(
@@ -121,6 +131,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                   labelText: AppStrings.email,
                                   keyboardType: TextInputType.emailAddress,
                                   controller: _emailController,
+                                  validator: (value) => Validators.email(value),
                                 ),
                                 const SizedBox(height: 10),
                                 CustomTextField(
@@ -130,6 +141,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                   controller: _passwordController,
                                   autocorrect: false,
                                   enableSuggestions: false,
+                                  validator: (value) =>
+                                      Validators.password(value),
                                 ),
                                 const SizedBox(height: 10),
                                 CustomTextField(
@@ -139,6 +152,11 @@ class _RegisterPageState extends State<RegisterPage> {
                                   controller: _confirmPasswordController,
                                   autocorrect: false,
                                   enableSuggestions: false,
+                                  validator: (value) =>
+                                      Validators.confirmPassword(
+                                    _passwordController.text,
+                                    value,
+                                  ),
                                 ),
                                 const SizedBox(height: 10),
                                 CustomTextField(
@@ -146,6 +164,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                   labelText: AppStrings.phoneNumber,
                                   keyboardType: TextInputType.phone,
                                   controller: _phoneNumberController,
+                                  validator: (value) =>
+                                      Validators.phoneNumber(value),
                                 ),
                                 const SizedBox(height: 10),
                                 CustomTextField(
@@ -171,8 +191,12 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           const SizedBox(height: 20),
                           CustomButton(
-                            text: AppStrings.signUp,
-                            onPressed: _submit,
+                            text: authState.isLoading
+                                ? "Signing Up..."
+                                : AppStrings.signUp,
+                            onPressed: authState.isLoading
+                                ? () {}
+                                : () => _submit(context, authNotifier),
                           ),
                           const SizedBox(height: 10),
                           TextButton(
@@ -182,12 +206,13 @@ class _RegisterPageState extends State<RegisterPage> {
                             child: Text(
                               AppStrings.haveAccount,
                               style: AppTextStyles.headline3(
-                                  const Color(0xFF494949)),
+                                const Color(0xFF494949),
+                              ),
                             ),
                           ),
-                          const SizedBox(height: 15),
-                          const AuthFooter(),
                           Spacer(),
+                          const AuthFooter(),
+                          const Spacer(),
                         ],
                       ),
                     ),
