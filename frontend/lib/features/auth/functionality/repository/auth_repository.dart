@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:frontend/core/constants/app_strings.dart';
 import 'package:frontend/core/utils/exceptions.dart';
 import 'package:frontend/features/auth/functionality/model/signup_request.dart';
 import 'package:frontend/features/auth/functionality/services/email_verification_service.dart';
@@ -78,8 +79,8 @@ class AuthRepository {
       _logger.i("stored successfully");
     } on DioException catch (e) {
       _logger.e('Login failed', e, e.stackTrace);
-      if (e.response?.data['detail'] == 'User is not verified') {
-        throw EmailNotVerifiedException('User is not verified');
+      if (e.response?.data['detail'] == AppStrings.userNotVerified) {
+        throw EmailNotVerifiedException(AppStrings.userNotVerified);
       }
       throw Exception(e.response?.data['detail'] ?? 'Invalid Credentials.');
     } catch (e) {

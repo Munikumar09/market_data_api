@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/core/routes/app_routes.dart';
 import 'package:frontend/core/themes/app_theme.dart';
 
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>(); // Global navigator key
+final GlobalKey<NavigatorState> navigatorKey =
+    GlobalKey<NavigatorState>(); // Global navigator key
 
 void main() {
   runApp(
@@ -21,8 +22,8 @@ class MyApp extends ConsumerWidget {
     return MaterialApp(
       title: 'Paper Trading App',
       theme: AppThemes.lightTheme,
-      navigatorKey: navigatorKey, 
-      initialRoute: AppRoutes.initial,// Set the global key
+      navigatorKey: navigatorKey,
+      initialRoute: AppRoutes.initial, // Set the global key
       routes: AppRoutes.pages,
     );
   }

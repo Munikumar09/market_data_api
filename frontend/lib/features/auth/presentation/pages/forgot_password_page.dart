@@ -78,7 +78,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   hintText: AppStrings.email,
                   labelText: AppStrings.email,
                   keyboardType: TextInputType.emailAddress,
-                  controller: _emailController, 
+                  controller: _emailController,
                 ),
                 const SizedBox(height: 16),
                 _isLoading

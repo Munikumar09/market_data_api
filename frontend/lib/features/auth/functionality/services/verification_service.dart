@@ -10,7 +10,8 @@ abstract class VerificationService {
 
   Future<void> sendVerification(String recipient, String medium) async {
     try {
-      await dio.post("/authentication/send-verification-code", queryParameters: {
+      await dio
+          .post("/authentication/send-verification-code", queryParameters: {
         "email_or_phone": recipient,
         "verification_medium": medium,
       });
@@ -21,7 +22,8 @@ abstract class VerificationService {
     }
   }
 
-  Future<void> verifyCode(String recipient, String verificationCode, String medium) async {
+  Future<void> verifyCode(
+      String recipient, String verificationCode, String medium) async {
     try {
       final response = await dio.post('/authentication/verify-code', data: {
         "verification_code": verificationCode,

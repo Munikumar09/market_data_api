@@ -5,7 +5,8 @@ import 'package:frontend/features/auth/functionality/providers/global_providers.
 final protectedDataProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   final dio = ref.read(dioProvider); // Get Dio instance with auth interceptor
   try {
-    final response = await dio.get('/authentication/protected-endpoint'); // API Call
+    final response =
+        await dio.get('/authentication/protected-endpoint'); // API Call
     return response.data;
   } catch (e) {
     throw Exception("Failed to fetch protected data");

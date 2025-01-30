@@ -21,35 +21,36 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
   }
 
   Future<void> _checkAuthentication() async {
-  final secureStorage = ref.read(secureStorageProvider);
-  final tokens = await secureStorage.getTokens();
-  final accessToken = tokens['accessToken'];
-  final refreshToken = tokens['refreshToken'];
-  final dio = ref.read(dioProvider); // Use Dio with interceptor
+    final secureStorage = ref.read(secureStorageProvider);
+    final tokens = await secureStorage.getTokens();
+    final accessToken = tokens['accessToken'];
+    final refreshToken = tokens['refreshToken'];
+    final dio = ref.read(dioProvider); // Use Dio with interceptor
 
-  if (accessToken != null || refreshToken != null) {
-    final isAuthenticated = await _isAuthenticated(dio);
-    if (isAuthenticated) {
-      ref.invalidate(protectedDataProvider); // Refresh protected data
-      navigatorKey.currentState?.pushReplacementNamed(AppRoutes.home);
-      return;
+    if (accessToken != null || refreshToken != null) {
+      final isAuthenticated = await _isAuthenticated(dio);
+      if (isAuthenticated) {
+        ref.invalidate(protectedDataProvider); // Refresh protected data
+        navigatorKey.currentState?.pushReplacementNamed(AppRoutes.home);
+        return;
+      }
     }
-  }
 
-  // If tokens are invalid, clear storage and go to login
-  await secureStorage.clearTokens();
-  navigatorKey.currentState?.pushReplacementNamed(AppRoutes.welcome);
-}
+    // If tokens are invalid, clear storage and go to login
+    await secureStorage.clearTokens();
+    navigatorKey.currentState?.pushReplacementNamed(AppRoutes.welcome);
+  }
 
 // ✅ Function to check authentication using a protected endpoint
-Future<bool> _isAuthenticated(Dio dio) async {
-  try {
-    final response = await dio.get('/authentication/protected-endpoint'); // Use any protected API
-    return response.statusCode == 200;
-  } catch (e) {
-    return false; // Token is invalid, will trigger interceptor if needed
+  Future<bool> _isAuthenticated(Dio dio) async {
+    try {
+      final response = await dio
+          .get('/authentication/protected-endpoint'); // Use any protected API
+      return response.statusCode == 200;
+    } catch (e) {
+      return false; // Token is invalid, will trigger interceptor if needed
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {

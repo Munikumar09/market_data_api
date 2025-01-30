@@ -16,6 +16,7 @@ from app.utils.common.logger import get_logger
 from app.utils.constants import EMAIL
 
 from .authenticate import (
+    generate_verification_code,
     get_current_user,
     send_and_save_code,
     signin_user,
@@ -144,19 +145,3 @@ def protected_route(current_user: User = Depends(get_current_user)) -> dict:
     """
     logger.info("Access to protected route by user: %s", current_user.email)
     return {"message": "This is a protected route", "user": current_user.model_dump()}
-
-@router.post("/refresh-token", status_code=status.HTTP_200_OK)
-async def refresh_token(refresh_token: str) -> dict:
-    """
-    Refresh the access and refresh tokens using a valid refresh token.
-
-    Parameters:
-    -----------
-    - **refresh_token** (str): The refresh token provided by the client.
-
-    Returns:
-    --------
-    - JSON response containing the new access and refresh tokens.
-    """
-    logger.info("Refreshing token using refresh token")
-    return access_token_from_refresh_token(refresh_token)

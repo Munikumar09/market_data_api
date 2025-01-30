@@ -31,4 +31,5 @@ class AppStrings {
   static const String emailOtp = 'Enter Email OTP';
   static const String phoneOtp = 'Enter Phone OTP';
   static const String verify = 'Verify';
+  static const String userNotVerified = 'User not verified';
 }
