@@ -2,6 +2,7 @@
 from pathlib import Path
 from typing import cast
 
+from app.routers.authentication.jwt_tokens import access_token_from_refresh_token
 import hydra
 from fastapi import APIRouter, Depends, HTTPException, status
 
@@ -145,3 +146,19 @@ def protected_route(current_user: User = Depends(get_current_user)) -> dict:
     """
     logger.info("Access to protected route by user: %s", current_user.email)
     return {"message": "This is a protected route", "user": current_user.model_dump()}
+
+@router.post("/refresh-token", status_code=status.HTTP_200_OK)
+async def refresh_token(refresh_token: str) -> dict:
+    """
+    Refresh the access and refresh tokens using a valid refresh token.
+
+    Parameters:
+    -----------
+    - **refresh_token** (str): The refresh token provided by the client.
+
+    Returns:
+    --------
+    - JSON response containing the new access and refresh tokens.
+    """
+    logger.info("Refreshing token using refresh token")
+    return access_token_from_refresh_token(refresh_token)
