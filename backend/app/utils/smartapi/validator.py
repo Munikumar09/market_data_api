@@ -2,14 +2,14 @@
 from bisect import bisect_left
 from datetime import datetime, time, timedelta
 
-from app.utils.common.exceptions import (
+from app.utils.common.exceptions.historical_data import (
     AllDaysHolidayException,
     DataUnavailableException,
     InvalidDateRangeBoundsException,
     InvalidTradingHoursException,
     SymbolNotFoundException,
 )
-from app.utils.common.types.financial_types import Exchange
+from app.utils.common.types.financial_types import ExchangeType
 from app.utils.common.types.reques_types import CandlestickInterval
 from app.utils.date_utils import validate_datetime_format
 from app.utils.file_utils import get_symbols, load_json_data, read_text_data
@@ -22,7 +22,7 @@ from app.utils.smartapi.constants import (
 
 
 def validate_symbol_and_get_token(
-    stock_exchange: Exchange, stock_symbol: str
+    stock_exchange: ExchangeType, stock_symbol: str
 ) -> tuple[str, str]:
     """
     Validate the stock symbol and get the stock token from the symbols data.
@@ -30,7 +30,7 @@ def validate_symbol_and_get_token(
 
     Parameters:
     -----------
-    stock_exchange: ``Exchange``
+    stock_exchange: ``ExchangeType``
         The stock exchange of the stock symbol
     stock_symbol: ``str``
         The stock symbol to be validated and get the token
@@ -49,7 +49,7 @@ def validate_symbol_and_get_token(
     stock_symbol = stock_symbol.upper()
     symbols_path = BSE_SYMBOLS_PATH
 
-    if stock_exchange == Exchange.NSE:
+    if stock_exchange == ExchangeType.NSE:
         symbols_path = NSE_SYMBOLS_PATH
 
     all_symbols_data = get_symbols(symbols_path)

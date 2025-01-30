@@ -4,8 +4,8 @@ from typing import Annotated
 from fastapi import APIRouter, Path, Query
 
 from app.schemas.stock_model import HistoricalStockDataBundle, SmartAPIStockPriceInfo
-from app.utils.common.exceptions import UnkownException
-from app.utils.common.types.financial_types import Exchange
+from app.utils.common.exceptions.historical_data import UnkownException
+from app.utils.common.types.financial_types import ExchangeType
 from app.utils.common.types.reques_types import CandlestickInterval, RequestType
 from app.utils.smartapi.connection import get_endpoint_connection
 from app.utils.smartapi.data_processor import (
@@ -33,10 +33,10 @@ async def latest_price_quote(stock_symbol: Annotated[str, Path()]):
     """
 
     stock_token, stock_symbol = validate_symbol_and_get_token(
-        stock_exchange=Exchange.NSE, stock_symbol=stock_symbol
+        stock_exchange=ExchangeType.NSE, stock_symbol=stock_symbol
     )
     payload = {
-        "exchange": Exchange.NSE.value,
+        "exchange": ExchangeType.NSE.name,
         "tradingsymbol": stock_symbol,
         "symboltoken": stock_token,
     }
@@ -115,14 +115,14 @@ async def historical_stock_data(
     """
 
     stock_token, stock_symbol = validate_symbol_and_get_token(
-        stock_exchange=Exchange.NSE, stock_symbol=stock_symbol
+        stock_exchange=ExchangeType.NSE, stock_symbol=stock_symbol
     )
     validated_interval = CandlestickInterval.validate_interval(interval)
     validated_start_date, validated_end_date = validate_dates(
         start_date, end_date, validated_interval, stock_symbol.split("-")[0]
     )
     payload = {
-        "exchange": Exchange.NSE.value,
+        "exchange": ExchangeType.NSE.name,
         "tradingsymbol": stock_symbol,
         "interval": validated_interval.name,
         "fromdate": validated_start_date.strftime("%Y-%m-%d %H:%M"),

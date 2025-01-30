@@ -147,6 +147,7 @@ def test_retrieve_and_save(sqlite_saver: SqliteDataSaver, kafka_data: list[dict]
     encoded_data = [
         Message(value=json.dumps(data).encode("utf-8")) for data in kafka_data
     ]
+
     # Test: 2.1 ( Test saving data to the sqlite database )
     sqlite_saver.consumer.__iter__.return_value = encoded_data
     sqlite_saver.retrieve_and_save()
@@ -156,7 +157,24 @@ def test_retrieve_and_save(sqlite_saver: SqliteDataSaver, kafka_data: list[dict]
     with get_session(sqlite_saver.engine) as session:
         stock_price_info = get_all_stock_price_info(session=session)
 
-    inserted_data = [info.to_dict() for info in stock_price_info]
+    inserted_data = [info.model_dump() for info in stock_price_info]
+
     expected_data = [InstrumentPrice(**data).to_dict() for data in kafka_data]
 
     assert inserted_data == expected_data
+
+
+# Add these test cases
+def test_save_stock_data_validation(sqlite_saver):
+    """
+    Test the validation of the `save_stock_data` method of the SqliteDataSaver.
+    """
+    invalid_data = {
+        # Missing required fields
+        "missing_exchange": {"symbol": "INFY", "data_provider_id": 1},
+        # Invalid values
+        "invalid_exchange": {"symbol": "INFY", "exchange_id": 999},
+    }
+    for _, data in invalid_data.items():
+        with pytest.raises(KeyError):
+            sqlite_saver.save_stock_data(data)

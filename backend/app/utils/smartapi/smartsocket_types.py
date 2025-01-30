@@ -1,6 +1,8 @@
 from enum import Enum
 from typing import Type, TypeVar
 
+from app.utils.common.types.financial_types import ExchangeType
+
 # Declare a TypeVar for enum types
 E = TypeVar("E", bound=Enum)
 
@@ -87,7 +89,7 @@ class SubscriptionMode(Enum):
         return get_enum_member(SubscriptionMode, subscription_mode)
 
 
-class ExchangeType(Enum):
+class SmartAPIExchangeSegment(Enum):
     """
     This enumeration class is used to define the exchange type for the WebSocket client.
     """
@@ -96,7 +98,7 @@ class ExchangeType(Enum):
     BSE_CM = 2
 
     @staticmethod
-    def get_exchange(exchange_symbol: str | int) -> "ExchangeType":
+    def get_exchange(exchange_symbol: str | int) -> "SmartAPIExchangeSegment":
         """
         This method is used to get the exchange type based on the exchange symbol or value.
 
@@ -110,7 +112,7 @@ class ExchangeType(Enum):
         ``ExchangeType``
             The exchange type based on the exchange symbol or value
         """
-        return get_enum_member(ExchangeType, exchange_symbol)
+        return get_enum_member(SmartAPIExchangeSegment, exchange_symbol)
 
 
 class SubscriptionAction(Enum):
@@ -120,3 +122,9 @@ class SubscriptionAction(Enum):
 
     SUBSCRIBE = 1
     UNSUBSCRIBE = 2
+
+
+SMARTAPI_EXCHANGETYPE_MAP = {
+    SmartAPIExchangeSegment.NSE_CM: ExchangeType.NSE,
+    SmartAPIExchangeSegment.BSE_CM: ExchangeType.BSE,
+}

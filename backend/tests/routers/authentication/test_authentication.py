@@ -53,7 +53,7 @@ def mock_generate_verification_code(mocker: MockFixture):
     Mock the generate_verification_code function
     """
     return mocker.patch(
-        "app.routers.authentication.authentication.generate_verification_code",
+        "app.routers.authentication.authenticate.generate_verification_code",
     )
 
 
@@ -63,7 +63,7 @@ def mock_create_or_update_user_verification(mocker: MockFixture):
     Mock the create_or_update_user_verification function
     """
     return mocker.patch(
-        "app.routers.authentication.authentication.create_or_update_user_verification",
+        "app.routers.authentication.authenticate.create_or_update_user_verification",
     )
 
 
@@ -91,7 +91,7 @@ def mock_notification_provider(mocker: MockFixture):
     Mock the notification provider
     """
     return mocker.patch(
-        "app.routers.authentication.authentication.notification_provider",
+        "app.routers.authentication.authentication.email_notification_provider",
         MockNotificationProvider(),
     )
 
@@ -101,9 +101,7 @@ def mock_get_user_verification(mocker: MockFixture):
     """
     Mock the get_user_verification function
     """
-    return mocker.patch(
-        "app.routers.authentication.authentication.get_user_verification"
-    )
+    return mocker.patch("app.routers.authentication.authenticate.get_user_verification")
 
 
 @pytest.fixture
@@ -237,8 +235,7 @@ def test_send_verification_code(
     mock_generate_verification_code.return_value = "123456"
 
     response = client.post(
-        "/authentication/send-verification-code",
-        params={"email_or_phone": test_user.email, "verification_medium": "email"},
+        "/authentication/send-verification-code", params={"email": test_user.email}
     )
     assert response.status_code == 200
     assert response.json() == {
@@ -251,38 +248,28 @@ def test_send_verification_code(
     assert mock_notification_provider.recipient_email == test_user.email
     assert mock_notification_provider.recipient_name == test_user.username
 
-    # Test: 3.2 ( Invalid verification medium )
-    with pytest.raises(HTTPException) as exc:
-        client.post(
-            "/authentication/send-verification-code",
-            params={
-                "email_or_phone": test_user.email,
-                "verification_medium": "invalid",
-            },
-        )
-    assert exc.value.status_code == status.HTTP_400_BAD_REQUEST
-    assert exc.value.detail == "Invalid verification medium. Use 'email' or 'phone'."
-    mock_get_user_by_attr.return_value = None
-
-    # Test: 3.3 ( User does not exist )
-    with pytest.raises(HTTPException) as exc:
-        client.post(
-            "/authentication/send-verification-code",
-            params={"email_or_phone": test_user.email, "verification_medium": "email"},
-        )
-    assert exc.value.status_code == status.HTTP_404_NOT_FOUND
-    assert exc.value.detail == "User does not exist with this email or phone."
-
-    # Test: 3.4 ( Email or phone is already verified )
+    # Test: 3.2 ( Email is already verified )
     test_user.is_verified = True
     mock_get_user_by_attr.return_value = test_user
     with pytest.raises(HTTPException) as exc:
         client.post(
             "/authentication/send-verification-code",
-            params={"email_or_phone": test_user.email, "verification_medium": "email"},
+            params={"email": test_user.email},
         )
     assert exc.value.status_code == status.HTTP_400_BAD_REQUEST
-    assert exc.value.detail == "Email or phone is already verified."
+    assert exc.value.detail == "Email is already verified."
+
+    # # Test: 3.3 ( User does not exist )
+    mock_get_user_by_attr.side_effect = HTTPException(
+        status.HTTP_404_NOT_FOUND, f"User not found with given email {test_user.email}"
+    )
+    with pytest.raises(HTTPException) as exc:
+        client.post(
+            "/authentication/send-verification-code", params={"email": test_user.email}
+        )
+    assert exc.value.status_code == status.HTTP_404_NOT_FOUND
+    assert exc.value.detail == f"User not found with given email {test_user.email}"
+    mock_get_user_by_attr.reset_mock()
 
 
 # Test: 4
@@ -310,11 +297,11 @@ def test_verify_code(
         "/authentication/verify-code",
         json={
             "verification_code": test_verification_code,
-            "email_or_phone": test_user.email,
+            "email": test_user.email,
         },
     )
     assert response.status_code == 200
-    assert response.json()["message"] == "Email or phone verified successfully"
+    assert response.json()["message"] == "Email verified successfully"
     mock_update_user_verification_status.assert_called_once_with(test_user.email)
 
     # Test: 4.2 ( User does not exist )
@@ -324,11 +311,11 @@ def test_verify_code(
             "/authentication/verify-code",
             json={
                 "verification_code": test_verification_code,
-                "email_or_phone": test_user.email,
+                "email": test_user.email,
             },
         )
     assert exc.value.status_code == status.HTTP_404_NOT_FOUND
-    assert exc.value.detail == "User does not exist with this email or phone"
+    assert exc.value.detail == "User does not exist with this email"
 
     # Test: 4.3 ( Invalid verification code )
     mock_get_user_verification.return_value = user_verification
@@ -337,7 +324,7 @@ def test_verify_code(
             "/authentication/verify-code",
             json={
                 "verification_code": "654321",
-                "email_or_phone": test_user.email,
+                "email": test_user.email,
             },
         )
     assert exc.value.status_code == status.HTTP_400_BAD_REQUEST
@@ -351,7 +338,7 @@ def test_verify_code(
             "/authentication/verify-code",
             json={
                 "verification_code": test_verification_code,
-                "email_or_phone": test_user.email,
+                "email": test_user.email,
             },
         )
     assert exc.value.status_code == status.HTTP_400_BAD_REQUEST

@@ -89,7 +89,10 @@ def get_user_by_attr(attr_name: str, attr_value: str, session: Session) -> User:
     result = session.exec(statement).first()
 
     if not result:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "User not found")
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            f"User not found with given {attr_name} {attr_value}",
+        )
 
     return result
 
@@ -204,14 +207,14 @@ def delete_user(user_id: int, session: Session) -> None:
 
 #### UserVerification CRUD operations ####
 @with_session
-def get_user_verification(recipient: str, session: Session) -> UserVerification | None:
+def get_user_verification(email: str, session: Session) -> UserVerification | None:
     """
-    Retrieve a user verification object from the database using the recipient (email/phone number).
+    Retrieve a user verification object from the database using the email.
 
     Parameters:
     ----------
-    recipient: ``str``
-        The email or phone number of the user to retrieve the verification object
+    email: ``str``
+        The email of the user to retrieve the verification object
     session: ``Session``
         Session object to interact with the database
 
@@ -220,7 +223,7 @@ def get_user_verification(recipient: str, session: Session) -> UserVerification 
     ``UserVerification | None``
         The user verification object if found, otherwise None
     """
-    statement = select(UserVerification).where(UserVerification.recipient == recipient)
+    statement = select(UserVerification).where(UserVerification.email == email)
     result = session.exec(statement).first()
 
     return result
@@ -245,7 +248,7 @@ def create_or_update_user_verification(
     """
 
     existing_user_verification = get_user_verification(
-        user_verification.recipient, session=session
+        user_verification.email, session=session
     )
 
     if not existing_user_verification:
@@ -257,9 +260,6 @@ def create_or_update_user_verification(
         existing_user_verification.expiration_time = user_verification.expiration_time
         existing_user_verification.reverified_datetime = (
             user_verification.reverified_datetime or datetime.datetime.now()
-        )
-        existing_user_verification.verification_medium = (
-            user_verification.verification_medium
         )
 
     session.add(existing_user_verification)

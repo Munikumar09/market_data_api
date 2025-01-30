@@ -1,7 +1,7 @@
 # pylint: disable=missing-class-docstring
 from enum import Enum
 
-from app.utils.common.exceptions import IntervalNotFoundException
+from app.utils.common.exceptions.historical_data import IntervalNotFoundException
 
 
 class RequestType(Enum):

@@ -1,5 +1,10 @@
 from app.utils.fetch_data import get_required_env_var
 
+# Authentication Constants
+EMAIL = "email"
+USER_ID = "user_id"
+
+
 # Secret keys for JWT tokens
 JWT_SECRET = get_required_env_var("JWT_SECRET_KEY")
 JWT_REFRESH_SECRET = get_required_env_var("JWT_REFRESH_SECRET_KEY")

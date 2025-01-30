@@ -75,6 +75,8 @@ class SqliteDataSaver(DataSaver):
             retrieval_timestamp=data["retrieval_timestamp"],
             last_traded_timestamp=data["last_traded_timestamp"],
             symbol=data["symbol"],
+            exchange_id=data["exchange_id"],
+            data_provider_id=data["data_provider_id"],
             last_traded_price=data["last_traded_price"],
             last_traded_quantity=data.get("last_traded_quantity"),
             average_traded_price=data.get("average_traded_price"),

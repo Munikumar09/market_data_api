@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime
 
 import pytest
+from pytest_mock import MockFixture, MockType
 
 from app.data_layer.database.models.user_model import User
 from app.routers.authentication.authenticate import get_hash_password
@@ -48,3 +49,18 @@ def token_data(test_user) -> dict[str, str]:
     Fixture to provide mock token data.
     """
     return {"user_id": test_user.user_id, "email": test_user.email}
+
+
+@pytest.fixture
+def mock_session(mocker: MockFixture) -> MockType:
+    """
+    Mock the get_session function to simulate a database session
+    """
+    session = mocker.patch(
+        "app.data_layer.database.db_connections.postgresql.get_session"
+    )
+    session.return_value = session
+    session.__enter__.side_effect = session
+    session.exec.return_value = session
+
+    return session

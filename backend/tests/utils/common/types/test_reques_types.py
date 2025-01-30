@@ -1,6 +1,6 @@
 import pytest
 
-from app.utils.common.exceptions import IntervalNotFoundException
+from app.utils.common.exceptions.historical_data import IntervalNotFoundException
 from app.utils.common.types.reques_types import CandlestickInterval
 
 
