@@ -3,12 +3,14 @@ class AuthState {
   final String? accessToken;
   final bool isLoading;
   final String? errorMessage;
+  final bool? isEmailNotVerified;
 
   AuthState({
     required this.isAuthenticated,
     this.accessToken,
     this.isLoading = false,
     this.errorMessage,
+    this.isEmailNotVerified,
   });
 
   factory AuthState.unauthenticated() {
@@ -27,12 +29,14 @@ class AuthState {
     String? accessToken,
     bool? isLoading,
     String? errorMessage,
+    bool? isEmailNotVerified,
   }) {
     return AuthState(
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       accessToken: accessToken ?? this.accessToken,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage,
+      isEmailNotVerified: isEmailNotVerified ?? this.isEmailNotVerified,
     );
   }
 }

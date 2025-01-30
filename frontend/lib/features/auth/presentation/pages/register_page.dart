@@ -75,7 +75,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             AppRoutes.verifyAccount,
             arguments: {
               'email': signupRequest.email,
-              'phone': signupRequest.phoneNumber,
             },
           );
         } else {

@@ -8,6 +8,7 @@ import 'package:frontend/features/auth/functionality/providers/auth_providers.da
 import 'package:frontend/features/auth/functionality/state/auth_notifier.dart';
 import 'package:frontend/features/auth/presentation/widgets/header_text.dart';
 import 'package:frontend/features/auth/presentation/widgets/auth_footer.dart';
+import 'package:frontend/features/home/home.dart';
 import 'package:frontend/shared/buttons/custom_button.dart';
 import 'package:frontend/shared/inputs/custom_text_field.dart';
 import 'package:frontend/shared/layouts/custom_background_widget.dart';
@@ -39,6 +40,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         final authState = ref.read(authNotifierProvider);
         if (!authState.isLoading && authState.errorMessage == null) {
           // Navigate to the home page after successful login
+          ref.invalidate(protectedDataProvider);
           Navigator.of(context).pushNamed(AppRoutes.home);
         } else if (authState.errorMessage != null) {
           // Display error message
@@ -48,6 +50,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               backgroundColor: Colors.red,
             ),
           );
+          if (authState.isEmailNotVerified == true) {
+            Navigator.of(context)
+                .pushNamed(AppRoutes.verifyAccount, arguments: {
+              'email': _emailController.text,
+            });
+          }
         }
       });
     }

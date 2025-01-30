@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frontend/core/utils/exceptions.dart';
 import 'package:frontend/features/auth/functionality/model/signup_request.dart';
 import 'package:frontend/features/auth/functionality/repository/auth_repository.dart';
 import 'package:frontend/features/auth/functionality/services/token_storage_service.dart';
@@ -16,11 +17,19 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       await _authRepository.login(email, password);
       final token = await _secureStorage.getTokens();
+
       state = AuthState.authenticated(token['accessToken']!);
+    } on EmailNotVerifiedException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: "Login failed: ${e.message}",
+        isEmailNotVerified: true,
+      );
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
         errorMessage: "Login failed: ${e.toString()}",
+        isEmailNotVerified: false,
       );
     }
   }
@@ -37,6 +46,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
     }
   }
+
   Future<void> verifyOtp(String email, String code) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
@@ -49,6 +59,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
     }
   }
+
   Future<void> logout() async {
     await _authRepository.logout();
     await _secureStorage.clearTokens();

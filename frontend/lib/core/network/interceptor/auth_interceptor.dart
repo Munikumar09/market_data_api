@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
+import 'package:frontend/core/routes/app_routes.dart';
 import 'package:frontend/features/auth/functionality/services/token_storage_service.dart';
+import 'package:frontend/main.dart'; // Global navigation key
 
 class AuthInterceptor extends InterceptorsWrapper {
   final SecureStorageService _secureStorage;
@@ -16,20 +18,19 @@ class AuthInterceptor extends InterceptorsWrapper {
     if (accessToken != null) {
       options.headers['Authorization'] = 'Bearer $accessToken';
     }
+
     return handler.next(options);
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     if (err.response?.statusCode == 401) {
-      // Handle token refresh independently
       final tokens = await _secureStorage.getTokens();
       final refreshToken = tokens['refreshToken'];
 
       if (refreshToken != null) {
         final newAccessToken = await _refreshAccessToken(refreshToken);
         if (newAccessToken != null) {
-          // Update the request with the new token
           err.requestOptions.headers['Authorization'] =
               'Bearer $newAccessToken';
           final retryResponse = await _dio.request(
@@ -43,23 +44,32 @@ class AuthInterceptor extends InterceptorsWrapper {
           return handler.resolve(retryResponse);
         }
       }
+
+      // Refresh token is invalid → navigate to login screen
+      navigatorKey.currentState?.pushNamedAndRemoveUntil(
+        AppRoutes.login,
+        (route) => false, // Remove all routes from stack
+      );
     }
+
     return handler.next(err);
   }
 
   Future<String?> _refreshAccessToken(String refreshToken) async {
     try {
-      final response = await _dio.post('/authentication/refresh-token', data: {
-        'refresh_token': refreshToken,
+      final response = await _dio.post('/auth/refresh-token', data: {
+        'refreshToken': refreshToken,
       });
-      final newAccessToken = response.data['access_token'];
+
+      final newAccessToken = response.data['accessToken'];
       await _secureStorage.saveTokens(
         newAccessToken,
-        refreshToken, // Keep the same refresh token
+        refreshToken,
       );
+
       return newAccessToken;
     } catch (e) {
-      return null; // Handle refresh failure
+      return null; // Refresh failed
     }
   }
 }
