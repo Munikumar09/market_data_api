@@ -53,3 +53,5 @@ app.*.map.json
 # Flutter/iOS specific
 *.framework.dSYM
 .last_build_id
+
+example

@@ -5,13 +5,13 @@ class HeaderText extends StatelessWidget {
   const HeaderText({
     super.key,
     required this.title,
-    required this.subtitle,
+    this.subtitle,
     this.titleColor,
     this.subtitleColor,
   });
 
   final String title;
-  final String subtitle;
+  final String? subtitle;
   final Color? titleColor;
   final Color? subtitleColor;
 
@@ -31,13 +31,14 @@ class HeaderText extends StatelessWidget {
           semanticsLabel: title,
         ),
         const SizedBox(height: 16),
-        Text(
-          subtitle,
-          style: AppTextStyles.headline2(
-            subtitleColor ?? theme.colorScheme.onSurface,
+        if (subtitle != null)
+          Text(
+            subtitle!,
+            style: AppTextStyles.headline2(
+              subtitleColor ?? theme.colorScheme.onSurface,
+            ),
+            semanticsLabel: subtitle,
           ),
-          semanticsLabel: subtitle,
-        ),
       ],
     );
   }

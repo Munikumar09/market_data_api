@@ -17,6 +17,7 @@ from app.utils.common.logger import get_logger
 from app.utils.constants import EMAIL
 
 from .authenticate import (
+    generate_verification_code,
     get_current_user,
     send_and_save_code,
     signin_user,
