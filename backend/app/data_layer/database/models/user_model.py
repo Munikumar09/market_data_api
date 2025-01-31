@@ -90,6 +90,21 @@ class User(SQLModel, table=True):  # type: ignore
         ),
     )
 
+    def to_dict(self):
+        """
+        Converts the User model to a dictionary
+        """
+        return {
+            "user_id": self.user_id,
+            "username": self.username,
+            "email": self.email,
+            "date_of_birth": self.date_of_birth.strftime("%Y-%m-%d"),
+            "phone_number": self.phone_number,
+            "gender": self.gender.value,
+            "is_verified": self.is_verified,
+            "updated_at": self.updated_at.strftime("%Y-%m-%dT%H:%M:%S"),
+        }
+
 
 class UserVerification(SQLModel, table=True):  # type: ignore
     """

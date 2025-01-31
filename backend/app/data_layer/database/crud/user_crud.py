@@ -91,7 +91,7 @@ def get_user_by_attr(attr_name: str, attr_value: str, session: Session) -> User:
     if not result:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
-            f"User not found with given {attr_name} {attr_value}",
+            f"User does not exist with given {attr_name}: {attr_value}",
         )
 
     return result

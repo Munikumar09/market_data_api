@@ -279,7 +279,7 @@ def validate_verification_code(email: str, verification_code: str) -> UserVerifi
     if user_verification is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="User does not exist with this email",
+            detail=f"User does not exist with email: {email}",
         )
 
     # Check if verification code matches
@@ -340,6 +340,15 @@ def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
     ``User``
         The user details retrieved from the database
     """
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Token is missing"
+        )
+
     decoded_data = decode_token(token, JWT_SECRET)
+    if USER_ID not in decoded_data:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
+        )
 
     return get_user(decoded_data[USER_ID])

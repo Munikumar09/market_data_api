@@ -139,7 +139,7 @@ async def verify_user(request: EmailVerificationRequest) -> dict:
     return {"message": "Email verified successfully"}
 
 
-@router.get("/sent-reset-password-code")
+@router.get("/send-reset-password-code")
 async def send_reset_password_code(email: str):
     """
     Send a reset password code to the user's email.
@@ -208,6 +208,11 @@ async def change_password(request: UserChangePassword) -> dict:
     """
     logger.info("Password change attempt for %s", request.email)
     user = authenticate_user(request.email, request.old_password)
+    if not user.is_verified:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email is not verified. Please verify the email first.",
+        )
     update_password(user.user_id, user.password, request.new_password)
     return {"message": "Password changed successfully"}
 
@@ -233,4 +238,4 @@ def protected_route(current_user: User = Depends(get_current_user)) -> dict:
     - JSON response indicating the protected route access.
     """
     logger.info("Access to protected route by user: %s", current_user.email)
-    return {"message": "This is a protected route", "user": current_user.model_dump()}
+    return {"message": "This is a protected route", "user": current_user.to_dict()}
