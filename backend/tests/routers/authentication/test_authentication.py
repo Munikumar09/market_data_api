@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from time import sleep
 
 import pytest
 from fastapi import HTTPException, status
@@ -110,6 +111,14 @@ def test_verification_code():
     Verification code for testing
     """
     return "123456"
+
+
+@pytest.fixture
+def mock_access_token_from_refresh_token(mocker: MockFixture):
+    # Mock the access_token_from_refresh_token function
+    return mocker.patch(
+        "app.routers.authentication.authentication.access_token_from_refresh_token"
+    )
 
 
 class MockNotificationProvider:
@@ -366,3 +375,55 @@ def test_protected_route(
     assert current_user["email"] == test_user.email
     assert current_user["username"] == test_user.username
     assert current_user["phone_number"] == test_user.phone_number
+
+
+# Test: 6
+def test_refresh_token(
+    mock_access_token_from_refresh_token: MockType,
+    token_data: dict,
+) -> None:
+    """
+    Test the refresh_token functionality. Verifies that tokens are refreshed successfully
+    and handles errors appropriately.
+    """
+    # Test: 6.1 ( Successful token refresh )
+    access_token = create_token(token_data, JWT_SECRET, 0.05)
+    refresh_token = create_token(token_data, JWT_REFRESH_SECRET, 0.05)
+    mock_access_token_from_refresh_token.return_value = {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+    }
+    response = client.post(
+        f"/authentication/refresh-token?refresh_token={refresh_token}"
+    )
+    assert response.status_code == 200
+    assert "access_token" in response.json()
+    assert "refresh_token" in response.json()
+    mock_access_token_from_refresh_token.assert_called_once_with(refresh_token)
+    mock_access_token_from_refresh_token.reset_mock()
+
+    # Test: 6.2 ( Invalid refresh token )
+    mock_access_token_from_refresh_token.side_effect = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid token",
+    )
+    with pytest.raises(HTTPException) as exc:
+        client.post(
+            f"/authentication/refresh-token?refresh_token=invalid_token",
+        )
+    assert exc.value.status_code == status.HTTP_401_UNAUTHORIZED
+    assert exc.value.detail == "Invalid token"
+    mock_access_token_from_refresh_token.assert_called_once_with("invalid_token")
+    mock_access_token_from_refresh_token.reset_mock()
+
+    # Test: 6.3 ( Expired refresh token )
+    sleep(3)
+    mock_access_token_from_refresh_token.side_effect = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Token has expired",
+    )
+    with pytest.raises(HTTPException) as exc:
+        client.post(f"/authentication/refresh-token?refresh_token={refresh_token}")
+    assert exc.value.status_code == status.HTTP_401_UNAUTHORIZED
+    assert exc.value.detail == "Token has expired"
+    mock_access_token_from_refresh_token.assert_called_once_with(refresh_token)
