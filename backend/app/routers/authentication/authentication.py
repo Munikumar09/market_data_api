@@ -2,28 +2,24 @@
 from pathlib import Path
 from typing import cast
 
-from app.routers.authentication.jwt_tokens import access_token_from_refresh_token
 import hydra
-from fastapi import APIRouter, Depends, HTTPException, status
-
 from app import ROOT_DIR
 from app.data_layer.database.crud.user_crud import get_user_by_attr
 from app.data_layer.database.models.user_model import User
 from app.notification.email.email_provider import EmailProvider
 from app.notification.provider import NotificationProvider
-from app.schemas.user_model import EmailVerificationRequest, UserSignIn, UserSignup
+from app.routers.authentication.jwt_tokens import \
+    access_token_from_refresh_token
+from app.schemas.user_model import (EmailVerificationRequest, UserSignIn,
+                                    UserSignup)
 from app.utils.common import init_from_cfg
 from app.utils.common.logger import get_logger
 from app.utils.constants import EMAIL
+from fastapi import APIRouter, Depends, HTTPException, status
 
-from .authenticate import (
-    get_current_user,
-    send_and_save_code,
-    signin_user,
-    signup_user,
-    update_user_verification_status,
-    validate_verification_code,
-)
+from .authenticate import (get_current_user, send_and_save_code, signin_user,
+                           signup_user, update_user_verification_status,
+                           validate_verification_code)
 
 # Initialize logging
 logger = get_logger(Path(__file__).name)

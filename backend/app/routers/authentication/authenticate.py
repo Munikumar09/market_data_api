@@ -3,40 +3,25 @@
 import random
 from datetime import datetime, timedelta, timezone
 
+from app.data_layer.database.crud.user_crud import (
+    create_or_update_user_verification, create_user, get_user,
+    get_user_by_attr, get_user_verification, update_user)
+from app.data_layer.database.models.user_model import (Gender, User,
+                                                       UserVerification)
+from app.notification.email.email_provider import EmailProvider
+from app.schemas.user_model import UserSignup
+from app.utils.common.exceptions.authentication import UserSignupError
+from app.utils.constants import (ACCESS_TOKEN_EXPIRE_MINUTES, EMAIL,
+                                 JWT_REFRESH_SECRET, JWT_SECRET, MACHINE_ID,
+                                 REFRESH_TOKEN_EXPIRE_DAYS, USER_ID)
 from dateutil.parser import parse
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from snowflake import SnowflakeGenerator
 
-from app.data_layer.database.crud.user_crud import (
-    create_or_update_user_verification,
-    create_user,
-    get_user,
-    get_user_by_attr,
-    get_user_verification,
-    update_user,
-)
-from app.data_layer.database.models.user_model import Gender, User, UserVerification
-from app.notification.email.email_provider import EmailProvider
-from app.schemas.user_model import UserSignup
-from app.utils.common.exceptions.authentication import UserSignupError
-from app.utils.constants import (
-    ACCESS_TOKEN_EXPIRE_MINUTES,
-    EMAIL,
-    JWT_REFRESH_SECRET,
-    JWT_SECRET,
-    MACHINE_ID,
-    REFRESH_TOKEN_EXPIRE_DAYS,
-    USER_ID,
-)
-
 from .jwt_tokens import create_token, decode_token
-from .user_validation import (
-    get_hash_password,
-    validate_user_data,
-    validate_user_exists,
-    verify_password,
-)
+from .user_validation import (get_hash_password, validate_user_data,
+                              validate_user_exists, verify_password)
 
 snowflake_generator = SnowflakeGenerator(MACHINE_ID)
 
