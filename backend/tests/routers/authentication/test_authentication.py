@@ -115,7 +115,9 @@ def test_verification_code():
 
 @pytest.fixture
 def mock_access_token_from_refresh_token(mocker: MockFixture):
-    # Mock the access_token_from_refresh_token function
+    """
+    Mock the access_token_from_refresh_token function
+    """
     return mocker.patch(
         "app.routers.authentication.authentication.access_token_from_refresh_token"
     )
@@ -409,7 +411,7 @@ def test_refresh_token(
     )
     with pytest.raises(HTTPException) as exc:
         client.post(
-            f"/authentication/refresh-token?refresh_token=invalid_token",
+            "/authentication/refresh-token?refresh_token=invalid_token",
         )
     assert exc.value.status_code == status.HTTP_401_UNAUTHORIZED
     assert exc.value.detail == "Invalid token"
