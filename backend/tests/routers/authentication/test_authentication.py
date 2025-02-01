@@ -417,7 +417,7 @@ def test_send_reset_password_code_invalid_email() -> None:
     Test sending a reset password code to an invalid email.
     """
     with pytest.raises(HTTPException) as exc:
-        client.get(
+        client.post(
             "/authentication/send-reset-password-code",
             params={"email": "invalid_email"},
         )
@@ -437,7 +437,7 @@ def test_send_reset_password_code_success(
     signup_user(sign_up_data)
 
     assert get_user_verification(sign_up_data.email) is None
-    response = client.get(
+    response = client.post(
         "/authentication/send-reset-password-code", params={"email": sign_up_data.email}
     )
     validate_verification_code_sent(

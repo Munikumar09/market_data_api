@@ -140,7 +140,7 @@ async def verify_user(request: EmailVerificationRequest) -> dict:
     return {"message": "Email verified successfully"}
 
 
-@router.get("/send-reset-password-code")
+@router.post("/send-reset-password-code")
 async def send_reset_password_code(email: str):
     """
     Send a reset password code to the user's email.

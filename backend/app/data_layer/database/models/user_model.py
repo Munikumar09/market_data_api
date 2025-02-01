@@ -90,11 +90,11 @@ class User(SQLModel, table=True):  # type: ignore
         ),
     )
 
-    def to_dict(self):
+    def to_dict(self, include_sensitive_data: bool = False):
         """
         Converts the User model to a dictionary
         """
-        return {
+        data = {
             "user_id": self.user_id,
             "username": self.username,
             "email": self.email,
@@ -104,6 +104,10 @@ class User(SQLModel, table=True):  # type: ignore
             "is_verified": self.is_verified,
             "updated_at": self.updated_at.strftime("%Y-%m-%dT%H:%M:%S"),
         }
+        if include_sensitive_data:
+            data["password"] = self.password
+
+        return data
 
 
 class UserVerification(SQLModel, table=True):  # type: ignore
@@ -144,14 +148,17 @@ class UserVerification(SQLModel, table=True):  # type: ignore
         )
     )
 
-    def to_dict(self):
+    def to_dict(self, include_sensitive_data: bool = False):
         """
         Converts the UserVerification model to a dictionary
         """
-        return {
+        data = {
             "email": self.email,
-            "verification_code": self.verification_code,
             "expiration_time": self.expiration_time,
             "verification_datetime": self.verification_datetime,
             "reverified_datetime": self.reverified_datetime,
         }
+        if include_sensitive_data:
+            data["verification_code"] = self.verification_code
+
+        return data
