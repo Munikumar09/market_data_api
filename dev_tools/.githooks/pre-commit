@@ -1,0 +1,37 @@
+#!/bin/bash
+
+echo "🔍 Running format and lint checks..."
+
+ROOT_DIR="$ROOT_PATH/../dev_tools/code_analysis"
+FRONTEND_DIR="$ROOT_DIR/frontend"
+BACKEND_DIR="$ROOT_DIR/backend"
+
+# Run format check
+sh $BACKEND_DIR/format.sh --check
+FORMAT_CHECK=$?
+
+# If format check fails, apply formatting
+if [ $FORMAT_CHECK -ne 0 ]; then
+    echo "⚠️ Backend code is not formatted properly. Running formatter..."
+    sh $BACKEND_DIR/format.sh 
+fi
+
+# Run lint check
+sh $BACKEND_DIR/lint.sh --check
+LINT_CHECK=$?
+
+sh $FRONTEND_DIR/format.sh --check
+FORMAT_CHECK=$?
+
+if [ $FORMAT_CHECK -ne 0 ]; then
+    echo "⚠️ Frontend code is not formatted properly. Running formatter..."
+    sh $FRONTEND_DIR/format.sh 
+fi
+
+# If any check fails, reject the commit
+if [ $LINT_CHECK -ne 0 ] || [ $FORMAT_CHECK -ne 0 ]; then
+    echo "❌ Linting or Formatting failed. Fix the issues before committing."
+    exit 1
+fi
+
+echo "✅ Code is properly formatted and linted! Proceeding with commit..."

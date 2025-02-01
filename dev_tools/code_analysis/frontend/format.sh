@@ -4,7 +4,7 @@ set -euo pipefail
 
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 cd "$SCRIPT_DIR" || exit 1
-cd ../.. || exit 1
+cd ../../../frontend || exit 1
 
 # Format Dart files
 format_files() {
