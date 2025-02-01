@@ -18,7 +18,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
-  dynamic _passwordController = TextEditingController();
+  final _passwordController = TextEditingController();
 
   @override
   void dispose() {

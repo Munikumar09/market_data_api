@@ -3,7 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 cd "$SCRIPT_DIR" || exit 1
-cd .. || exit 1
+cd ../../../backend || exit 1
 
 run_mypy_check() {
 	echo "Running mypy check..."

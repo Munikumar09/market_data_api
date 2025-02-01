@@ -1,0 +1,142 @@
+#!/bin/bash
+
+set -e  # Stop on any error
+
+SCRIPT_DIR=$(dirname "$(realpath "$0")")
+cd "$SCRIPT_DIR" || exit 1
+ROOT_PATH="$SCRIPT_DIR/../.."  # Root path of the repository
+
+cd "$ROOT_PATH" || exit 1
+echo "🔍 Running format and lint checks..."
+
+FRONTEND_DIR="$ROOT_PATH/frontend"
+BACKEND_DIR="$ROOT_PATH/backend"
+
+# Get the list of staged files
+CHANGED_FILES=$(git diff --name-only --cached)
+# Check if any backend files are modified
+BACKEND_CHANGED=$(echo "$CHANGED_FILES" | grep -E "^backend/" || true)
+# Check if any frontend files are modified
+FRONTEND_CHANGED=$(echo "$CHANGED_FILES" | grep -E "^frontend/" || true)
+
+FAILED=0  # Flag to track failures
+
+format_check_python_files() {
+    CHANGED_PYTHON_FILES=$(echo "$1" | grep -E "\.py$")
+    if [ -z "$CHANGED_PYTHON_FILES" ]; then
+        echo "✅ No Python files changed."
+        return 0
+    fi
+    
+    # Run format check using black
+    if ! echo "$CHANGED_PYTHON_FILES" | xargs black --check 2>/tmp/black_errors.log; then
+        echo "--------------------------------------------"
+        echo "❌ Black check failed."
+        cat /tmp/black_errors.log
+        echo "--------------------------------------------"
+        FAILED=1
+    else
+        echo "✅ Black check passed."
+    fi
+
+    # Run format check using isort
+    if ! echo "$CHANGED_PYTHON_FILES" | xargs isort --profile black --check 2>/tmp/isort_errors.log; then
+        echo "--------------------------------------------"
+        echo "❌ Isort check failed."
+        cat /tmp/isort_errors.log
+        echo "--------------------------------------------"
+        FAILED=1
+    else
+        echo "✅ Isort check passed."
+    fi
+}
+
+lint_check_python_files() {
+    CHANGED_PYTHON_FILES=$(echo "$1" | grep -E "\.py$")
+    if [ -z "$CHANGED_PYTHON_FILES" ]; then
+        echo "✅ No Python files changed."
+        return 0
+    fi
+    mypy_failed=0
+    MYPY_OUTPUT=$(mypy --config-file "$BACKEND_DIR/mypy.ini" $CHANGED_PYTHON_FILES 2>&1) || mypy_failed=1
+
+    if [ $mypy_failed -ne 0 ]; then
+        echo "--------------------------------------------"
+        echo "❌ Mypy check failed."
+        echo "$MYPY_OUTPUT"
+        echo "--------------------------------------------"
+        FAILED=1
+    else
+        echo "✅ Mypy check passed."
+    fi
+
+    pylint_failed=0
+    PYLINT_OUTPUT=$(pylint --rcfile "$BACKEND_DIR/pylintrc" $CHANGED_PYTHON_FILES 2>&1) || pylint_failed=1
+
+    if [ $pylint_failed -ne 0 ]; then
+        echo "--------------------------------------------"
+        echo "❌ Pylint check failed."
+        echo "$PYLINT_OUTPUT"
+        echo "--------------------------------------------"
+        FAILED=1
+    else
+        echo "✅ Pylint check passed."
+    fi
+}
+
+check_format_dart_files() {
+    if ! dart format --output=none .; then
+        echo "❌ Dart format check failed."
+        FAILED=1
+    else
+        echo "✅ Dart formatting is correct."
+    fi
+}
+
+lint_check_dart_files() {
+    ANALYZE_OUTPUT=$(dart analyze .)
+    LAST_LINE=$(echo "$ANALYZE_OUTPUT" | tail -n 1)
+    
+    if echo "$LAST_LINE" | grep -q "issue found"; then
+        echo "❌ Dart analysis issues found:"
+        echo "$ANALYZE_OUTPUT"
+        FAILED=1
+    else
+        echo "✅ No issues found in Dart analysis."
+    fi
+}
+
+# Run checks if backend changes exist
+if [ -n "$BACKEND_CHANGED" ]; then
+    echo -e "\033[1;34m➡️ Running checks for backend...\033[0m"
+    BACKEND_SCRIPT_DIR="$ROOT_PATH/dev_tools/code_analysis/backend"
+
+    format_check_python_files "$BACKEND_CHANGED"
+    lint_check_python_files "$BACKEND_CHANGED"
+
+    # Auto-format if needed
+    if [ $FAILED -ne 0 ]; then
+        echo "⚠️ Running auto-formatter for backend..."
+        echo
+        sh "$BACKEND_SCRIPT_DIR/format.sh" 2>/tmp/format_errors.log
+    fi
+fi
+
+# Run checks if frontend changes exist
+if [ -n "$FRONTEND_CHANGED" ]; then
+    echo -e "\033[1;34m➡️ Running checks for frontend...\033[0m"
+    check_format_dart_files
+    lint_check_dart_files
+fi
+
+echo
+# 🚨 Exit if any check failed
+if [ $FAILED -ne 0 ]; then
+
+    echo "❌ Pre-commit checks failed. Fix issues before committing."
+    exit 1
+fi
+
+
+echo "✅ All checks passed! Proceeding with commit."
+exit 0
