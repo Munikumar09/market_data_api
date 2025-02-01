@@ -33,6 +33,7 @@ from app.utils.constants import (
 from .jwt_tokens import create_token, decode_token
 from .user_validation import (
     get_hash_password,
+    validate_password,
     validate_user_data,
     validate_user_exists,
     verify_password,
@@ -100,6 +101,30 @@ def signup_user(user: UserSignup):
     }
 
 
+def authenticate_user(email: str, password: str) -> User:
+    """
+    Authenticate the user with the given email and password. If the user does not exist,
+    or the password is incorrect, it raises an error message. If the user is not verified,
+    it raises an error message. Otherwise, it returns the user details.
+
+    Parameters:
+    -----------
+    email: ``str``
+        The email address of the user
+    password: ``str``
+        The password of the user
+
+    Returns:
+    --------
+    ``User``
+        The user details retrieved from the database
+    """
+    user = get_user_by_attr(EMAIL, email)
+    verify_password(password, user.password)
+
+    return user
+
+
 def signin_user(email: str, password: str) -> dict[str, str]:
     """
     Sign in the user with the given email and password. If email or password is incorrect,
@@ -118,8 +143,7 @@ def signin_user(email: str, password: str) -> dict[str, str]:
     ``dict[str, str]``
         Dictionary containing the message, access token, and refresh token
     """
-    user = get_user_by_attr(EMAIL, email)
-    verify_password(password, user.password)
+    user = authenticate_user(email, password)
 
     if not user.is_verified:
         raise HTTPException(
@@ -226,7 +250,7 @@ def send_and_save_code(email: str, user_name: str, provider: EmailProvider):
     )
 
 
-def validate_verification_code(email: str, verification_code: str):
+def validate_verification_code(email: str, verification_code: str) -> UserVerification:
     """
     Validate the verification code sent by the user. If the verification code does not
     match the one stored in the database, or if the verification code has expired, it
@@ -243,6 +267,11 @@ def validate_verification_code(email: str, verification_code: str):
     -------
     ``HTTPException``
         If the verification code does not match or has expired
+
+    Returns:
+    -------
+    ``UserVerification``
+        The user verification object
     """
     # Fetch user verification details
     user_verification = get_user_verification(email)
@@ -250,7 +279,7 @@ def validate_verification_code(email: str, verification_code: str):
     if user_verification is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="User does not exist with this email",
+            detail=f"User does not exist with email: {email}",
         )
 
     # Check if verification code matches
@@ -265,6 +294,34 @@ def validate_verification_code(email: str, verification_code: str):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Verification code has expired. Try again",
         )
+
+    return user_verification
+
+
+def update_password(user_id: int, old_password: str, password: str):
+    """
+    Update the password of the user with the given user ID. If the old password does not
+    match the password stored in the database or the new password is the same as the old
+    password, it raises an error message. Otherwise, it updates the password in the database.
+
+    Parameters:
+    -----------
+    user_id: ``int``
+        The user ID of the user
+    old_password: ``str``
+        The old hashed password of the user
+    password: ``str``
+        The new password of the user
+    """
+    validate_password(password)
+
+    if verify_password(password, old_password, raise_exception=False):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password cannot be the same as the old password",
+        )
+
+    update_user(user_id, {"password": get_hash_password(password)})
 
 
 def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
@@ -283,6 +340,15 @@ def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
     ``User``
         The user details retrieved from the database
     """
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Token is missing"
+        )
+
     decoded_data = decode_token(token, JWT_SECRET)
+    if USER_ID not in decoded_data:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
+        )
 
     return get_user(decoded_data[USER_ID])

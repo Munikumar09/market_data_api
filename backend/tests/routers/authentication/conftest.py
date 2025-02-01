@@ -32,7 +32,7 @@ def test_user(sign_up_data: UserSignup) -> User:
     """
     Fixture to provide a mock user model.
     """
-    return User(
+    user = User(
         user_id=uuid.uuid4().int % (10**11),
         username=sign_up_data.username,
         email=sign_up_data.email,
@@ -41,6 +41,7 @@ def test_user(sign_up_data: UserSignup) -> User:
         date_of_birth=datetime.strptime(sign_up_data.date_of_birth, "%d/%m/%Y"),
         gender=sign_up_data.gender,
     )
+    return user
 
 
 @pytest.fixture

@@ -139,7 +139,10 @@ def test_get_user_by_attr(session):
     with pytest.raises(HTTPException) as exc:
         get_user_by_attr("email", "sampleuser@example.com", session=session)
 
-    assert exc.value.detail == "User not found with given email sampleuser@example.com"
+    assert (
+        exc.value.detail
+        == "User does not exist with given email: sampleuser@example.com"
+    )
 
 
 # Test: 5

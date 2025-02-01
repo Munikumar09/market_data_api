@@ -83,11 +83,17 @@ def test_verify_password():
     hashed_password = get_hash_password(password)
 
     # Test: 4.1 ( Valid password )
-    assert verify_password(password, hashed_password) is None
+    assert verify_password(password, hashed_password) is True
 
     # Test: 4.2 ( Invalid password )
     with pytest.raises(HTTPException):
         verify_password("wrongpassword", hashed_password)
+
+    # Test: 4.3 ( Invalid password with raise_exception=False )
+    assert (
+        verify_password("wrongpassword", hashed_password, raise_exception=False)
+        is False
+    )
 
 
 # Test: 5
