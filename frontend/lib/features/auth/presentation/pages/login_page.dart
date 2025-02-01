@@ -63,7 +63,7 @@ class _LoginPageState extends State<LoginPage> {
                         labelText: AppStrings.password,
                         controller: _passwordController,
                         autocorrect: false,
-                        enableSuggestions: false, 
+                        enableSuggestions: false,
                       ),
                     ],
                   ),
