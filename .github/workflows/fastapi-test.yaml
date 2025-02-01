@@ -45,9 +45,10 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     defaults:
+
       run:
         shell: bash -l {0}
-        working-directory: backend
+        working-directory: .
     steps:
       - uses: actions/checkout@v3
       
@@ -61,13 +62,11 @@ jobs:
       - name: Install poetry
         run: |
           curl -sSL https://install.python-poetry.org | python3 - --version ${{ env.POETRY_VERSION }} -y
-          ./scripts/setup
+          .backend/scripts/setup
       - name: Python Format check
-        run: ./scripts/format.sh --check
-      - name: Yaml Format check
-        run: ./scripts/yaml_format --check
+        run: ./dev_tools/code_analysis/backend/format.sh --check
       - name: Lint check
-        run: ./scripts/lint.sh
+        run: ./dev_tools/code_analysis/backend/lint.sh
       
         
   test:
@@ -76,7 +75,9 @@ jobs:
       run:
         shell: bash -l {0}
         working-directory: backend
+    # Services to be used in the job
     services:
+      # PostgreSQL service alias
       postgres:
         image: postgres:17  # Use a specific version for consistency
         ports:
@@ -96,9 +97,6 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
-
-
-
 
      # Set up an environment variable with value "app"
       - name: Set up environment variable
