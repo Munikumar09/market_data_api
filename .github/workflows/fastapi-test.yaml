@@ -51,6 +51,10 @@ jobs:
         working-directory: .
     steps:
       - uses: actions/checkout@v3
+      - name: sample
+        run: ls -la
+      - name: current directory
+        run: pwd
       
       - name: Install miniconda and create environment
         uses: conda-incubator/setup-miniconda@v2
@@ -62,8 +66,6 @@ jobs:
       - name: Install poetry
         run: |
           curl -sSL https://install.python-poetry.org | python3 - --version ${{ env.POETRY_VERSION }} -y
-          ls
-          pwd
           .backend/scripts/setup
       - name: Python Format check
         run: ./dev_tools/code_analysis/backend/format.sh --check
