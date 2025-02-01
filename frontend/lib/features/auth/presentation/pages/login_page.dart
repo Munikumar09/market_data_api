@@ -18,7 +18,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  dynamic _passwordController = TextEditingController();
 
   @override
   void dispose() {
@@ -63,7 +63,7 @@ class _LoginPageState extends State<LoginPage> {
                         labelText: AppStrings.password,
                         controller: _passwordController,
                         autocorrect: false,
-                        enableSuggestions: false, 
+                        enableSuggestions: false,
                       ),
                     ],
                   ),

@@ -31,8 +31,9 @@ class CustomButton extends StatelessWidget {
           borderRadius: borderRadius,
           boxShadow: [
             BoxShadow(
-              color: backgroundColor ?? theme.primaryColor
-                  .withValues(alpha: 0.3), // Shadow matches button color
+              color: backgroundColor ??
+                  theme.primaryColor
+                      .withValues(alpha: 0.3), // Shadow matches button color
               blurRadius: 20,
               offset: const Offset(0, 10),
               spreadRadius: 0,
