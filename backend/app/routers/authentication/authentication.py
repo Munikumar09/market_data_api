@@ -13,6 +13,7 @@ from app.data_layer.database.crud.user_crud import (
 from app.data_layer.database.models.user_model import User
 from app.notification.email.email_provider import EmailProvider
 from app.notification.provider import NotificationProvider
+from app.routers.authentication.jwt_tokens import access_token_from_refresh_token
 from app.schemas.user_model import (
     EmailVerificationRequest,
     UserChangePassword,
@@ -20,7 +21,6 @@ from app.schemas.user_model import (
     UserSignIn,
     UserSignup,
 )
-from app.routers.authentication.jwt_tokens import access_token_from_refresh_token
 from app.utils.common import init_from_cfg
 from app.utils.common.logger import get_logger
 from app.utils.constants import EMAIL
@@ -239,7 +239,7 @@ def protected_route(current_user: User = Depends(get_current_user)) -> dict:
     - JSON response indicating the protected route access.
     """
     logger.info("Access to protected route by user: %s", current_user.email)
-    
+
     return {"message": "This is a protected route", "user": current_user.to_dict()}
 
 
@@ -256,5 +256,5 @@ async def refresh_token(refresh_token: str) -> dict:
     --------
     - JSON response containing the new access and refresh tokens.
     """
-    logger.info("Refreshing token using refresh token")
+    logger.info("Creating new access token using refresh token")
     return access_token_from_refresh_token(refresh_token)
