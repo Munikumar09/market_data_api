@@ -17,14 +17,16 @@ format_bash_files() {
 check_format() {
 	format_files --check
 	format_bash_files -d
+	./scripts/yaml_format --check
 }
 
 reformat() {
 	format_files
 	format_bash_files
+	./scripts/yaml_format --all
 }
 
-if [ "$1" == "--check" ]; then
+if [ "${1:-}" == "--check" ]; then
 	check_format
 else
 	reformat
