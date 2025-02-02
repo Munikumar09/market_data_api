@@ -250,7 +250,7 @@ lint_check_dart_files() {
 	fi
 
 	echo "--------------------------------------------"
-	ANALYZE_OUTPUT=$(dart analyze $files 2>&1)
+	ANALYZE_OUTPUT=$(dart analyze $files 2>&1) || true
 	LAST_LINE=$(echo "$ANALYZE_OUTPUT" | tail -n 1)
 
 	if echo "$LAST_LINE" | grep -q "No issues found!"; then
