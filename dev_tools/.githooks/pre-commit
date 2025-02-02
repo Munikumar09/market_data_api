@@ -225,7 +225,7 @@ check_format_dart_files() {
 	fi
 	echo "--------------------------------------------"
 
-	FORMAT_OUTPUT=$(dart format --output=none $files 2>&1)
+	FORMAT_OUTPUT=$(dart format --output=none $files 2>&1)||true
 
 	if echo "$FORMAT_OUTPUT" | grep -q "(0 changed)"; then
 		echo "✅ Dart format check passed."
