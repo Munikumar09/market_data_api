@@ -76,6 +76,7 @@ format_check_python_files() {
 	local black_tmp isort_tmp
 	black_tmp=$(mktemp /tmp/black_errors.XXXXXX)
 	register_tmp_file "$black_tmp"
+
 	isort_tmp=$(mktemp /tmp/isort_errors.XXXXXX)
 	register_tmp_file "$isort_tmp"
 
@@ -84,7 +85,7 @@ format_check_python_files() {
 		echo "--------------------------------------------"
 		echo "❌ Black check failed. Reformatting Python files..."
 		echo "$files" | tr '\n' '\0' | xargs -0 black
-		git add $(echo "$files")
+		echo "$files" | tr '\n' '\0' | xargs -0 git add
 		echo "--------------------------------------------"
 		FAILED=1
 	else
@@ -95,7 +96,7 @@ format_check_python_files() {
 		echo "--------------------------------------------"
 		echo "❌ Isort check failed. Sorting imports..."
 		echo "$files" | tr '\n' '\0' | xargs -0 isort --profile black --src "$BACKEND_DIR"
-		git add $(echo "$files")
+		echo "$files" | tr '\n' '\0' | xargs -0 git add
 		echo "--------------------------------------------"
 		FAILED=1
 	else
@@ -115,6 +116,16 @@ lint_check_python_files() {
 	check_command "mypy"
 	check_command "pylint"
 
+	local mypy_config="$BACKEND_DIR/mypy.ini"
+	local pylint_config="$BACKEND_DIR/.pylintrc"
+
+	for config in "$mypy_config" "$pylint_config"; do
+		if [ ! -f "$config" ]; then
+			echo "Error: Config file not found: $config"
+			exit 1
+		fi
+	done
+
 	local mypy_tmp pylint_tmp
 	mypy_tmp=$(mktemp /tmp/mypy_errors.XXXXXX)
 	register_tmp_file "$mypy_tmp"
@@ -122,7 +133,7 @@ lint_check_python_files() {
 	register_tmp_file "$pylint_tmp"
 
 	# Run mypy
-	if ! MYPY_OUTPUT=$(mypy --config-file "$BACKEND_DIR/mypy.ini" $files 2>&1); then
+	if ! MYPY_OUTPUT=$(mypy --config-file "$mypy_config" $files 2>&1); then
 		echo "--------------------------------------------"
 		echo "❌ Mypy check failed."
 		echo "$MYPY_OUTPUT"
@@ -133,7 +144,7 @@ lint_check_python_files() {
 	fi
 
 	# Run pylint
-	if ! PYLINT_OUTPUT=$(pylint --rcfile "$BACKEND_DIR/.pylintrc" $files 2>&1); then
+	if ! PYLINT_OUTPUT=$(pylint --rcfile "$pylint_config" $files 2>&1); then
 		echo "--------------------------------------------"
 		echo "❌ Pylint check failed."
 		echo "$PYLINT_OUTPUT"
@@ -147,6 +158,7 @@ lint_check_python_files() {
 # Format Bash files with shfmt
 check_format_bash_files() {
 	check_command "shfmt"
+
 	local files
 	files=$(echo "$1" | grep -E "\.sh$" || true)
 	if [ -z "$files" ]; then
@@ -162,7 +174,7 @@ check_format_bash_files() {
 	if ! echo "$files" | tr '\n' '\0' | xargs -0 shfmt -d; then
 		echo "❌ Shfmt check failed. Formatting Bash files..."
 		echo "$files" | tr '\n' '\0' | xargs -0 shfmt -w
-		git add $(echo "$files")
+		echo "$files" | tr '\n' '\0' | xargs -0 git add
 		FAILED=1
 	else
 		echo "✅ Shfmt check passed."
@@ -197,13 +209,14 @@ check_format_yaml_files() {
 	fi
 	popd >/dev/null || exit 1
 
-	git add $(echo "$files")
+	echo "$files" | tr '\n' '\0' | xargs -0 git add
 	echo "--------------------------------------------"
 }
 
 # Format Dart files with dart format
 check_format_dart_files() {
 	check_command "dart"
+
 	local files
 	files=$(echo "$1" | grep -E "\.dart$" || true)
 	if [ -z "$files" ]; then
@@ -216,19 +229,19 @@ check_format_dart_files() {
 
 	if echo "$FORMAT_OUTPUT" | grep -q "(0 changed)"; then
 		echo "✅ Dart format check passed."
-
 	else
 		echo "❌ Dart format check failed. Fixing Dart formatting..."
 		dart format $files
 		FAILED=1
 	fi
-	git add $(echo "$files")
+	echo "$files" | tr '\n' '\0' | xargs -0 git add
 	echo "--------------------------------------------"
 }
 
 # Lint Dart files with dart analyze
 lint_check_dart_files() {
 	check_command "dart"
+
 	local files
 	files=$(echo "$1" | grep -E "\.dart$" || true)
 	if [ -z "$files" ]; then

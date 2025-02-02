@@ -71,7 +71,6 @@ def signup_user(user: UserSignup) -> dict["str", "str"]:
     ``dict``
         A message indicating if the user was created successfully or an error message
     """
-
     # Check whether the user is already exists with the given details
     if reason := validate_user_exists(user):
         raise UserSignupError(reason)
