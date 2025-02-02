@@ -49,9 +49,11 @@ register_tmp_file() {
 # Cleanup temporary files on exit
 cleanup() {
 	# Use a default empty array if TMP_FILES is not set
-	for file in "${TMP_FILES[@]:-}"; do
-		[ -e "$file" ] && rm -f "$file"
-	done
+	if [[ ${#TMP_FILES[@]} -gt 0 ]]; then
+		for file in "${TMP_FILES[@]}"; do
+			[ -e "$file" ] && rm -f "$file"
+		done
+	fi
 }
 trap cleanup EXIT
 
