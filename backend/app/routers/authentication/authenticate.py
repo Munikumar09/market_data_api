@@ -56,7 +56,7 @@ def get_snowflake_id() -> int:
     return next(snowflake_generator)
 
 
-def signup_user(user: UserSignup):
+def signup_user(user: UserSignup) -> dict["str", "str"]:
     """
     Validates the user data and creates a new user in the system if the user does not
     already exist. If the user already exists, it returns an error message.
