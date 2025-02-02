@@ -4,7 +4,8 @@ set -euo pipefail
 
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 cd "$SCRIPT_DIR" || exit 1
-cd .. || exit 1
+cd ../../../backend || exit 1
+
 
 format_files() {
 	git ls-files "*.py" | xargs black "$@"
@@ -17,14 +18,20 @@ format_bash_files() {
 check_format() {
 	format_files --check
 	format_bash_files -d
+
+	cd $SCRIPT_DIR
+	./yaml_format --check
 }
 
 reformat() {
 	format_files
 	format_bash_files
+
+	cd $SCRIPT_DIR
+	./yaml_format --all
 }
 
-if [ "$1" == "--check" ]; then
+if [ "${1:-}" == "--check" ]; then
 	check_format
 else
 	reformat
