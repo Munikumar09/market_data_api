@@ -58,7 +58,16 @@ async def email_identifier(request: Request) -> str:
     ``str``
         The identifier for rate limiting
     """
+    # Check query params first
     email = request.query_params.get("email")
+    if email is None:
+        # If not in query params, check request body
+        try:
+            body = await request.json()
+            email = body.get("email")
+        except Exception:
+            email = None
+
     if email is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

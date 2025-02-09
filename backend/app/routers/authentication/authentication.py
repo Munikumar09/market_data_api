@@ -160,8 +160,8 @@ async def verify_user(request: EmailVerificationRequest) -> dict:
     dependencies=[
         Depends(
             RateLimiter(
-                times=1,
-                seconds=120,
+                times=TIMES,
+                seconds=SECONDS,
                 identifier=email_identifier,
             )
         )
