@@ -32,6 +32,12 @@ env:
   SMARTAPI_CLIENT_ID: ${{ secrets.SMARTAPI_CLIENT_ID }}
   SMARTAPI_PWD: ${{ secrets.SMARTAPI_PWD }}
   SMARTAPI_TOKEN: ${{ secrets.SMARTAPI_TOKEN }}
+
+  # Redis credentials
+  REDIS_HOST: ${{ secrets.REDIS_HOST }}
+  REDIS_PORT: ${{ secrets.REDIS_PORT }}
+  REDIS_DB: ${{ secrets.REDIS_DB }}
+  
 on:
   pull_request:
     branches: [ "master" ]
