@@ -309,7 +309,7 @@ async def test_send_verification_code_invalid_email(
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
     assert response.json() == {
-        "message": "User does not exist with given email: invalid_email"
+        "detail": "User does not exist with given email: invalid_email"
     }
 
 
