@@ -4,6 +4,7 @@ from typing import cast
 
 import hydra
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi_limiter.depends import RateLimiter
 
 from app import ROOT_DIR
 from app.data_layer.database.crud.user_crud import (
@@ -23,10 +24,11 @@ from app.schemas.user_model import (
 )
 from app.utils.common import init_from_cfg
 from app.utils.common.logger import get_logger
-from app.utils.constants import EMAIL
+from app.utils.constants import EMAIL, SECONDS, TIMES
 
 from .authenticate import (
     authenticate_user,
+    email_identifier,
     get_current_user,
     send_and_save_code,
     signin_user,
@@ -80,7 +82,19 @@ async def signin(user: UserSignIn) -> dict:
     return signin_user(user.email, user.password)
 
 
-@router.post("/send-verification-code", status_code=status.HTTP_200_OK)
+@router.post(
+    "/send-verification-code",
+    status_code=status.HTTP_200_OK,
+    dependencies=[
+        Depends(
+            RateLimiter(
+                times=TIMES,
+                seconds=SECONDS,
+                identifier=email_identifier,
+            )
+        )
+    ],
+)
 async def send_verification_code(email: str) -> dict:
     """
     Send a verification code to the user's email.
@@ -140,7 +154,19 @@ async def verify_user(request: EmailVerificationRequest) -> dict:
     return {"message": "Email verified successfully"}
 
 
-@router.post("/send-reset-password-code")
+@router.post(
+    "/send-reset-password-code",
+    status_code=status.HTTP_200_OK,
+    dependencies=[
+        Depends(
+            RateLimiter(
+                times=1,
+                seconds=120,
+                identifier=email_identifier,
+            )
+        )
+    ],
+)
 async def send_reset_password_code(email: str):
     """
     Send a reset password code to the user's email.

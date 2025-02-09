@@ -1,13 +1,19 @@
-# pylint: disable=no-value-for-parameter
+# pylint: disable=no-value-for-parameter too-many-lines
 from datetime import datetime, timezone
 from time import sleep
 from typing import cast
 
+import fakeredis
 import pytest
+import pytest_asyncio
+from _pytest._code.code import ExceptionInfo
 from fastapi import HTTPException, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.testclient import TestClient
+from fastapi_limiter import FastAPILimiter
+from httpx import AsyncClient
 from httpx._models import Response
+from pytest import MonkeyPatch
 from pytest_mock import MockFixture
 from sqlalchemy.pool import StaticPool
 from sqlmodel import create_engine
@@ -32,6 +38,7 @@ from app.routers.authentication.authentication import router
 from app.routers.authentication.user_validation import verify_password
 from app.schemas.user_model import UserSignup
 from app.utils.constants import JWT_REFRESH_SECRET, JWT_SECRET
+from main import app
 
 client = TestClient(router)
 
@@ -39,25 +46,6 @@ client = TestClient(router)
 #################### FIXTURES ####################
 
 VALID_PASSWORD = "Password123!"
-
-
-@pytest.fixture
-def mock_notification_provider(mocker: MockFixture):
-    """
-    Mock the notification provider.
-    """
-    return mocker.patch(
-        "app.routers.authentication.authentication.email_notification_provider",
-        MockNotificationProvider(),
-    )
-
-
-@pytest.fixture
-def test_verification_code():
-    """
-    Verification code for testing.
-    """
-    return "123456"
 
 
 class MockNotificationProvider:
@@ -82,8 +70,27 @@ class MockNotificationProvider:
         }
 
 
+@pytest.fixture
+def mock_notification_provider(mocker: MockFixture):
+    """
+    Mock the notification provider.
+    """
+    return mocker.patch(
+        "app.routers.authentication.authentication.email_notification_provider",
+        MockNotificationProvider(),
+    )
+
+
+@pytest.fixture
+def test_verification_code():
+    """
+    Verification code for testing.
+    """
+    return "123456"
+
+
 @pytest.fixture(autouse=True)
-def mock_session(monkeypatch):
+def mock_session(monkeypatch: MonkeyPatch):
     """
     Mock the session object.
     """
@@ -99,10 +106,33 @@ def mock_session(monkeypatch):
     )
 
 
-#################### TESTS ####################
+@pytest_asyncio.fixture(scope="function", autouse=True)
+async def initialize_rate_limiter():
+    """
+    Initialize the rate limiter with a FAKE Redis connection.
+    """
+    redis = fakeredis.aioredis.FakeRedis(decode_responses=True)
+    await FastAPILimiter.init(redis)
+    yield redis
+    await redis.flushall()
+    await redis.aclose()
 
 
-def validate_http_exception(exc, status_code, detail):
+@pytest_asyncio.fixture(scope="function")
+async def async_client():
+    """
+    Use AsyncClient for async requests to FastAPI.
+    """
+    async with AsyncClient(app=app, base_url="http://test") as client:
+        yield client  # ✅ Ensure all requests are properly awaited
+
+
+#################### HELPER FUNCTIONS ####################
+
+
+def validate_http_exception(
+    exc: ExceptionInfo[HTTPException], status_code: int, detail: str
+):
     """
     Validate the HTTPException.
     """
@@ -152,6 +182,9 @@ def validate_user_verification(
         cast(datetime, user_verification.reverified_datetime).date()
         == datetime.now().date()
     )
+
+
+#################### TESTS ####################
 
 
 def test_signup(sign_up_data: UserSignup) -> None:
@@ -261,25 +294,28 @@ def test_signin_success(
     assert response.json()["message"] == "Login successful"
 
 
-def test_send_verification_code_invalid_email(
+@pytest.mark.asyncio
+async def test_send_verification_code_invalid_email(
+    async_client,
     sign_up_data: UserSignup,
 ) -> None:
     """
     Test sending a verification code to an invalid email.
     """
     signup_user(sign_up_data)
-    with pytest.raises(HTTPException) as exc:
-        client.post(
-            "/authentication/send-verification-code", params={"email": "invalid_email"}
-        )
-    validate_http_exception(
-        exc,
-        status.HTTP_404_NOT_FOUND,
-        "User does not exist with given email: invalid_email",
+    response = await async_client.post(
+        "/authentication/send-verification-code",
+        params={"email": "invalid_email"},
     )
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.json() == {
+        "message": "User does not exist with given email: invalid_email"
+    }
 
 
-def test_send_verification_code_already_verified(
+@pytest.mark.asyncio
+async def test_send_verification_code_already_verified(
+    async_client,
     sign_up_data: UserSignup,
 ) -> None:
     """
@@ -287,17 +323,18 @@ def test_send_verification_code_already_verified(
     """
     signup_user(sign_up_data)
     update_user_verification_status(sign_up_data.email)
-    with pytest.raises(HTTPException) as exc:
-        client.post(
-            "/authentication/send-verification-code",
-            params={"email": sign_up_data.email},
-        )
-    validate_http_exception(
-        exc, status.HTTP_400_BAD_REQUEST, "Email is already verified."
+
+    response = await async_client.post(
+        "/authentication/send-verification-code",
+        params={"email": sign_up_data.email},
     )
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Email is already verified."}
 
 
-def test_send_verification_code_success(
+@pytest.mark.asyncio
+async def test_send_verification_code_success(
+    async_client,
     sign_up_data: UserSignup,
     mock_notification_provider,
 ) -> None:
@@ -306,7 +343,7 @@ def test_send_verification_code_success(
     """
     signup_user(sign_up_data)
     update_user_verification_status(sign_up_data.email, False)
-    response = client.post(
+    response = await async_client.post(
         "/authentication/send-verification-code", params={"email": sign_up_data.email}
     )
     validate_verification_code_sent(
@@ -412,24 +449,25 @@ def test_verify_code_success(sign_up_data: UserSignup, test_verification_code) -
     assert user_verification.expiration_time == 0
 
 
-def test_send_reset_password_code_invalid_email() -> None:
+@pytest.mark.asyncio
+async def test_send_reset_password_code_invalid_email(async_client) -> None:
     """
     Test sending a reset password code to an invalid email.
     """
-    with pytest.raises(HTTPException) as exc:
-        client.post(
-            "/authentication/send-reset-password-code",
-            params={"email": "invalid_email"},
-        )
-    validate_http_exception(
-        exc,
-        status.HTTP_404_NOT_FOUND,
-        "User does not exist with given email: invalid_email",
+
+    response = await async_client.post(
+        "/authentication/send-reset-password-code",
+        params={"email": "invalid_email"},
     )
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.json() == {
+        "detail": "User does not exist with given email: invalid_email"
+    }
 
 
-def test_send_reset_password_code_success(
-    sign_up_data: UserSignup, mock_notification_provider
+@pytest.mark.asyncio
+async def test_send_reset_password_code_success(
+    async_client, sign_up_data: UserSignup, mock_notification_provider
 ) -> None:
     """
     Test the successful sending of a reset password code.
@@ -437,7 +475,7 @@ def test_send_reset_password_code_success(
     signup_user(sign_up_data)
 
     assert get_user_verification(sign_up_data.email) is None
-    response = client.post(
+    response = await async_client.post(
         "/authentication/send-reset-password-code", params={"email": sign_up_data.email}
     )
     validate_verification_code_sent(
@@ -945,3 +983,58 @@ def test_refresh_token_success(sign_up_data: UserSignup) -> None:
     assert response.status_code == 200
     assert "access_token" in response.json()
     assert "refresh_token" in response.json()
+
+
+#################### RATE LIMITER TESTS ####################
+@pytest.mark.asyncio
+async def test_rate_limiter_send_verification_code(
+    async_client: AsyncClient, sign_up_data: UserSignup
+) -> None:
+    """
+    Test the rate limiter for the send verification code endpoint.
+    """
+    signup_user(sign_up_data)
+    failed_attempts = 0
+    for _ in range(5):
+        response = await async_client.post(
+            "/authentication/send-verification-code",
+            params={"email": sign_up_data.email},
+        )
+        if response.status_code == 200:
+            assert (
+                response.json()["message"]
+                == f"Verification code sent to {sign_up_data.email}. Valid for 10 minutes."
+            )
+        else:
+            assert response.status_code == 429
+            assert response.json()["detail"] == "Too Many Requests"
+            failed_attempts += 1
+
+    assert failed_attempts == 4
+
+
+@pytest.mark.asyncio
+async def test_rate_limiter_send_password_reset_code(
+    async_client: AsyncClient, sign_up_data: UserSignup
+) -> None:
+    """
+    Test the rate limiter for the send password reset code endpoint.
+    """
+    signup_user(sign_up_data)
+    failed_attempts = 0
+    for _ in range(5):
+        response = await async_client.post(
+            "/authentication/send-reset-password-code",
+            params={"email": sign_up_data.email},
+        )
+        if response.status_code == 200:
+            assert (
+                response.json()["message"]
+                == f"Reset password code sent to {sign_up_data.email}. Valid for 10 minutes."
+            )
+        else:
+            assert response.status_code == 429
+            assert response.json()["detail"] == "Too Many Requests"
+            failed_attempts += 1
+
+    assert failed_attempts == 4

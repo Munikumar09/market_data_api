@@ -4,7 +4,7 @@ import random
 from datetime import datetime, timedelta, timezone
 
 from dateutil.parser import parse
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from snowflake import SnowflakeGenerator
 
@@ -42,6 +42,30 @@ from .user_validation import (
 snowflake_generator = SnowflakeGenerator(MACHINE_ID)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/authentication/signin")
+
+
+async def email_identifier(request: Request) -> str:
+    """
+    Identifier for rate limiting based on email and path.
+
+    Parameters:
+    -----------
+    request: ``Request``
+        The request object from the client
+
+    Returns:
+    --------
+    ``str``
+        The identifier for rate limiting
+    """
+    email = request.query_params.get("email")
+    if email is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email is required to identify the user",
+        )
+
+    return email + ":" + request.scope["path"]
 
 
 def get_snowflake_id() -> int:

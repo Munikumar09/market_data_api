@@ -21,3 +21,7 @@ try:
     MACHINE_ID = int(get_required_env_var("MACHINE_ID"))
 except ValueError as e:
     raise ValueError("MACHINE_ID must be an integer") from e
+
+# Rate Limiter Constants
+TIMES = 1
+SECONDS = 120
