@@ -32,18 +32,21 @@ env:
   SMARTAPI_CLIENT_ID: ${{ secrets.SMARTAPI_CLIENT_ID }}
   SMARTAPI_PWD: ${{ secrets.SMARTAPI_PWD }}
   SMARTAPI_TOKEN: ${{ secrets.SMARTAPI_TOKEN }}
-
 on:
   pull_request:
     branches: [ "master" ]
+
 
 permissions:
   contents: read
 
 jobs:
+  # This job sets up the Python environment
   static:
+    # The type of runner that the job will run on
     runs-on: ubuntu-latest
     defaults:
+
       run:
         shell: bash -l {0}
         working-directory: .
@@ -67,14 +70,15 @@ jobs:
 
       - name: Lint Check
         run: ./dev_tools/code_analysis/backend/lint.sh
-
+      
+        
   test:
     runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash -l {0}
         working-directory: backend
-
+    # Services to be used in the job
     services:
       # PostgreSQL service alias
       postgres:
@@ -85,16 +89,16 @@ jobs:
           POSTGRES_USER: ${{ env.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
           POSTGRES_DB: ${{ env.POSTGRES_DB }}
-          PGDATA: /dev/shm  # Run PostgreSQL in-memory for faster execution
         options: >-
-          --health-cmd "pg_isready -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }}"
-          --health-interval 5s
+          --health-cmd pg_isready
+          --health-interval 10s
           --health-timeout 5s
           --health-retries 5
     
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
       - name: Set up Environment Variable
@@ -106,6 +110,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           activate-environment: ${{ env.APP }}
 
+      # Install poetry and all the packages in pyproject.toml file
       - name: Install Poetry and Dependencies
         run: |
           curl -sSL https://install.python-poetry.org | python3 - --version ${{ env.POETRY_VERSION }} -y
