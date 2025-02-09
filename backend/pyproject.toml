@@ -18,7 +18,7 @@ websocket-client = "^1.5.2"
 pyotp = "^2.9.0"
 logzero = "^1.7.0"
 httpx = "^0.25.0"
-pytest = "^7.4.2"
+pytest = "^8.2"
 dvc = {extras = ["gdrive"], version = "^3.49.0"}
 platformdirs = "3.10.0"
 numpy = "^1.26.4"
@@ -40,6 +40,9 @@ ruamel-yaml = "^0.18.9"
 shfmt-py = "^3.7.0.1"
 python-dateutil = "^2.9.0.post0"
 types-python-dateutil = "^2.9.0.20241206"
+pytest-asyncio = "^0.25.3"
+fastapi-limiter = "^0.1.6"
+fakeredis = {extras = ["lua"], version = "^2.26.2"}
 
 
 

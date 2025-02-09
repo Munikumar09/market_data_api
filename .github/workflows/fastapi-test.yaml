@@ -2,6 +2,7 @@
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
 name: Quality Checks
+
 env:
   PYTHON_VERSION: 3.12.3
   POETRY_VERSION: 1.8.2
@@ -31,6 +32,12 @@ env:
   SMARTAPI_CLIENT_ID: ${{ secrets.SMARTAPI_CLIENT_ID }}
   SMARTAPI_PWD: ${{ secrets.SMARTAPI_PWD }}
   SMARTAPI_TOKEN: ${{ secrets.SMARTAPI_TOKEN }}
+
+  # Redis credentials
+  REDIS_HOST: ${{ secrets.REDIS_HOST }}
+  REDIS_PORT: ${{ secrets.REDIS_PORT }}
+  REDIS_DB: ${{ secrets.REDIS_DB }}
+  
 on:
   pull_request:
     branches: [ "master" ]
@@ -52,7 +59,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - name: Install miniconda and create environment
+      - name: Install Miniconda and Create Environment
         uses: conda-incubator/setup-miniconda@v2
         with:
           python-version: ${{ env.PYTHON_VERSION }}
@@ -63,9 +70,11 @@ jobs:
         run: |
           curl -sSL https://install.python-poetry.org | python3 - --version ${{ env.POETRY_VERSION }} -y
           ./backend/scripts/setup
-      - name: Python Format check
+
+      - name: Python Format Check
         run: ./dev_tools/code_analysis/backend/format.sh --check
-      - name: Lint check
+
+      - name: Lint Check
         run: ./dev_tools/code_analysis/backend/lint.sh
       
         
@@ -98,24 +107,24 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
-     # Set up an environment variable with value "app"
-      - name: Set up environment variable
-        run: |
-         echo "APP=app" >> "$GITHUB_ENV"
+      - name: Set up Environment Variable
+        run: echo "APP=app" >> "$GITHUB_ENV"
 
-      # Install miniconda and create a new environment with python 3.10
-      - name: Install miniconda and create environment
+      - name: Install Miniconda and Create Environment
         uses: conda-incubator/setup-miniconda@v2
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           activate-environment: ${{ env.APP }}
 
       # Install poetry and all the packages in pyproject.toml file
-      - name: Install poetry and dependencies
+      - name: Install Poetry and Dependencies
         run: |
           curl -sSL https://install.python-poetry.org | python3 - --version ${{ env.POETRY_VERSION }} -y
           ./scripts/setup
-  
-      - name: testing
+
+      - name: Verify PostgreSQL Connection
+        run: |
+          PGPASSWORD=${{ env.POSTGRES_PASSWORD }} psql -h ${{ env.POSTGRES_HOST }} -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} -c "SELECT 1;"
+        continue-on-error: false  # Fail if PostgreSQL is not ready
+      - name: Run Tests
         run: pytest . -vvv
-    
