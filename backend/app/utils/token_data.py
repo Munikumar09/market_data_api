@@ -103,9 +103,11 @@ def get_token_data(provider: DataProviderType) -> list[Instrument]:
     ``list[Instrument]``
         The processed token data as a list of Instrument objects
     """
-    if provider == DataProviderType.SMARTAPI:
-        return get_smartapi_token_data()
-    if provider == DataProviderType.UPSTOX:
-        return process_upstox_token_data()
+    provider_map = {
+        DataProviderType.SMARTAPI: get_smartapi_token_data,
+        DataProviderType.UPSTOX: process_upstox_token_data,
+    }
 
-    return []
+    fetch_func = provider_map.get(provider, lambda: [])
+
+    return fetch_func()

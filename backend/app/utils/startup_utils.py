@@ -51,7 +51,9 @@ def is_update_required(dataprovider_type: DataProviderType) -> bool:
 
     today_8_30 = datetime.now().replace(hour=8, minute=30, second=0, microsecond=0)
 
-    return not (last_update >= today_8_30 or current_time < today_8_30)
+    # Return True if last update was before today's 8:30 AM and current time is after 8:30 AM
+    # pylint: disable=chained-comparison
+    return last_update < today_8_30 and current_time >= today_8_30
 
 
 def insert_exchange_data():
@@ -79,7 +81,7 @@ def insert_data_provider_data():
 
 def create_tokens_db(remove_existing: bool = True):
     """
-    Creates the SmartAPI tokens database and tables if they do not exist.
+    Creates and updates the tokens database and tables for all data providers.
     """
     create_db_and_tables()
     insert_exchange_data()
