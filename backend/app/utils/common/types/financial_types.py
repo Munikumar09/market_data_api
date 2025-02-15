@@ -13,6 +13,7 @@ class DataProviderType(Enum):
     """
 
     SMARTAPI = 1
+    UPSTOX = 2
 
     @classmethod
     def get_data_provider(

@@ -1,5 +1,5 @@
 """
-This script contains the CRUD operations for the all the tables in the SQLite database.
+This script contains the CRUD operations for all the tables in the PostgreSQL database.
 Most of the functions are generic and can be used for any table in the database.The 
 functions are used to perform Insert, Update, Delete and Select operations on the tables.
 """
@@ -16,7 +16,7 @@ from sqlalchemy.dialects.sqlite.dml import Insert as SQLiteInsert
 from sqlalchemy.sql.elements import BinaryExpression
 from sqlmodel import Session, SQLModel, or_, select
 
-from app.data_layer.database.db_connections.sqlite import with_session
+from app.data_layer.database.db_connections.postgresql import with_session
 from app.utils.common.logger import get_logger
 from app.utils.constants import INSERTION_BATCH_SIZE
 

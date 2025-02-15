@@ -23,3 +23,10 @@ ALL_INDICES = f"{NSE_BASE_URL}/api/allIndices"
 
 # Database urls
 SQLITE_DB_URL = f"sqlite:///{ROOT_DIR}/data_layer/database/db/sqlite/db.sqlite3"
+
+
+# Token Data Urls
+SMARTAPI_TOKENS_URL = "https://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json"
+UPSTOX_TOKEN_URL = (
+    "https://assets.upstox.com/market-quote/instruments/exchange/complete.json.gz"
+)

@@ -6,14 +6,12 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from app.data_layer.database.models.instrument_model import Instrument
 from app.schemas.stock_model import (
     HistoricalStockDataBundle,
     HistoricalStockPriceInfo,
     SmartAPIStockPriceInfo,
 )
 from app.utils.common.logger import get_logger
-from app.utils.common.types.financial_types import DataProviderType, ExchangeType
 from app.utils.common.types.reques_types import CandlestickInterval
 from app.utils.smartapi.validator import check_data_availability, find_open_market_days
 
@@ -236,99 +234,3 @@ def process_smart_api_historical_stock_data(
         available_stock_data=processed_available_stock_data,
         missing_timestamps=missing_timestamps,
     )
-
-
-def determine_instrument_type(row: dict[str, str]) -> str:
-    """
-    Determine the instrument type based on the given row data.
-    This function first checks if an instrument type is already provided.
-    If not, it infers the type from the symbol using specific rules
-
-    Parameters:
-    -----------
-    row: ``dict[str, str]``
-        The row data from which to determine the instrument type
-
-    Returns:
-    --------
-    ``str``
-        The instrument type determined from the given row data
-    """
-    if row["instrumenttype"]:
-        return row["instrumenttype"]
-
-    symbol = row["symbol"]
-
-    if symbol[0].isdigit():
-        return "unk"
-
-    return symbol.split("-")[1] if "-" in symbol else "EQ"
-
-
-def process_smartapi_token_data(tokens_data: list[dict[str, str]]) -> list[Instrument]:
-    """
-    Processes the token data from the SmartAPI and returns the processed data.
-
-    Parameters:
-    -----------
-    tokens_data: ``list[dict[str, str]]``
-        The token data to be processed
-
-    Returns:
-    --------
-    ``list[Instrument]``
-        The processed token data as a list of Instrument
-    """
-    df = pd.DataFrame(tokens_data)
-    df = df[~df["symbol"].str.match(r"^\d")]
-    df = df.drop_duplicates(subset=["token"])
-    df["instrumenttype"] = df.apply(determine_instrument_type, axis=1)
-    df["symbol"] = df["symbol"].apply(lambda x: x.split("-")[0])
-    df["exchange"] = df["exch_seg"].apply(ExchangeType.get_exchange)
-    df.dropna(subset=["exchange"], inplace=True)
-    df.drop_duplicates(subset=["symbol", "exchange"], inplace=True)
-    df.drop(columns=["exch_seg"], inplace=True)
-
-    tokens_dict_data = df.to_dict("records")
-
-    processed_data = []
-    for token in tokens_dict_data:
-        processed_data.append(
-            Instrument(
-                token=token["token"],
-                exchange_id=token["exchange"].value,
-                data_provider_id=DataProviderType.SMARTAPI.value,
-                symbol=token["symbol"],
-                name=token["name"],
-                instrument_type=token["instrumenttype"],
-                expiry_date=token["expiry"],
-                strike_price=token["strike"],
-                lot_size=token["lotsize"],
-                tick_size=token["tick_size"],
-            )
-        )
-
-    return processed_data
-
-
-def process_token_data(
-    tokens_data: list[dict[str, str]], provider: DataProviderType
-) -> list[Instrument]:
-    """
-    Processes the token data based on the given provider and returns the processed data.
-
-    Parameters:
-    ----------
-    tokens_data: ``list[dict[str, str]]``
-        The token data to be processed
-    provider: ``DataProviderType``
-        The data provider type based on which the token data should be processed
-
-    Returns:
-    --------
-    ``list[Instrument]``
-        The processed token data as a list of Instrument objects
-    """
-    if provider == DataProviderType.SMARTAPI:
-        return process_smartapi_token_data(tokens_data)
-    return []

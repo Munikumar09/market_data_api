@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import (
     Column,
@@ -7,7 +7,7 @@ from sqlalchemy import (
     PrimaryKeyConstraint,
     SmallInteger,
 )
-from sqlmodel import Field, SQLModel
+from sqlmodel import TIMESTAMP, Field, SQLModel, text
 
 
 class Exchange(SQLModel, table=True):  # type: ignore
@@ -53,6 +53,14 @@ class DataProvider(SQLModel, table=True):  # type: ignore
 
     id: int = Field(sa_column=Column(SmallInteger(), primary_key=True))
     name: str = Field(min_length=3, max_length=30)
+    last_updated: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(
+            TIMESTAMP(timezone=True),
+            server_default=text("CURRENT_TIMESTAMP"),
+            onupdate=text("CURRENT_TIMESTAMP"),
+        ),
+    )
 
     def to_dict(self):
         """
@@ -61,6 +69,7 @@ class DataProvider(SQLModel, table=True):  # type: ignore
         return {
             "id": self.id,
             "name": self.name,
+            "last_updated": self.last_updated.replace(tzinfo=None),
         }
 
 
