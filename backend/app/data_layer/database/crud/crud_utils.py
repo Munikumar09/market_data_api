@@ -16,7 +16,7 @@ from sqlalchemy.dialects.sqlite.dml import Insert as SQLiteInsert
 from sqlalchemy.sql.elements import BinaryExpression
 from sqlmodel import Session, SQLModel, or_, select
 
-from app.data_layer.database.db_connections.sqlite import with_session
+from app.data_layer.database.db_connections.postgresql import with_session
 from app.utils.common.logger import get_logger
 from app.utils.constants import INSERTION_BATCH_SIZE
 

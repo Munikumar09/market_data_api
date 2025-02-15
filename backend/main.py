@@ -32,8 +32,7 @@ try:
     redis_client = redis.Redis(
         host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB, decode_responses=True
     )
-    # Test connection
-    redis_client.ping()
+
 except redis.ConnectionError as e:
     logger.error("Failed to connect to Redis: %s", str(e))
     raise
@@ -44,6 +43,7 @@ async def startup_event():
     try:
         postgresql.create_db_and_tables()
         create_smartapi_tokens_db()
+        await redis_client
         await FastAPILimiter.init(redis_client)
     except Exception as e:
         logger.error("Failed to initialize startup event: %s", str(e))
