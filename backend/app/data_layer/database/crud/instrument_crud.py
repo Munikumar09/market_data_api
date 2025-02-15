@@ -6,23 +6,22 @@ from pathlib import Path
 
 from sqlmodel import Session, delete, select
 
-from app.data_layer.database.db_connections.postgresql import get_session
-from app.data_layer.database.db_connections.sqlite import with_session
+from app.data_layer.database.db_connections.postgresql import with_session
 from app.data_layer.database.models import Instrument, InstrumentPrice
 from app.utils.common.logger import get_logger
 
 logger = get_logger(Path(__file__).name)
 
 
-def delete_all_data():
+@with_session
+def delete_all_data(session):
     """
     Deletes all data from the Instrument table.
     """
     try:
-        with get_session() as session:
-            statement = delete(Instrument)
-            session.exec(statement)
-            session.commit()
+        statement = delete(Instrument)
+        session.exec(statement)
+        session.commit()
     except Exception as e:
         logger.error("Failed to delete all data from the Instrument table: %s", str(e))
         raise e
@@ -31,7 +30,7 @@ def delete_all_data():
 @with_session
 def get_all_stock_price_info(session: Session) -> list[InstrumentPrice]:
     """
-    Retrieve all the data from the InstrumentPrice table in the SQLite database.
+    Retrieve all the data from the InstrumentPrice table in the Postgresql database.
 
     Parameters
     ----------
