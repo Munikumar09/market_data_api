@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from pathlib import Path
 
 from app.data_layer.database.crud.crud_utils import (
     get_data_by_any_condition,
@@ -9,10 +10,11 @@ from app.data_layer.database.db_connections.postgresql import (
     get_session,
 )
 from app.data_layer.database.models import DataProvider, Exchange, Instrument
+from app.utils.common.logger import get_logger
 from app.utils.common.types.financial_types import DataProviderType, ExchangeType
 from app.utils.token_data import get_token_data
 
-REFRESH_TIME = datetime.strptime("20:30:00", "%H:%M:%S").time()
+logger = get_logger(Path(__file__).name)
 
 
 def is_update_required(dataprovider_type: DataProviderType) -> bool:
@@ -48,10 +50,8 @@ def is_update_required(dataprovider_type: DataProviderType) -> bool:
         return True
 
     today_8_30 = datetime.now().replace(hour=8, minute=30, second=0, microsecond=0)
-    if last_update >= today_8_30 or current_time < today_8_30:
-        return False
 
-    return True
+    return not (last_update >= today_8_30 or current_time < today_8_30)
 
 
 def insert_exchange_data():
@@ -77,7 +77,7 @@ def insert_data_provider_data():
         insert_data(DataProvider, data_provider_data, session=session)
 
 
-def create_smartapi_tokens_db(remove_existing: bool = True):
+def create_tokens_db(remove_existing: bool = True):
     """
     Creates the SmartAPI tokens database and tables if they do not exist.
     """
@@ -94,6 +94,7 @@ def create_smartapi_tokens_db(remove_existing: bool = True):
                     update_existing=remove_existing,
                 )
         else:
-            print(
-                f"Skipping update for {provider.name} as it was updated today after 8:30 AM."
+            logger.info(
+                "Skipping update for %s as it was updated today after 8:30 AM.",
+                provider.name,
             )

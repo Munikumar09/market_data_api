@@ -1,9 +1,14 @@
+from pathlib import Path
+
 import pandas as pd
 
 from app.data_layer.database.models.instrument_model import Instrument
+from app.utils.common.logger import get_logger
 from app.utils.common.types.financial_types import DataProviderType, ExchangeType
 from app.utils.fetch_data import fetch_data
 from app.utils.urls import SMARTAPI_TOKENS_URL, UPSTOX_TOKEN_URL
+
+logger = get_logger(Path(__file__).name)
 
 
 def get_smartapi_token_data() -> list[Instrument]:
@@ -19,28 +24,32 @@ def get_smartapi_token_data() -> list[Instrument]:
     ``list[Instrument]``
         The processed token data as a list of Instrument objects
     """
-    tokens_data = fetch_data(SMARTAPI_TOKENS_URL)
-    df = pd.DataFrame(tokens_data)
-    df = df[df["exch_seg"] == "NSE"]
-    df = df[df["instrumenttype"] == ""]
-    df["instrumenttype"] = df["symbol"].apply(lambda x: x.split("-")[-1])
-    df = df[df["instrumenttype"].isin(["EQ", "SM", "BE", "ST"])]
+    try:
+        tokens_data = fetch_data(SMARTAPI_TOKENS_URL)
+        df = pd.DataFrame(tokens_data)
+        df = df[df["exch_seg"] == "NSE"]
+        df = df[df["instrumenttype"] == ""]
+        df["instrumenttype"] = df["symbol"].apply(lambda x: x.split("-")[-1])
+        df = df[df["instrumenttype"].isin(["EQ", "SM", "BE", "ST"])]
 
-    return [
-        Instrument(
-            token=token["token"],
-            exchange_id=ExchangeType.NSE.value,
-            data_provider_id=DataProviderType.SMARTAPI.value,
-            symbol=token["symbol"],
-            name=token["name"],
-            instrument_type=token["instrumenttype"],
-            expiry_date=token["expiry"],
-            strike_price=token["strike"],
-            lot_size=token["lotsize"],
-            tick_size=token["tick_size"],
-        )
-        for token in df.to_dict("records")
-    ]
+        return [
+            Instrument(
+                token=token["token"],
+                exchange_id=ExchangeType.NSE.value,
+                data_provider_id=DataProviderType.SMARTAPI.value,
+                symbol=token["symbol"],
+                name=token["name"],
+                instrument_type=token["instrumenttype"],
+                expiry_date=token["expiry"],
+                strike_price=token["strike"],
+                lot_size=token["lotsize"],
+                tick_size=token["tick_size"],
+            )
+            for token in df.to_dict("records")
+        ]
+    except Exception as e:
+        logger.error("Error in get_smartapi_token_data: %s", e)
+        return []
 
 
 def process_upstox_token_data() -> list[Instrument]:
@@ -56,24 +65,28 @@ def process_upstox_token_data() -> list[Instrument]:
     ``list[Instrument]``
         The processed token data as a list of Instrument objects
     """
-    df = pd.read_json(UPSTOX_TOKEN_URL, compression="gzip")
-    df = df[df["segment"] == "BSE_EQ"]
-    df = df[df["instrument_type"].isin(["A", "B", "X", "T", "XT", "M", "MT"])]
-    df["instrument_type"] = df["segment"].apply(lambda x: x.split("_")[1])
+    try:
+        df = pd.read_json(UPSTOX_TOKEN_URL, compression="gzip")
+        df = df[df["segment"] == "BSE_EQ"]
+        df = df[df["instrument_type"].isin(["A", "B", "X", "T", "XT", "M", "MT"])]
+        df["instrument_type"] = df["segment"].apply(lambda x: x.split("_")[1])
 
-    return [
-        Instrument(
-            token=token["instrument_key"],
-            exchange_id=ExchangeType.BSE.value,
-            data_provider_id=DataProviderType.UPSTOX.value,
-            symbol=token["trading_symbol"],
-            name=token["name"],
-            instrument_type=token["instrument_type"],
-            lot_size=token["lot_size"],
-            tick_size=token["tick_size"],
-        )
-        for token in df.to_dict("records")
-    ]
+        return [
+            Instrument(
+                token=token["instrument_key"],
+                exchange_id=ExchangeType.BSE.value,
+                data_provider_id=DataProviderType.UPSTOX.value,
+                symbol=token["trading_symbol"],
+                name=token["name"],
+                instrument_type=token["instrument_type"],
+                lot_size=token["lot_size"],
+                tick_size=token["tick_size"],
+            )
+            for token in df.to_dict("records")
+        ]
+    except Exception as e:
+        logger.error("Error in process_upstox_token_data: %s", e)
+        return []
 
 
 def get_token_data(provider: DataProviderType) -> list[Instrument]:

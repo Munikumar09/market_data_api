@@ -15,7 +15,7 @@ from app.routers.nse.equity import equity
 from app.routers.smartapi.smartapi import smartapi
 from app.utils.common.logger import get_logger
 from app.utils.fetch_data import get_required_env_var
-from app.utils.startup_utils import create_smartapi_tokens_db
+from app.utils.startup_utils import create_tokens_db
 
 logger = get_logger(Path(__file__).name)
 
@@ -34,7 +34,13 @@ try:
     )
 
 except redis.ConnectionError as e:
-    logger.error("Failed to connect to Redis: %s", str(e))
+    logger.error(
+        "Failed to connect to Redis at %s:%d (db: %s): %s",
+        REDIS_HOST,
+        REDIS_PORT,
+        REDIS_DB,
+        str(e),
+    )
     raise
 
 
@@ -42,7 +48,7 @@ except redis.ConnectionError as e:
 async def startup_event():
     try:
         postgresql.create_db_and_tables()
-        create_smartapi_tokens_db()
+        create_tokens_db()
         await redis_client
         await FastAPILimiter.init(redis_client)
     except Exception as e:

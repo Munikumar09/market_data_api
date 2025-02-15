@@ -1,5 +1,5 @@
 """
-This script contains the CRUD operations for the all the tables in the SQLite database.
+This script contains the CRUD operations for all the tables in the PostgreSQL database.
 Most of the functions are generic and can be used for any table in the database.The 
 functions are used to perform Insert, Update, Delete and Select operations on the tables.
 """

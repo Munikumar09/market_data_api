@@ -12,7 +12,7 @@ from omegaconf import DictConfig
 from app.sockets.connections import WebsocketConnection
 from app.utils.common import init_from_cfg
 from app.utils.common.logger import get_logger
-from app.utils.startup_utils import create_smartapi_tokens_db
+from app.utils.startup_utils import create_tokens_db
 
 logger = get_logger(Path(__file__).name)
 
@@ -52,7 +52,7 @@ def main(cfg: DictConfig):
     For example, if there are 2 websockets and 3 connection to each websocket,
     then it will create 6 connections in total.
     """
-    create_smartapi_tokens_db()
+    create_tokens_db()
     for connection in cfg.connections:
         create_websocket_connection(connection)
 

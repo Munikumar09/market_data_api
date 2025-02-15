@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import (
     Column,
@@ -54,7 +54,7 @@ class DataProvider(SQLModel, table=True):  # type: ignore
     id: int = Field(sa_column=Column(SmallInteger(), primary_key=True))
     name: str = Field(min_length=3, max_length=30)
     last_updated: datetime = Field(
-        default_factory=datetime.now,
+        default_factory=lambda: datetime.now(timezone.utc),
         sa_column=Column(
             TIMESTAMP(timezone=True),
             server_default=text("CURRENT_TIMESTAMP"),
