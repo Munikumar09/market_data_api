@@ -26,7 +26,7 @@ from app.utils.constants import (
     JWT_REFRESH_SECRET,
     JWT_SECRET,
     MACHINE_ID,
-    REFRESH_TOKEN_EXPIRE_DAYS,
+    REFRESH_TOKEN_EXPIRE_MINUTES,
     USER_ID,
 )
 
@@ -192,7 +192,7 @@ def signin_user(email: str, password: str) -> dict[str, str]:
     refresh_token = create_token(
         token_data,
         JWT_REFRESH_SECRET,
-        REFRESH_TOKEN_EXPIRE_DAYS,
+        REFRESH_TOKEN_EXPIRE_MINUTES,
     )
 
     return {

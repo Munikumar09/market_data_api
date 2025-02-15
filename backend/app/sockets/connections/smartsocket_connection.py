@@ -5,7 +5,7 @@ from typing import Optional
 from omegaconf import DictConfig
 
 from app.data_layer.database.crud.crud_utils import get_data_by_all_conditions
-from app.data_layer.database.db_connections.sqlite import get_session
+from app.data_layer.database.db_connections.postgresql import get_session
 from app.data_layer.database.models import Instrument
 from app.data_layer.streaming.streamer import Streamer
 from app.sockets.connections.websocket_connection import WebsocketConnection
