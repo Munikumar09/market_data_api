@@ -127,92 +127,98 @@ void main() {
 
     group('handleInvalidResponse', () {
       test('should return AppException with correct message for GET request',
-        () {
-      // Arrange
-      final mockRequestOptions = MockRequestOptions();
-      when(() => mockRequestOptions.method).thenReturn('GET');
-      when(() => mockRequestOptions.path).thenReturn('/api/users');
+          () {
+        // Arrange
+        final mockRequestOptions = MockRequestOptions();
+        when(() => mockRequestOptions.method).thenReturn('GET');
+        when(() => mockRequestOptions.path).thenReturn('/api/users');
 
-      final mockResponse = MockResponse();
-      when(() => mockResponse.statusCode).thenReturn(400);
-      when(() => mockResponse.requestOptions).thenReturn(mockRequestOptions);
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(400);
+        when(() => mockResponse.requestOptions).thenReturn(mockRequestOptions);
 
-      // Act
-      final appException = ApiErrorHandler.handleInvalidResponse(mockResponse);
+        // Act
+        final appException =
+            ApiErrorHandler.handleInvalidResponse(mockResponse);
 
-      // Assert
-      expect(appException, isA<AppException>());
-      expect(
-        appException.message,
-        'Invalid response (400) for GET request to /api/users',
-      );
-    });
+        // Assert
+        expect(appException, isA<AppException>());
+        expect(
+          appException.message,
+          'Invalid response (400) for GET request to /api/users',
+        );
+      });
 
-    test('should return AppException with correct message for POST request',
-        () {
-      // Arrange
-      final mockRequestOptions = MockRequestOptions();
-      when(() => mockRequestOptions.method).thenReturn('POST');
-      when(() => mockRequestOptions.path).thenReturn('/api/login');
+      test('should return AppException with correct message for POST request',
+          () {
+        // Arrange
+        final mockRequestOptions = MockRequestOptions();
+        when(() => mockRequestOptions.method).thenReturn('POST');
+        when(() => mockRequestOptions.path).thenReturn('/api/login');
 
-      final mockResponse = MockResponse();
-      when(() => mockResponse.statusCode).thenReturn(500);
-      when(() => mockResponse.requestOptions).thenReturn(mockRequestOptions);
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(500);
+        when(() => mockResponse.requestOptions).thenReturn(mockRequestOptions);
 
-      // Act
-      final appException = ApiErrorHandler.handleInvalidResponse(mockResponse);
+        // Act
+        final appException =
+            ApiErrorHandler.handleInvalidResponse(mockResponse);
 
-      // Assert
-      expect(appException, isA<AppException>());
-      expect(
-        appException.message,
-        'Invalid response (500) for POST request to /api/login',
-      );
-    });
+        // Assert
+        expect(appException, isA<AppException>());
+        expect(
+          appException.message,
+          'Invalid response (500) for POST request to /api/login',
+        );
+      });
 
-    test('should return AppException with correct message for different status code',
-        () {
-      // Arrange
-      final mockRequestOptions = MockRequestOptions();
-      when(() => mockRequestOptions.method).thenReturn('PUT');
-      when(() => mockRequestOptions.path).thenReturn('/api/profile');
+      test(
+          'should return AppException with correct message for different status code',
+          () {
+        // Arrange
+        final mockRequestOptions = MockRequestOptions();
+        when(() => mockRequestOptions.method).thenReturn('PUT');
+        when(() => mockRequestOptions.path).thenReturn('/api/profile');
 
-      final mockResponse = MockResponse();
-      when(() => mockResponse.statusCode).thenReturn(404); // Different status code
-      when(() => mockResponse.requestOptions).thenReturn(mockRequestOptions);
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode)
+            .thenReturn(404); // Different status code
+        when(() => mockResponse.requestOptions).thenReturn(mockRequestOptions);
 
-      // Act
-      final appException = ApiErrorHandler.handleInvalidResponse(mockResponse);
+        // Act
+        final appException =
+            ApiErrorHandler.handleInvalidResponse(mockResponse);
 
-      // Assert
-      expect(appException, isA<AppException>());
-      expect(
-        appException.message,
-        'Invalid response (404) for PUT request to /api/profile',
-      );
-    });
+        // Assert
+        expect(appException, isA<AppException>());
+        expect(
+          appException.message,
+          'Invalid response (404) for PUT request to /api/profile',
+        );
+      });
 
-    test('should return AppException with correct message for empty path', () {
-      // Arrange
-      final mockRequestOptions = MockRequestOptions();
-      when(() => mockRequestOptions.method).thenReturn('DELETE');
-      when(() => mockRequestOptions.path).thenReturn(''); // Empty path
+      test('should return AppException with correct message for empty path',
+          () {
+        // Arrange
+        final mockRequestOptions = MockRequestOptions();
+        when(() => mockRequestOptions.method).thenReturn('DELETE');
+        when(() => mockRequestOptions.path).thenReturn(''); // Empty path
 
-      final mockResponse = MockResponse();
-      when(() => mockResponse.statusCode).thenReturn(401);
-      when(() => mockResponse.requestOptions).thenReturn(mockRequestOptions);
+        final mockResponse = MockResponse();
+        when(() => mockResponse.statusCode).thenReturn(401);
+        when(() => mockResponse.requestOptions).thenReturn(mockRequestOptions);
 
-      // Act
-      final appException = ApiErrorHandler.handleInvalidResponse(mockResponse);
+        // Act
+        final appException =
+            ApiErrorHandler.handleInvalidResponse(mockResponse);
 
-      // Assert
-      expect(appException, isA<AppException>());
-      expect(
-        appException.message,
-        'Invalid response (401) for DELETE request to ', // Trailing space is fine
-      );
-    });
-
+        // Assert
+        expect(appException, isA<AppException>());
+        expect(
+          appException.message,
+          'Invalid response (401) for DELETE request to ', // Trailing space is fine
+        );
+      });
     });
   });
 }

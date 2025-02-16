@@ -210,7 +210,7 @@ void main() {
         // 3.  Call onError *again*, simulating a queued request.
         authInterceptor.onError(dioException, mockErrorHandler);
         await pumpEventQueue();
-        
+
         // 4.  Verify that the refresh token request was only called once.
         verify(() => mockDio.post(AuthInterceptor.refreshTokenEndpoint,
                 queryParameters: any(named: 'queryParameters')))
