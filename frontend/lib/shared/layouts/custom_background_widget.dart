@@ -17,7 +17,7 @@ class CustomBackgroundWidget extends StatelessWidget {
       decoration: ShapeDecoration(
         color: Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(50),
+          borderRadius: BorderRadius.circular(5),
         ),
       ),
       child: Stack(

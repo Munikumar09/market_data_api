@@ -1,66 +1,91 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/core/constants/app_strings.dart';
 import 'package:frontend/core/routes/app_routes.dart';
-import 'package:frontend/features/auth/presentation/widgets/header_text.dart';
-import 'package:frontend/shared/buttons/custom_button.dart';
+import 'package:frontend/features/auth/presentation/widgets/header_text_widget.dart';
+import 'package:frontend/shared/buttons/primary_button.dart'; // Import PrimaryButton
 import 'package:frontend/shared/layouts/custom_background_widget.dart';
 
+/// {@template welcome_page}
+/// The initial page displayed to the user, offering options to log in or sign up.
+/// {@endtemplate}
 class WelcomePage extends StatelessWidget {
+  /// {@macro welcome_page}
   const WelcomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context); // Get theme once for reuse
+
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: theme.colorScheme.surface,
       body: CustomBackgroundWidget(
         child: SingleChildScrollView(
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height,
+          // Use ConstrainedBox for height constraint
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height,
+            ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment:
+                    MainAxisAlignment.center, // Center vertically
                 children: [
-                  Spacer(),
-                  Image.asset(
-                    'assets/images/welcome_image.png',
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height / 2.5,
+                  const SizedBox(height: 25),
+                  _buildWelcomeImage(context),
+                  const SizedBox(height: 20),
+                  const HeaderTextWidget(
+                    //Consistent Naming
+                    title: AppStrings.welcomeTitle,
+                    subtitle: AppStrings.welcomeSubtitle,
                   ),
-                  Spacer(),
-                  HeaderText(
-                      title: AppStrings.welcomeTitle,
-                      subtitle: AppStrings.welcomeSubtitle),
-                  Spacer(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Expanded(
-                        child: CustomButton(
-                            text: AppStrings.signUp,
-                            onPressed: () {
-                              Navigator.of(context)
-                                  .pushNamed(AppRoutes.register);
-                            }),
-                      ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: CustomButton(
-                            text: AppStrings.login,
-                            onPressed: () {
-                              Navigator.of(context).pushNamed(AppRoutes.login);
-                            }),
-                      ),
-                    ],
-                  ),
-                  Spacer(),
+                  const SizedBox(height: 20),
+                  _buildActionButtons(context),
                 ],
               ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  /// Builds the welcome image widget.  Extracting this makes `build` cleaner.
+  Widget _buildWelcomeImage(BuildContext context) {
+    return Image.asset(
+      'assets/images/welcome_image.png',
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height / 2.5,
+      // Consider adding:
+      // fit: BoxFit.contain, // Or BoxFit.cover, depending on your image
+      // gaplessPlayback: true, // Prevent flicker on image reload
+    );
+  }
+
+  /// Builds the row of action buttons (Sign Up and Login).
+  Widget _buildActionButtons(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: PrimaryButton(
+            // Use PrimaryButton
+            text: AppStrings.signUp,
+            onPressed: () {
+              Navigator.of(context).pushNamed(AppRoutes.register);
+            },
+          ),
+        ),
+        const SizedBox(width: 20),
+        Expanded(
+          child: PrimaryButton(
+            // Use PrimaryButton
+            text: AppStrings.login,
+            onPressed: () {
+              Navigator.of(context).pushNamed(AppRoutes.login);
+            },
+          ),
+        ),
+      ],
     );
   }
 }

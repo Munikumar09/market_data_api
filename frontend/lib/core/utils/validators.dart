@@ -23,12 +23,36 @@ class Validators {
     if (!value.contains(RegExp(r'[0-9]'))) {
       return 'Password must contain at least one number';
     }
+    if (!value.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) {
+      return 'Password must contain at least one special character';
+    }
     return null;
   }
 
   static String? required(String? value) {
     if (value == null || value.isEmpty) {
       return 'This field is required';
+    }
+    return null;
+  }
+
+  static String? confirmPassword(String? password, String? confirmPassword) {
+    if (confirmPassword == null || confirmPassword.isEmpty) {
+      return 'Please confirm your password';
+    }
+    if (password != confirmPassword) {
+      return 'Passwords do not match';
+    }
+    return null;
+  }
+
+  static String? phoneNumber(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your phone number';
+    }
+    final phoneRegExp = RegExp(r'^\+?\d{10}$');
+    if (!phoneRegExp.hasMatch(value)) {
+      return 'Please enter a valid phone number';
     }
     return null;
   }

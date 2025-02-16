@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/core/constants/app_strings.dart';
 import 'package:frontend/core/constants/app_text_styles.dart';
 import 'package:frontend/core/routes/app_routes.dart';
-import 'package:frontend/features/auth/presentation/widgets/header_text.dart';
+import 'package:frontend/features/auth/presentation/widgets/header_text_widget.dart';
 import 'package:frontend/features/auth/presentation/widgets/auth_footer.dart';
 import 'package:frontend/shared/buttons/custom_button.dart';
 import 'package:frontend/shared/inputs/custom_text_field.dart';
@@ -41,7 +41,7 @@ class _LoginPageState extends State<LoginPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Spacer(),
-                HeaderText(
+                HeaderTextWidget(
                   title: AppStrings.loginTitle,
                   subtitle: AppStrings.loginSubtitle,
                 ),
@@ -102,7 +102,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 Spacer(),
-                const AuthFooter(),
+                const AuthFooterWidget(),
                 Spacer(),
               ],
             ),
