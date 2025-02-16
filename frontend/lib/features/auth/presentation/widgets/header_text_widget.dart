@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/core/constants/app_text_styles.dart';
 
-class HeaderText extends StatelessWidget {
-  const HeaderText({
+class HeaderTextWidget extends StatelessWidget {
+  const HeaderTextWidget({
     super.key,
     required this.title,
-    required this.subtitle,
+    this.subtitle,
     this.titleColor,
     this.subtitleColor,
   });
 
   final String title;
-  final String subtitle;
+  final String? subtitle;
   final Color? titleColor;
   final Color? subtitleColor;
 
@@ -31,13 +31,17 @@ class HeaderText extends StatelessWidget {
           semanticsLabel: title,
         ),
         const SizedBox(height: 16),
-        Text(
-          subtitle,
-          style: AppTextStyles.headline2(
-            subtitleColor ?? theme.colorScheme.onSurface,
+        if (subtitle != null)
+          Align(
+            alignment: Alignment.center,
+            child: Text(
+              subtitle!,
+              style: AppTextStyles.headline2(
+                subtitleColor ?? theme.colorScheme.onSurface,
+              ),
+              semanticsLabel: subtitle,
+            ),
           ),
-          semanticsLabel: subtitle,
-        ),
       ],
     );
   }

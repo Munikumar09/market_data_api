@@ -3,8 +3,8 @@ import 'package:frontend/core/constants/app_strings.dart';
 import 'package:frontend/core/constants/app_text_styles.dart';
 import 'package:frontend/shared/buttons/icon_button.dart';
 
-class AuthFooter extends StatelessWidget {
-  const AuthFooter({super.key});
+class AuthFooterWidget extends StatelessWidget {
+  const AuthFooterWidget({super.key});
   @override
   Widget build(BuildContext context) {
     return Padding(
