@@ -61,13 +61,16 @@ void main() {
     // Correctly test debug mode
     test('PrettyDioLogger is added in debug mode', () {
       // Use runZoned to override kDebugMode *within* the test
-      return runZoned(() {
-        dioClient = DioClient(mockSecureStorage, mockRef);
-        final dio = dioClient.dio;
-        expect(dio.interceptors, isNotEmpty);
-        expect(dio.interceptors.any((i) => i is PrettyDioLogger), isTrue);
-        // Force debug
-      });
+      return runZoned(
+        () {
+          dioClient = DioClient(mockSecureStorage, mockRef);
+          final dio = dioClient.dio;
+          expect(dio.interceptors, isNotEmpty);
+          expect(dio.interceptors.any((i) => i is PrettyDioLogger), isTrue);
+          // Force debug
+        },
+        zoneValues: {#debug: true},
+      );
     });
   });
 }

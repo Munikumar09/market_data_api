@@ -10,6 +10,9 @@ class MockDioException extends Mock implements DioException {}
 // Mock Response
 class MockResponse extends Mock implements Response {}
 
+// Mock Request Options
+class MockRequestOptions extends Mock implements RequestOptions {}
+
 void main() {
   late MockDioException mockDioException;
   late MockResponse mockResponse;
@@ -123,20 +126,93 @@ void main() {
     });
 
     group('handleInvalidResponse', () {
-      test('should return formatted message with status code', () {
-        // Arrange
-        const statusCode = 404;
-        when(() => mockResponse.statusCode).thenReturn(statusCode);
+      test('should return AppException with correct message for GET request',
+        () {
+      // Arrange
+      final mockRequestOptions = MockRequestOptions();
+      when(() => mockRequestOptions.method).thenReturn('GET');
+      when(() => mockRequestOptions.path).thenReturn('/api/users');
 
-        // Act
-        final result = ApiErrorHandler.handleInvalidResponse(mockResponse);
+      final mockResponse = MockResponse();
+      when(() => mockResponse.statusCode).thenReturn(400);
+      when(() => mockResponse.requestOptions).thenReturn(mockRequestOptions);
 
-        // Assert
-        expect(
-            result,
-            isA<AppException>()
-                .having((e) => e.message, 'message', 'Invalid response (404)'));
-      });
+      // Act
+      final appException = ApiErrorHandler.handleInvalidResponse(mockResponse);
+
+      // Assert
+      expect(appException, isA<AppException>());
+      expect(
+        appException.message,
+        'Invalid response (400) for GET request to /api/users',
+      );
+    });
+
+    test('should return AppException with correct message for POST request',
+        () {
+      // Arrange
+      final mockRequestOptions = MockRequestOptions();
+      when(() => mockRequestOptions.method).thenReturn('POST');
+      when(() => mockRequestOptions.path).thenReturn('/api/login');
+
+      final mockResponse = MockResponse();
+      when(() => mockResponse.statusCode).thenReturn(500);
+      when(() => mockResponse.requestOptions).thenReturn(mockRequestOptions);
+
+      // Act
+      final appException = ApiErrorHandler.handleInvalidResponse(mockResponse);
+
+      // Assert
+      expect(appException, isA<AppException>());
+      expect(
+        appException.message,
+        'Invalid response (500) for POST request to /api/login',
+      );
+    });
+
+    test('should return AppException with correct message for different status code',
+        () {
+      // Arrange
+      final mockRequestOptions = MockRequestOptions();
+      when(() => mockRequestOptions.method).thenReturn('PUT');
+      when(() => mockRequestOptions.path).thenReturn('/api/profile');
+
+      final mockResponse = MockResponse();
+      when(() => mockResponse.statusCode).thenReturn(404); // Different status code
+      when(() => mockResponse.requestOptions).thenReturn(mockRequestOptions);
+
+      // Act
+      final appException = ApiErrorHandler.handleInvalidResponse(mockResponse);
+
+      // Assert
+      expect(appException, isA<AppException>());
+      expect(
+        appException.message,
+        'Invalid response (404) for PUT request to /api/profile',
+      );
+    });
+
+    test('should return AppException with correct message for empty path', () {
+      // Arrange
+      final mockRequestOptions = MockRequestOptions();
+      when(() => mockRequestOptions.method).thenReturn('DELETE');
+      when(() => mockRequestOptions.path).thenReturn(''); // Empty path
+
+      final mockResponse = MockResponse();
+      when(() => mockResponse.statusCode).thenReturn(401);
+      when(() => mockResponse.requestOptions).thenReturn(mockRequestOptions);
+
+      // Act
+      final appException = ApiErrorHandler.handleInvalidResponse(mockResponse);
+
+      // Assert
+      expect(appException, isA<AppException>());
+      expect(
+        appException.message,
+        'Invalid response (401) for DELETE request to ', // Trailing space is fine
+      );
+    });
+
     });
   });
 }

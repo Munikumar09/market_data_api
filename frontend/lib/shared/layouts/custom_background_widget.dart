@@ -92,7 +92,7 @@ class CustomBackgroundWidget extends StatelessWidget {
           ),
           if (child != null)
             Positioned.fill(
-              child: child!,
+              child: SafeArea(child: child!),
             ),
         ],
       ),

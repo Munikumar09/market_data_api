@@ -1,12 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/core/constants/app_text_styles.dart';
 
-/// {@template primary_button}
-/// A customizable primary button widget.
-///
-/// Allows setting text, background color, text color, font size, border radius,
-/// and an optional child widget to replace the text (e.g., for a loading indicator).
-/// {@endtemplate}
 class PrimaryButton extends StatelessWidget {
   /// The text to display on the button.
   final String text;

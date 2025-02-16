@@ -16,11 +16,6 @@ import 'package:frontend/shared/inputs/custom_text_field.dart';
 import 'package:frontend/shared/layouts/custom_background_widget.dart';
 import 'package:frontend/shared/loaders/loading_indicator.dart';
 
-/// {@template register_page}
-/// A [StatefulWidget] that displays the registration page.
-///
-/// Allows users to create a new account by providing necessary information.
-/// {@endtemplate}
 class RegisterPage extends ConsumerStatefulWidget {
   /// {@macro register_page}
   const RegisterPage({super.key});
@@ -117,29 +112,27 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       body: CustomBackgroundWidget(
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context).size.height,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 16),
-                    const HeaderTextWidget(
-                      // Consistent naming
-                      title: AppStrings.registerTitle,
-                      subtitle: AppStrings.registerSubtitle,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildForm(), // Build the form
-                    const SizedBox(height: 16),
-                    const AuthFooterWidget(), // Consistent naming
-                  ],
-                ),
+        child: SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 16),
+                  const HeaderTextWidget(
+                    // Consistent naming
+                    title: AppStrings.registerTitle,
+                    subtitle: AppStrings.registerSubtitle,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildForm(), // Build the form
+                  const SizedBox(height: 16),
+                  const AuthFooterWidget(), // Consistent naming
+                ],
               ),
             ),
           ),

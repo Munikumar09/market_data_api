@@ -5,9 +5,7 @@ import 'package:frontend/features/auth/presentation/widgets/header_text_widget.d
 import 'package:frontend/shared/buttons/primary_button.dart'; // Import PrimaryButton
 import 'package:frontend/shared/layouts/custom_background_widget.dart';
 
-/// {@template welcome_page}
-/// The initial page displayed to the user, offering options to log in or sign up.
-/// {@endtemplate}
+/// The welcome page of the application.
 class WelcomePage extends StatelessWidget {
   /// {@macro welcome_page}
   const WelcomePage({super.key});
@@ -56,9 +54,13 @@ class WelcomePage extends StatelessWidget {
       'assets/images/welcome_image.png',
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height / 2.5,
-      // Consider adding:
-      // fit: BoxFit.contain, // Or BoxFit.cover, depending on your image
-      // gaplessPlayback: true, // Prevent flicker on image reload
+      fit: BoxFit.contain,
+      gaplessPlayback: true,
+      semanticLabel: 'Welcome illustration',
+      errorBuilder: (context, error, stackTrace) {
+        debugPrint('Error loading welcome image: $error');
+        return const SizedBox.shrink();
+      },
     );
   }
 

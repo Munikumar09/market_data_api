@@ -19,9 +19,12 @@ class LoadingIndicator extends StatelessWidget {
       height: size,
       width: size,
       child: CircularProgressIndicator(
-        strokeWidth: strokeWidth,
-        color: color ?? Colors.white, // Default to white if not specified
-      ),
+          strokeWidth: strokeWidth,
+          color: color ??
+              Theme.of(context)
+                  .colorScheme
+                  .onPrimary // Default to white if not specified
+          ),
     );
   }
 }

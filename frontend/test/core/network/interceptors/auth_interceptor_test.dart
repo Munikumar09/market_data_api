@@ -171,10 +171,8 @@ void main() {
         when(() => mockResponse.statusCode).thenReturn(401);
 
         await authInterceptor.onError(dioException, mockErrorHandler);
-        // --- Add a small delay to allow microtasks to complete ---
-        await Future.delayed(Duration.zero); // The key change!
+        await pumpEventQueue();
 
-        // verify(() => mockSecureStorage.clearTokens()).called(1);
         verify(() => mockRef.read(authNotifierProvider.notifier).logout())
             .called(1);
         verify(() => mockErrorHandler.reject(dioException)).called(1);
@@ -211,12 +209,9 @@ void main() {
 
         // 3.  Call onError *again*, simulating a queued request.
         authInterceptor.onError(dioException, mockErrorHandler);
-        await Future.delayed(Duration.zero);
-
-        // 4.  Verify the queuing behavior *indirectly*:
-        //     - The refresh token request should have been attempted *only once*.
-        //     - The *second* call to onError should NOT have triggered another refresh.
-        //     - The *second* call to onError should have called handler.reject().
+        await pumpEventQueue();
+        
+        // 4.  Verify that the refresh token request was only called once.
         verify(() => mockDio.post(AuthInterceptor.refreshTokenEndpoint,
                 queryParameters: any(named: 'queryParameters')))
             .called(1); // ONLY ONCE
@@ -277,7 +272,7 @@ void main() {
 
         // Act
         await authInterceptor.onError(dioException, mockErrorHandler);
-        await Future.delayed(Duration.zero);
+        await pumpEventQueue();
         // Assert
         verify(() => mockSecureStorage.getTokens()).called(1);
         verify(() => mockDio.post(AuthInterceptor.refreshTokenEndpoint,
@@ -334,7 +329,7 @@ void main() {
         await authInterceptor.onError(dioException, handler);
 
         // *** Add a delay here to allow async operations to complete ***
-        await Future.delayed(Duration.zero);
+        await pumpEventQueue();
 
         // Assert
         verify(() => mockSecureStorage.getTokens()).called(1);
@@ -421,7 +416,7 @@ void main() {
         authInterceptor.onError(dioException2, handler2); // Don't await here
 
         // // Add the delay *after* both calls to onError.
-        await Future.delayed(Duration.zero);
+        await pumpEventQueue();
 
         verify(() => mockSecureStorage.getTokens()).called(1);
         verify(() => mockDio.post(AuthInterceptor.refreshTokenEndpoint,

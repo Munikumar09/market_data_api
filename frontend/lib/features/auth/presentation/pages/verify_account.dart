@@ -11,9 +11,7 @@ import 'package:frontend/shared/inputs/custom_text_field.dart';
 import 'package:frontend/shared/layouts/custom_background_widget.dart';
 import 'package:frontend/shared/loaders/loading_indicator.dart';
 
-/// {@template verify_account_page}
-/// A page that allows users to verify their account using an OTP sent to their email.
-/// {@endtemplate}
+/// The verify account page of the application.
 class VerifyAccountPage extends ConsumerStatefulWidget {
   /// {@macro verify_account_page}
   const VerifyAccountPage({super.key});
@@ -32,7 +30,6 @@ class _VerifyAccountPageState extends ConsumerState<VerifyAccountPage> {
   @override
   void initState() {
     super.initState();
-    // Use addPostFrameCallback ONLY for actions that MUST happen after the first build.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _extractEmailFromArgs();
     });
@@ -45,15 +42,32 @@ class _VerifyAccountPageState extends ConsumerState<VerifyAccountPage> {
     _email = args?['email'] as String? ?? '';
 
     if (_email.isNotEmpty && !_isCodeSent) {
-      ref.read(authNotifierProvider.notifier).sendVerificationCode(_email);
-      // DON'T show the success snackbar here.  We'll handle it in ref.listen
-      _isCodeSent = true; // Mark the code as sent.
+      _sendInitialVerificationCode();
     } else if (_email.isEmpty) {
-      // Use addPostFrameCallback to ensure Navigator.pop() is called after build
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.of(context).pop(); // Go back
+        Navigator.of(context).pop();
         context.showErrorSnackBar("Error: Email address is missing.");
       });
+    }
+  }
+
+  Future<void> _sendInitialVerificationCode() async {
+    try {
+      await ref
+          .read(authNotifierProvider.notifier)
+          .sendVerificationCode(_email);
+      if (mounted) {
+        setState(() {
+          _isCodeSent =
+              true; // Mark the code as sent *after* successful API call
+        });
+      }
+    } catch (e) {
+      // Handle errors during initial code sending.
+      if (mounted) {
+        context
+            .showErrorSnackBar("Failed to send initial verification code: $e");
+      }
     }
   }
 
@@ -75,43 +89,41 @@ class _VerifyAccountPageState extends ConsumerState<VerifyAccountPage> {
 
   /// Resends the verification code.
   Future<void> _onResendOtpPressed() async {
-    // No need for a separate flag; just call the provider method.
-    ref.read(authNotifierProvider.notifier).sendVerificationCode(_email);
-    // DON'T show the success snackbar here. Handled in ref.listen
+    try {
+      await ref
+          .read(authNotifierProvider.notifier)
+          .sendVerificationCode(_email);
+    } catch (e) {
+      //Handle errors during resend
+      if (mounted) {
+        context.showErrorSnackBar("Failed to resend verification code: $e");
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // Use ref.listen for ALL side effects: navigation, snackbars, etc.
     ref.listen<AuthState>(authNotifierProvider, (previous, next) {
-      // 1. Handle initial code sending success.
+      // 1. Handle *SUCCESSFUL* initial code sending (moved to listen).  More reliable.
       if (previous?.status != AuthStatus.verificationSent &&
-              next.status == AuthStatus.verificationSent &&
-              _email.isNotEmpty // Only show if email exists
-          ) {
+          next.status == AuthStatus.verificationSent &&
+          _isCodeSent) {
         context.showSuccessSnackBar('Verification code sent to $_email');
       }
 
       // 2. Handle OTP verification attempts (success and error).
       if (_didAttemptVerification && next.status != AuthStatus.loading) {
-        _didAttemptVerification = false; // Reset flag
+        _didAttemptVerification = false;
 
         if (next.status == AuthStatus.initial) {
           Navigator.pushNamedAndRemoveUntil(
               context, AppRoutes.login, (route) => false);
           context.showSuccessSnackBar('Account verified successfully.');
         } else if (next.error != null) {
-          context.showErrorSnackBar(next.error!); // Consistent error display
+          context.showErrorSnackBar(next.error!);
         }
-      }
-      // 3. Handle resend success
-      if (previous?.status != AuthStatus.verificationSent &&
-              next.status == AuthStatus.verificationSent &&
-              _isCodeSent // Ensure this is after a resend, not the initial send
-          ) {
-        context.showSuccessSnackBar('Verification code resent to $_email');
       }
     });
 
@@ -135,8 +147,8 @@ class _VerifyAccountPageState extends ConsumerState<VerifyAccountPage> {
                   ),
                   const SizedBox(height: 50),
                   _buildForm(),
-                  const SizedBox(height: 20), // Space below the button
-                  _buildResendButton(theme), // Resend button
+                  const SizedBox(height: 20),
+                  _buildResendButton(theme),
                 ],
               ),
             ),
@@ -146,7 +158,6 @@ class _VerifyAccountPageState extends ConsumerState<VerifyAccountPage> {
     );
   }
 
-  /// Builds the form with the OTP input field and submit button.
   Widget _buildForm() {
     final authState = ref.watch(authNotifierProvider);
 
@@ -179,14 +190,12 @@ class _VerifyAccountPageState extends ConsumerState<VerifyAccountPage> {
     );
   }
 
-  /// Builds the "Resend OTP" button.
   Widget _buildResendButton(ThemeData theme) {
     return TextButton(
       onPressed: _onResendOtpPressed,
       child: Text(
         "Resend OTP",
         style: theme.textTheme.labelLarge!.copyWith(
-          // Use theme for styling
           color: theme.colorScheme.primary,
         ),
       ),

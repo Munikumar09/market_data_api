@@ -52,4 +52,9 @@ class AuthState {
       accessToken: accessToken ?? this.accessToken,
     );
   }
+
+  @override
+  String toString() {
+    return 'AuthState(status: $status, email: $email, error: $error, accessToken: ${accessToken != null ? '***' : 'null'})';
+  }
 }

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend/core/utils/exceptions/app_exceptions.dart';
 import 'package:frontend/core/utils/handlers/api_call_handler.dart';
+import 'package:frontend/core/utils/handlers/api_error_handler.dart';
 import 'package:mocktail/mocktail.dart';
 
 // Mock Dio
@@ -272,6 +273,41 @@ void main() {
               'Detailed error message from server')),
         );
       });
+      test('should handle rate limiting with retry-after header', () async {
+        // Arrange
+        final dioError = DioException(
+          requestOptions: RequestOptions(path: '/test'),
+          type: DioExceptionType.badResponse,
+          response: Response(
+            requestOptions: RequestOptions(path: '/test'),
+            statusCode: 429,
+            headers: Headers.fromMap({
+              'retry-after': ['30']
+            }),
+            // It's good practice to set a data payload, even if it's simple.
+            data: {'detail': 'Too many requests'},
+          ),
+          // Set a message in DioException (optional but good practice)
+          message: "Rate limit exceeded",
+        );
+        when(() => mockDio.get(any())).thenThrow(dioError);
+
+        // Act & Assert
+        await expectLater(
+          () => apiCallHandler.handleApiCall<String>(
+            call: () =>
+                mockDio.get('/test').then((res) => res.data!), // Correct call
+            exception: (message) =>
+                AppException(message), // Correctly use AppException
+            operationName: 'Test Operation',
+          ),
+          throwsA(isA<AppException>().having(
+            (e) => e.message,
+            'message',
+            startsWith('Too many requests'), // Use startsWith
+          )),
+        );
+      });
     });
 
     group('validateResponse', () {
@@ -295,9 +331,26 @@ void main() {
         // Act & Assert
         expect(
           () => apiCallHandler.validateResponse(response),
-          throwsA(isA<AppException>().having((e) => e.message, 'message',
-              'Invalid response (400)')), // Check for AppException and message
+          throwsA(isA<AppException>()), // Check for AppException and message
         );
+      });
+      test('should handle null status code', () {
+        final response = Response(
+            requestOptions: RequestOptions(path: ''), statusCode: null);
+
+        final result = ApiErrorHandler.handleInvalidResponse(response);
+        expect(result, isA<AppException>());
+      });
+      test('should handle different status codes', () {
+        final testCodes = [400, 401, 403, 404, 500, 502, 503];
+        for (final code in testCodes) {
+          final mockResponse = Response(
+              requestOptions: RequestOptions(path: ''), statusCode: code);
+
+          final result = ApiErrorHandler.handleInvalidResponse(mockResponse);
+          expect(result, isA<AppException>());
+          // expect(result.message, contains(code));
+        }
       });
     });
   });

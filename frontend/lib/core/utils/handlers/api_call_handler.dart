@@ -4,16 +4,20 @@ import 'package:frontend/core/utils/handlers/api_error_handler.dart';
 import 'package:logger/logger.dart';
 
 class ApiCallHandler {
-  final Logger _logger = Logger(
-    printer: PrettyPrinter(
-      methodCount: 0, // Reduce clutter in production logs
-      errorMethodCount: 5, // Show enough stack trace for errors
-      lineLength: 120,
-      colors: true,
-      printEmojis: true,
-      printTime: false,
-    ), // Consider using a more configurable printer
-  );
+  final Logger _logger;
+
+  ApiCallHandler({Logger? logger})
+      : _logger = logger ??
+            Logger(
+              printer: PrettyPrinter(
+                methodCount: 0,
+                errorMethodCount: 5,
+                lineLength: 120,
+                colors: true,
+                printEmojis: true,
+                printTime: false,
+              ),
+            );
 
   Future<T> handleApiCall<T>({
     required Future<T> Function() call,

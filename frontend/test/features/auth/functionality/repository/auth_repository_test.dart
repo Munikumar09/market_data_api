@@ -370,7 +370,7 @@ void main() {
             statusCode: 200);
 
         when(() => mockDio.post(ApiEndpoints.sendVerification,
-                queryParameters: {'email': email})) // Changed to data:
+                queryParameters: {'email': email}))
             .thenAnswer((_) async => mockResponse);
 
         when(() => mockApiCallHandler.validateResponse(mockResponse,
@@ -823,6 +823,10 @@ void main() {
         final exceptionMessage = 'Failed to clear tokens';
         final mockException = TokenStorageException(exceptionMessage);
 
+        // Mock secureStorageService.clearTokens() to throw the exception.
+        when(() => mockSecureStorageService.clearTokens())
+            .thenThrow(mockException);
+
         // Mock handleApiCall to correctly handle the exception.
         when(() => mockApiCallHandler.handleApiCall<void>(
               call: any(named: 'call'),
@@ -838,10 +842,6 @@ void main() {
                     as AppException Function(String);
             throw exceptionFunction(e.message); // Use e.message, not a default.
           }
-
-          // Mock secureStorageService.clearTokens() to throw the exception.
-          when(() => mockSecureStorageService.clearTokens())
-              .thenThrow(mockException);
 
           // Act and Assert
           await expectLater(

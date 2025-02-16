@@ -39,7 +39,12 @@ class _InitialPageState extends ConsumerState<InitialPage> {
   Widget build(BuildContext context) {
     // Listen for changes in the authentication state.
     ref.listen<AuthState>(authNotifierProvider, (previous, next) {
-      _handleAuthStateChange(next);
+      // Debounce rapid state changes
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (mounted) {
+          _handleAuthStateChange(next);
+        }
+      });
     });
 
     return Scaffold(
@@ -65,16 +70,16 @@ class _InitialPageState extends ConsumerState<InitialPage> {
 
     switch (state.status) {
       case AuthStatus.authenticated:
-        // Navigate to home screen when authenticated.
+        debugPrint('Navigating to home screen - User authenticated');
         Navigator.of(context).pushReplacementNamed(AppRoutes.home);
         break;
       case AuthStatus.unauthenticated:
       case AuthStatus.error:
-        // Navigate to welcome screen when unauthenticated or in case of error.
+        debugPrint('Navigating to welcome screen - ${state.status}');
         Navigator.of(context).pushReplacementNamed(AppRoutes.welcome);
         break;
       default:
-        // Do nothing while in loading or other intermediate states.
+        debugPrint('Staying on loading screen - ${state.status}');
         break;
     }
   }

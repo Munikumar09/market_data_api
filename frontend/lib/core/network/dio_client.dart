@@ -7,18 +7,23 @@ import 'package:frontend/features/auth/application/services/token_storage_servic
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 class DioClient {
-  static const _connectionTimeout = 5000;
-  static const _receiveTimeout = 5000;
+  final int connectionTimeout;
+  final int receiveTimeout;
 
   final Dio _dio;
   final SecureStorageService _secureStorage;
   final Ref ref;
-  DioClient(this._secureStorage, this.ref)
-      : _dio = Dio(
+
+  DioClient(
+    this._secureStorage,
+    this.ref, {
+    this.connectionTimeout = 5000,
+    this.receiveTimeout = 5000,
+  }) : _dio = Dio(
           BaseOptions(
             baseUrl: AppUrls.baseUrl,
-            connectTimeout: const Duration(milliseconds: _connectionTimeout),
-            receiveTimeout: const Duration(milliseconds: _receiveTimeout),
+            connectTimeout: Duration(milliseconds: connectionTimeout),
+            receiveTimeout: Duration(milliseconds: receiveTimeout),
             contentType: 'application/json',
           ),
         ) {

@@ -1,6 +1,6 @@
-// snackbar_helper.dart
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
+
 
 /// Extension on BuildContext to show custom snackbars.
 extension SnackbarContext on BuildContext {
@@ -8,6 +8,7 @@ extension SnackbarContext on BuildContext {
     required String title,
     required String message,
     required ContentType contentType,
+    Duration duration = const Duration(seconds: 4), 
   }) {
     final snackBar = SnackBar(
       elevation: 0,
@@ -18,6 +19,7 @@ extension SnackbarContext on BuildContext {
         message: message,
         contentType: contentType,
       ),
+      duration: duration,
     );
 
     ScaffoldMessenger.of(this)
