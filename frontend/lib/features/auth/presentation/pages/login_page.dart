@@ -94,7 +94,7 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 10),
                 TextButton(
                   onPressed: () {
-                    Navigator.of(context).pushNamed(AppRoutes.register);
+                    Navigator.of(context).pushReplacementNamed(AppRoutes.register);
                   },
                   child: Text(
                     AppStrings.createAccount,

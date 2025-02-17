@@ -24,4 +24,5 @@ class AppRoutes {
     verifyAccount: (context) => VerifyAccountPage(),
     home: (context) => HomePage(),
   };
+
 }

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:frontend/core/constants/app_urls.dart';
+import 'package:frontend/core/constants/api_endpoints.dart';
 import 'package:frontend/core/network/dio_client.dart';
 import 'package:frontend/core/network/interceptor/auth_interceptor.dart';
 import 'package:frontend/features/auth/application/services/token_storage_service.dart';
@@ -35,7 +35,7 @@ void main() {
 
       final dio = dioClient.dio;
 
-      expect(dio.options.baseUrl, AppUrls.baseUrl);
+      expect(dio.options.baseUrl, ApiEndpoints.baseUrl);
       expect(dio.options.connectTimeout, const Duration(milliseconds: 5000));
       expect(dio.options.receiveTimeout, const Duration(milliseconds: 5000));
       expect(dio.options.headers['Content-Type'], 'application/json');

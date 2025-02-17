@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/core/constants/app_urls.dart';
+import 'package:frontend/core/constants/api_endpoints.dart';
 import 'package:frontend/core/network/interceptor/auth_interceptor.dart';
 import 'package:frontend/features/auth/application/services/token_storage_service.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
@@ -21,7 +21,7 @@ class DioClient {
     this.receiveTimeout = 5000,
   }) : _dio = Dio(
           BaseOptions(
-            baseUrl: AppUrls.baseUrl,
+            baseUrl: ApiEndpoints.baseUrl,
             connectTimeout: Duration(milliseconds: connectionTimeout),
             receiveTimeout: Duration(milliseconds: receiveTimeout),
             contentType: 'application/json',

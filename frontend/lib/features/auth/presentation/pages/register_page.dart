@@ -255,7 +255,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   /// Builds the "Already have an account?" link.
   Widget _buildLoginLink() {
     return TextButton(
-      onPressed: () => Navigator.pushNamed(context, AppRoutes.login),
+      onPressed: () => Navigator.pushReplacementNamed(context, AppRoutes.login),
       child: Text(
         AppStrings.haveAccount,
         style: AppTextStyles.headline3(const Color(0xFF494949)),
