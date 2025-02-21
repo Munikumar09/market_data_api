@@ -21,6 +21,7 @@ void main() {
   late MockDio mockDio;
   late MockSecureStorageService mockSecureStorageService;
   late MockApiCallHandler mockApiCallHandler;
+  late AppException? capturedException;
 
   setUp(() {
     mockDio = MockDio();
@@ -31,12 +32,43 @@ void main() {
       tokenStorage: mockSecureStorageService,
       apiCallHandler: mockApiCallHandler,
     );
+    capturedException = null;
+    when(() => mockApiCallHandler.handleApiCall<void>(
+          call: any(named: 'call'),
+          exception:
+              any(named: 'exception'), // Capture the exception *function*
+          operationName: any(named: 'operationName'),
+        )).thenAnswer((invocation) async {
+      try {
+        await invocation.namedArguments[const Symbol('call')]();
+      } on DioException catch (e) {
+        // Get the exception function.
+        final exceptionFunction =
+            invocation.namedArguments[const Symbol('exception')] as AppException
+                Function(String);
+        // Get message from the exception *RESPONSE DATA*.
+        final String errorMessage =
+            e.response?.data['message']?.toString() ?? "Operation failed";
 
+        // Call exception function with the actual error message *from the response*.
+        capturedException = exceptionFunction(errorMessage);
+        // Throw the created exception
+        throw capturedException!; // We know it's not null.
+      }
+    });
     registerFallbackValue(Future<void>.value()); // For void returns
     registerFallbackValue(RequestOptions(path: ''));
     registerFallbackValue(Response(
         requestOptions: RequestOptions(path: ''),
         statusCode: 200)); // For Response
+  });
+
+  tearDown(() {
+    // Reset mocks after each test.
+    reset(mockDio);
+    reset(mockSecureStorageService);
+    reset(mockApiCallHandler);
+    capturedException = null;
   });
 
   group('AuthRepository', () {
@@ -67,15 +99,6 @@ void main() {
 
         when(() => mockApiCallHandler.validateResponse(mockResponse,
             successStatus: 201)).thenReturn(mockResponse);
-
-        when(() => mockApiCallHandler.handleApiCall<void>(
-              call: any(named: 'call'),
-              exception: any(named: 'exception'),
-              operationName: any(named: 'operationName'),
-            )).thenAnswer((invocation) async {
-          return await invocation
-              .namedArguments[const Symbol('call')](); // Corrected to await
-        });
 
         // Act
         await authRepository.signup(signupRequest);
@@ -108,29 +131,6 @@ void main() {
               data: signupRequest.toJson(),
             )).thenThrow(dioException);
 
-        // This is the key change.  Capture the exception function.
-        AppException? capturedException;
-        when(() => mockApiCallHandler.handleApiCall<void>(
-              call: any(named: 'call'),
-              exception:
-                  any(named: 'exception'), // Capture the exception *function*
-              operationName: any(named: 'operationName'),
-            )).thenAnswer((invocation) async {
-          try {
-            await invocation.namedArguments[const Symbol('call')]();
-          } on DioException catch (e) {
-            // Get the exception function.
-            final exceptionFunction =
-                invocation.namedArguments[const Symbol('exception')]
-                    as AppException Function(String);
-
-            // Call the REAL exception function to create the exception.
-            capturedException = exceptionFunction(e.message ?? "Signup failed");
-            // Throw the created exception
-            throw capturedException!; // We know it's not null.
-          }
-        });
-
         // Act and Assert
         await expectLater(
           () => authRepository.signup(signupRequest),
@@ -139,8 +139,10 @@ void main() {
 
         // Verify that the *captured* exception is the correct type.
         expect(capturedException, isA<SignupFailedException>());
-        expect((capturedException as SignupFailedException).message,
-            equals(dioException.message ?? "Signup failed")); // Check message
+        expect(
+            (capturedException as SignupFailedException).message,
+            equals(
+                dioException.message ?? "Operation failed")); // Check message
 
         verify(() => mockDio.post(
               ApiEndpoints.signup,
@@ -183,16 +185,6 @@ void main() {
         // Mock validateResponse to return the mock response.
         when(() => mockApiCallHandler.validateResponse(mockResponse,
             successStatus: 200)).thenReturn(mockResponse);
-
-        // Mock the handleApiCall method.
-        when(() => mockApiCallHandler.handleApiCall<void>(
-              call: any(named: 'call'),
-              exception: any(named: 'exception'),
-              operationName: any(named: 'operationName'),
-            )).thenAnswer((invocation) async {
-          // Execute the API call.
-          return await invocation.namedArguments[const Symbol('call')]();
-        });
 
         // Mock the secure storage service to save the tokens.
         when(() => mockSecureStorageService.saveTokens(
@@ -239,30 +231,6 @@ void main() {
               data: {'email': email, 'password': password},
             )).thenThrow(dioException);
 
-        AppException? capturedException;
-        when(() => mockApiCallHandler.handleApiCall<void>(
-              call: any(named: 'call'),
-              exception: any(named: 'exception'),
-              operationName: any(named: 'operationName'),
-            )).thenAnswer((invocation) async {
-          try {
-            await invocation.namedArguments[const Symbol('call')]();
-          } on DioException catch (e) {
-            // Get the exception function.
-            final exceptionFunction =
-                invocation.namedArguments[const Symbol('exception')]
-                    as AppException Function(String);
-            // Get message from the exception *RESPONSE DATA*.
-            final String errorMessage =
-                e.response?.data['message']?.toString() ?? "Signin failed";
-
-            // Call exception function with the actual error message *from the response*.
-            capturedException = exceptionFunction(errorMessage);
-
-            throw capturedException!; // We know it's not null.
-          }
-        });
-
         // Act and Assert
         await expectLater(
           () => authRepository.signin(email, password),
@@ -270,8 +238,10 @@ void main() {
         );
 
         expect(capturedException, isA<LoginFailedException>());
-        expect((capturedException as LoginFailedException).message,
-            equals(dioException.message ?? "Signin failed")); // Check message
+        expect(
+            (capturedException as LoginFailedException).message,
+            equals(
+                dioException.message ?? "Operation failed")); // Check message
         verify(() => mockDio.post(
               ApiEndpoints.signin,
               data: {'email': email, 'password': password},
@@ -308,31 +278,6 @@ void main() {
               ApiEndpoints.signin,
               data: {'email': email, 'password': password},
             )).thenThrow(dioException);
-
-        // Capture the *entire* exception object that's thrown.
-        AppException? capturedException;
-
-        when(() => mockApiCallHandler.handleApiCall<void>(
-              call: any(named: 'call'),
-              exception: any(named: 'exception'),
-              operationName: any(named: 'operationName'),
-            )).thenAnswer((invocation) async {
-          try {
-            await invocation.namedArguments[const Symbol('call')]();
-          } on DioException catch (e) {
-            final exceptionFunction =
-                invocation.namedArguments[const Symbol('exception')]
-                    as AppException Function(String);
-            // Get message from the exception *RESPONSE DATA*.
-            final String errorMessage =
-                e.response?.data['message']?.toString() ?? "Signin failed";
-
-            // Call exception function with the actual error message *from the response*.
-            capturedException = exceptionFunction(errorMessage);
-
-            throw capturedException!; // Throw *the* exception.
-          }
-        });
 
         // Act and Assert
         await expectLater(
@@ -376,18 +321,6 @@ void main() {
         when(() => mockApiCallHandler.validateResponse(mockResponse,
             successStatus: 200)).thenReturn(mockResponse);
 
-        // Correctly mock handleApiCall to return void.
-        when(() => mockApiCallHandler.handleApiCall<void>(
-              // Use void
-              call: any(named: 'call'),
-              exception: any(named: 'exception'),
-              operationName: any(named: 'operationName'),
-            )).thenAnswer((invocation) async {
-          // Execute the 'call' function.  No need to return anything.
-          await invocation.namedArguments[const Symbol('call')]();
-          return; // Explicitly return void.
-        });
-
         // Act: Execute the code being tested.
         await authRepository.sendVerificationCode(email);
 
@@ -420,27 +353,6 @@ void main() {
               queryParameters: {'email': email},
             )).thenThrow(dioException);
 
-        AppException? capturedException;
-        when(() => mockApiCallHandler.handleApiCall<void>(
-              call: any(named: 'call'),
-              exception: any(named: 'exception'),
-              operationName: any(named: 'operationName'),
-            )).thenAnswer((invocation) async {
-          try {
-            await invocation.namedArguments[const Symbol('call')]();
-          } on DioException catch (e) {
-            final exceptionFunction =
-                invocation.namedArguments[const Symbol('exception')]
-                    as AppException Function(String);
-            final String errorMessage =
-                e.response?.data['message']?.toString() ??
-                    "Sending verification code failed";
-
-            capturedException = exceptionFunction(errorMessage);
-            throw capturedException!;
-          }
-        });
-
         // Act and Assert
         await expectLater(
           () => authRepository.sendVerificationCode(email),
@@ -449,8 +361,8 @@ void main() {
         expect(capturedException, isA<SendVerificationCodeFailedException>());
         expect(
             (capturedException as SendVerificationCodeFailedException).message,
-            equals(dioException.message ??
-                "Sending verification code failed")); // Check message
+            equals(
+                dioException.message ?? "Operation failed")); // Check message
         verify(() => mockDio.post(
               ApiEndpoints.sendVerification,
               queryParameters: {'email': email},
@@ -484,14 +396,6 @@ void main() {
         when(() => mockApiCallHandler.validateResponse(mockResponse,
             successStatus: 200)).thenReturn(mockResponse);
 
-        when(() => mockApiCallHandler.handleApiCall<void>(
-              call: any(named: 'call'),
-              exception: any(named: 'exception'),
-              operationName: any(named: 'operationName'),
-            )).thenAnswer((invocation) async {
-          return await invocation.namedArguments[const Symbol('call')]();
-        });
-
         // Act: Execute the code being tested.
         await authRepository.verifyVerificationCode(email, code);
 
@@ -522,27 +426,6 @@ void main() {
               data: {'verification_code': code, 'email': email},
             )).thenThrow(dioException);
 
-        AppException? capturedException;
-        when(() => mockApiCallHandler.handleApiCall<void>(
-              call: any(named: 'call'),
-              exception: any(named: 'exception'),
-              operationName: any(named: 'operationName'),
-            )).thenAnswer((invocation) async {
-          try {
-            await invocation.namedArguments[const Symbol('call')]();
-          } on DioException catch (e) {
-            final exceptionFunction =
-                invocation.namedArguments[const Symbol('exception')]
-                    as AppException Function(String);
-            final String errorMessage =
-                e.response?.data['message']?.toString() ??
-                    "Verification failed";
-
-            capturedException = exceptionFunction(errorMessage);
-            throw capturedException!;
-          }
-        });
-
         // Act and Assert
         await expectLater(
           () => authRepository.verifyVerificationCode(email, code),
@@ -552,8 +435,8 @@ void main() {
         expect(capturedException, isA<VerificationFailedException>());
         expect(
             (capturedException as VerificationFailedException).message,
-            equals(dioException.message ??
-                "Verification failed")); // Check message
+            equals(
+                dioException.message ?? "Operation failed")); // Check message
 
         verify(() => mockDio.post(
               ApiEndpoints.verifyCode,
@@ -588,13 +471,6 @@ void main() {
         when(() => mockApiCallHandler.validateResponse(mockResponse,
             successStatus: 200)).thenReturn(mockResponse);
 
-        when(() => mockApiCallHandler.handleApiCall<void>(
-              call: any(named: 'call'),
-              exception: any(named: 'exception'),
-              operationName: any(named: 'operationName'),
-            )).thenAnswer((invocation) async {
-          return await invocation.namedArguments[const Symbol('call')]();
-        });
         // Act: Execute the code being tested.
         await authRepository.sendResetPasswordCode(email);
 
@@ -626,26 +502,6 @@ void main() {
               queryParameters: {'email': email},
             )).thenThrow(dioException);
 
-        AppException? capturedException;
-        when(() => mockApiCallHandler.handleApiCall<void>(
-              call: any(named: 'call'),
-              exception: any(named: 'exception'),
-              operationName: any(named: 'operationName'),
-            )).thenAnswer((invocation) async {
-          try {
-            await invocation.namedArguments[const Symbol('call')]();
-          } on DioException catch (e) {
-            final exceptionFunction =
-                invocation.namedArguments[const Symbol('exception')]
-                    as AppException Function(String);
-            final String errorMessage =
-                e.response?.data['message']?.toString() ??
-                    "Sending reset password code failed";
-            capturedException = exceptionFunction(errorMessage);
-            throw capturedException!;
-          }
-        });
-
         // Act and Assert
         await expectLater(
           () => authRepository.sendResetPasswordCode(email),
@@ -655,8 +511,8 @@ void main() {
         expect(capturedException, isA<PasswordResetFailedException>());
         expect(
             (capturedException as PasswordResetFailedException).message,
-            equals(dioException.message ??
-                "Sending reset password code failed")); // Check message
+            equals(
+                dioException.message ?? "Operation failed")); // Check message
         verify(() => mockDio.post(
               ApiEndpoints.sendResetPasswordCode,
               queryParameters: {'email': email},
@@ -692,14 +548,6 @@ void main() {
 
         when(() => mockApiCallHandler.validateResponse(mockResponse,
             successStatus: 200)).thenReturn(mockResponse);
-
-        when(() => mockApiCallHandler.handleApiCall<void>(
-              call: any(named: 'call'),
-              exception: any(named: 'exception'),
-              operationName: any(named: 'operationName'),
-            )).thenAnswer((invocation) async {
-          return await invocation.namedArguments[const Symbol('call')]();
-        });
 
         // Act: Execute the code being tested.
         await authRepository.resetPassword(email, code, newPassword);
@@ -738,26 +586,6 @@ void main() {
               },
             )).thenThrow(dioException);
 
-        AppException? capturedException;
-        when(() => mockApiCallHandler.handleApiCall<void>(
-              call: any(named: 'call'),
-              exception: any(named: 'exception'),
-              operationName: any(named: 'operationName'),
-            )).thenAnswer((invocation) async {
-          try {
-            await invocation.namedArguments[const Symbol('call')]();
-          } on DioException catch (e) {
-            final exceptionFunction =
-                invocation.namedArguments[const Symbol('exception')]
-                    as AppException Function(String);
-            final String errorMessage =
-                e.response?.data['message']?.toString() ??
-                    "Password reset failed";
-            capturedException = exceptionFunction(errorMessage);
-            throw capturedException!;
-          }
-        });
-
         // Act and Assert
         await expectLater(
           () => authRepository.resetPassword(email, code, newPassword),
@@ -767,8 +595,8 @@ void main() {
         expect(capturedException, isA<PasswordResetFailedException>());
         expect(
             (capturedException as PasswordResetFailedException).message,
-            equals(dioException.message ??
-                "Password reset failed")); // Check message
+            equals(
+                dioException.message ?? "Operation failed")); // Check message
 
         verify(() => mockDio.post(
               ApiEndpoints.resetPassword,
@@ -793,13 +621,6 @@ void main() {
     group('logout', () {
       test('logout: should make a successful call and clear tokens', () async {
         // Arrange: Setup mocks for the test
-        when(() => mockApiCallHandler.handleApiCall<void>(
-              call: any(named: 'call'),
-              exception: any(named: 'exception'),
-              operationName: any(named: 'operationName'),
-            )).thenAnswer((invocation) async {
-          return await invocation.namedArguments[const Symbol('call')]();
-        });
 
         when(() => mockSecureStorageService.clearTokens())
             .thenAnswer((_) async {});
@@ -858,8 +679,7 @@ void main() {
         });
       });
       group('checkAuthState', () {
-        test('checkAuthState: should return true when access token is valid',
-            () async {
+        test('checkAuthState: should make a successful call', () async {
           // Arrange: Mock getTokens to return valid tokens.  We *still* need this.
 
           final mockResponse = Response(
@@ -868,15 +688,6 @@ void main() {
           // Mock the Dio.get call (it's a GET, not a POST).
           when(() => mockDio.get(ApiEndpoints.protected)) // Use queryParameters
               .thenAnswer((_) async => mockResponse);
-
-          // Mock handleApiCall to return true (simulating success).
-          when(() => mockApiCallHandler.handleApiCall<void>(
-                call: any(named: 'call'),
-                exception: any(named: 'exception'),
-                operationName: any(named: 'operationName'),
-              )).thenAnswer((invocation) async {
-            return await invocation.namedArguments[const Symbol('call')]();
-          });
 
           // Mock validateResponse (good practice, even if it's simple).
           when(() => mockApiCallHandler.validateResponse(any(),
@@ -896,7 +707,7 @@ void main() {
               successStatus: 200)).called(1);
         });
 
-        test('checkAuthState: should return null when access token is invalid',
+        test('checkAuthState: should throw AuthException on DioException',
             () async {
           // Arrange
           final dioException = DioException(
@@ -904,6 +715,7 @@ void main() {
             error: 'checking auth state failed',
             type: DioExceptionType.badResponse,
             response: Response(
+              data: {'message': 'Unauthorized'},
               // Include a response for more realistic error
               requestOptions: RequestOptions(path: ApiEndpoints.protected),
               statusCode: 401, // Unauthorized
@@ -913,23 +725,6 @@ void main() {
           // Mock Dio.get to *throw* the DioException.
           when(() => mockDio.get(ApiEndpoints.protected)) // Use queryParameters
               .thenThrow(dioException);
-          AppException? capturedException;
-          when(() => mockApiCallHandler.handleApiCall<void>(
-                call: any(named: 'call'),
-                exception: any(named: 'exception'),
-                operationName: any(named: 'operationName'),
-              )).thenAnswer((invocation) async {
-            try {
-              await invocation.namedArguments[const Symbol('call')]();
-            } on DioException catch (e) {
-              final exceptionFunction =
-                  invocation.namedArguments[const Symbol('exception')]
-                      as AppException Function(String);
-              final String errorMessage = e.error.toString();
-              capturedException = exceptionFunction(errorMessage);
-              throw capturedException!;
-            }
-          });
 
           // Act and Assert
           await expectLater(
@@ -938,30 +733,8 @@ void main() {
           );
 
           expect(capturedException, isA<AuthException>());
-          expect(
-              (capturedException as AuthException).message,
-              equals(dioException.message ??
-                  "checking auth state failed")); // Check message
-
-          // // Mock handleApiCall to return null (because of suppressError).
-          // when(() => mockApiCallHandler.handleApiCall<void>(
-          //       call: any(named: 'call'),
-          //       exception: any(named: 'exception'),
-          //       operationName: any(named: 'operationName'),
-          //     )).thenAnswer((invocation) async {
-          //   try {
-          //     return await invocation.namedArguments[const Symbol('call')]();
-          //   } on DioException catch (e) {
-          //     final exceptionFunction =
-          //         invocation.namedArguments[const Symbol('exception')]
-          //             as AppException Function(String);
-          //     final String errorMessage = e.error.toString();
-          //     throw exceptionFunction(errorMessage);
-          //   }
-          // });
-
-          // Act
-          // await authRepository.checkAuthState();
+          expect((capturedException as AuthException).message,
+              equals(dioException.message ?? "Unauthorized")); // Check message
 
           verify(() => mockDio.get(ApiEndpoints.protected))
               .called(1); // Correct verification.

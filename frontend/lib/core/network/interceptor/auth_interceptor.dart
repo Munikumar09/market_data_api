@@ -61,6 +61,7 @@ class AuthInterceptor extends Interceptor {
 
   bool _isRefreshing = false;
   Completer<String>? _refreshCompleter;
+  static const _maxQueueSize = 50;
   final List<_QueuedRequest> _requestQueue = [];
 
   AuthInterceptor(this._secureStorage, this._dio, this.ref);
@@ -198,6 +199,15 @@ class AuthInterceptor extends Interceptor {
 
   /// Queues a request during token refresh.
   void _queueRequest(RequestOptions options, ErrorInterceptorHandler handler) {
+    if (_requestQueue.length >= _maxQueueSize) {
+      _logger.w("Queue size limit reached. Rejecting request: ${options.uri}");
+      handler.reject(DioException(
+        requestOptions: options,
+        error: "Queue size limit reached",
+        type: DioExceptionType.unknown,
+      ));
+      return;
+    }
     _logger.i("Queuing request: ${options.uri}");
     _requestQueue.add(_QueuedRequest(options, handler));
   }

@@ -194,6 +194,7 @@ void main() {
         when(() => mockDio.post(
               AuthInterceptor.refreshTokenEndpoint,
               queryParameters: any(named: 'queryParameters'),
+              options: any(named: 'options'),
             )).thenAnswer((_) async => Response(
               requestOptions:
                   RequestOptions(path: AuthInterceptor.refreshTokenEndpoint),

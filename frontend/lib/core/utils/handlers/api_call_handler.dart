@@ -62,21 +62,21 @@ class ApiCallHandler {
       if (!suppressError) {
         throw exception(errorMessage);
       } else {
-        return null as T;
+        return Future<T>.value(null);
       }
     } on AppException catch (e, stackTrace) {
       _logger.e('$operationName failed: ${e.message}', e, stackTrace);
       if (!suppressError) {
         rethrow;
       } else {
-        return null as T;
+        return Future<T>.value(null);
       }
     } catch (e, stackTrace) {
       _logger.e('Unexpected error during $operationName: $e', e, stackTrace);
       if (!suppressError) {
         throw exception('An unexpected error occurred');
       } else {
-        return null as T;
+        return Future<T>.value(null);
       }
     }
   }
