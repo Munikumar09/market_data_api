@@ -1,13 +1,27 @@
+/*
+Documentation:
+---------------
+File: welcome_page.dart
+Description:
+  This file implements the WelcomePage which serves as the landing screen for users.
+  It displays a welcome image, a greeting message, and action buttons that navigate to the sign-up or login pages.
+  
+Methods:
+  • _buildWelcomeImage(BuildContext context):
+      - Constructs the widget displaying the welcome image with error handling.
+  • _buildActionButtons(BuildContext context):
+      - Constructs a row containing "Sign Up" and "Login" buttons for navigation.
+*/
+
 import 'package:flutter/material.dart';
 import 'package:frontend/core/constants/app_strings.dart';
 import 'package:frontend/core/routes/app_routes.dart';
 import 'package:frontend/features/auth/presentation/widgets/header_text_widget.dart';
-import 'package:frontend/shared/buttons/primary_button.dart'; // Import PrimaryButton
+import 'package:frontend/shared/buttons/primary_button.dart';
 import 'package:frontend/shared/layouts/custom_background_widget.dart';
 
 /// The welcome page of the application.
 class WelcomePage extends StatelessWidget {
-  /// {@macro welcome_page}
   const WelcomePage({super.key});
 
   @override

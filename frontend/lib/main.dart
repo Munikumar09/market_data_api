@@ -1,3 +1,20 @@
+/*
+Documentation:
+---------------
+File: main.dart
+Description:
+  This is the entry point of the application. It initializes the provider scope and sets up the TradingApp widget.
+  The TradingApp class configures the MaterialApp with themes, routes, and navigator key from Riverpod.
+  It also provides gesture detection to dismiss the keyboard and includes route observers for navigation monitoring.
+
+Methods:
+  • main():
+      - Runs the app within a ProviderScope.
+  • TradingApp.build(BuildContext context, WidgetRef ref):
+      - Builds the MaterialApp with app configuration such as themes, routes, navigator key, and gesture handling.
+*/
+
+// Code:
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/core/constants/app_strings.dart';
@@ -13,13 +30,12 @@ void main() {
   );
 }
 
-// 2. Separate app configuration into a dedicated widget
+/// The main application widget that configures the MaterialApp.
 class TradingApp extends ConsumerWidget {
   const TradingApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 3. Get navigation key from provider
     final navigatorKey = ref.read(navigatorKeyProvider);
 
     return MaterialApp(
@@ -31,13 +47,11 @@ class TradingApp extends ConsumerWidget {
       initialRoute: AppRoutes.initial,
       routes: AppRoutes.pages,
       builder: (context, child) {
-        // 4. Add error handling overlay
         return GestureDetector(
           onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
           child: child,
         );
       },
-      // 5. Add route observors for potential analytics/monitoring
       navigatorObservers: [HeroController()],
     );
   }

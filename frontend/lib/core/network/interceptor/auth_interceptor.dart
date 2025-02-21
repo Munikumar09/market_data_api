@@ -1,5 +1,45 @@
-import 'dart:async';
+/*
+Documentation:
+---------------
+Class: AuthInterceptor
+Description:
+  Intercepts HTTP requests to attach an Authorization header if available.
+  For 401 errors, triggers token refresh, queues further requests during refresh,
+  and retries or rejects those requests accordingly.
 
+Methods:
+  • onRequest(options, handler):
+      - Attaches the Authorization header with a Bearer token.
+      - Example: Requests get the header if an access token exists.
+      
+  • onError(err, handler):
+      - Handles 401 errors and initiates token refresh.
+      - Example: Retries queued requests on successful refresh.
+      
+  • _attemptTokenRefresh(err):
+      - Attempts to refresh the access token.
+      
+  • _refreshAccessToken(refreshToken):
+      - Sends a POST request to refresh the token.
+      
+  • _queueRequest(options, handler):
+      - Queues requests during token refresh.
+      
+  • _retryQueuedRequests(newAccessToken):
+      - Retries all queued requests with the new token.
+      
+  • _rejectQueuedRequests(originalError):
+      - Rejects all queued requests if refresh fails.
+      
+  • _retryRequest(options, newAccessToken, handler):
+      - Retries a single request with updated Authorization header.
+      
+  • _clearAuthDataAndLogout(error):
+      - Clears stored tokens and triggers logout.
+*/
+
+// Code:
+import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/core/constants/api_endpoints.dart';
@@ -8,7 +48,7 @@ import 'package:frontend/features/auth/application/providers/auth_providers.dart
 import 'package:frontend/features/auth/application/services/token_storage_service.dart';
 import 'package:logger/logger.dart';
 
-/// Interceptor to handle authentication and token refresh logic.
+/// AuthInterceptor handles attaching the Bearer token and token refresh logic.
 class AuthInterceptor extends Interceptor {
   static const _authorizationHeader = 'Authorization';
   static const _bearerPrefix = 'Bearer ';
@@ -25,14 +65,12 @@ class AuthInterceptor extends Interceptor {
 
   AuthInterceptor(this._secureStorage, this._dio, this.ref);
 
+  /// onRequest attaches the Authorization header if an access token exists.
   @override
   Future<void> onRequest(
-    RequestOptions options,
-    RequestInterceptorHandler handler,
-  ) async {
+      RequestOptions options, RequestInterceptorHandler handler) async {
     final tokens = await _secureStorage.getTokens();
     final accessToken = tokens.accessToken;
-
     if (accessToken != null && !options.path.contains(refreshTokenEndpoint)) {
       options.headers[_authorizationHeader] = _bearerPrefix + accessToken;
       _logger.i("onRequest: Adding Authorization header");
@@ -40,43 +78,32 @@ class AuthInterceptor extends Interceptor {
       _logger.i(
           "onRequest: Skipping Authorization header for refresh token request.");
     }
-
     _logger.d("onRequest: URL: ${options.uri}, Headers: ${options.headers}");
-
     return handler.next(options);
   }
 
+  /// onError processes 401 errors by attempting to refresh the token.
   @override
   Future<void> onError(
       DioException err, ErrorInterceptorHandler handler) async {
     final response = err.response;
-
     _logger.e(
         "onError triggered. URL: ${err.requestOptions.uri}, Status Code: ${response?.statusCode}, _isRefreshing: $_isRefreshing, Error: ${err.message}");
-
-    if (response?.statusCode != 401) {
-      _logger
-          .i("onError: Status code is not 401, passing to next interceptor.");
-      return handler.next(err);
-    }
-
+    if (response?.statusCode != 401) return handler.next(err);
     if (err.requestOptions.path.contains(refreshTokenEndpoint)) {
       _logger.e(
           "onError: Refresh token request failed. Logging out and rejecting request.");
       await _clearAuthDataAndLogout(err);
       return handler.reject(err);
     }
-
     if (_isRefreshing) {
       _logger.i("onError: Refresh already in progress. Queuing request.");
       _queueRequest(err.requestOptions, handler);
       return;
     }
-
     _isRefreshing = true;
     _logger
         .i("onError: Attempting token refresh. Setting _isRefreshing to true.");
-
     _refreshCompleter = Completer<String>();
     try {
       final newAccessToken = await _attemptTokenRefresh(err);
@@ -95,23 +122,21 @@ class AuthInterceptor extends Interceptor {
     }
   }
 
-  /// Attempts to refresh the access token using the refresh token.
+  /// Attempts to refresh the access token.
   Future<String?> _attemptTokenRefresh(DioException err) async {
     _logger.i("_attemptTokenRefresh: Called");
-
     final tokens = await _secureStorage.getTokens();
     final refreshToken = tokens.refreshToken;
-
     if (refreshToken == null) {
       _logger.e('_attemptTokenRefresh: No refresh token. Clearing data.');
       await _clearAuthDataAndLogout(err);
       throw DioException(
-          requestOptions: err.requestOptions,
-          response: err.response,
-          type: DioExceptionType.unknown,
-          error: "No refresh token available");
+        requestOptions: err.requestOptions,
+        response: err.response,
+        type: DioExceptionType.unknown,
+        error: "No refresh token available",
+      );
     }
-
     _logger.i("_attemptTokenRefresh: Retrieved refresh token");
     final newAccessToken = await _refreshAccessToken(refreshToken);
     if (newAccessToken == null) {
@@ -128,7 +153,7 @@ class AuthInterceptor extends Interceptor {
     return newAccessToken;
   }
 
-  /// Refreshes the access token using the provided refresh token.
+  /// Sends a POST request to refresh the access token.
   Future<String?> _refreshAccessToken(String refreshToken) async {
     _logger.i("_refreshAccessToken: Attempting to refresh token.");
     try {
@@ -136,7 +161,6 @@ class AuthInterceptor extends Interceptor {
         refreshTokenEndpoint,
         queryParameters: {StorageKeys.refreshToken: refreshToken},
       );
-
       if (response.statusCode != null &&
           response.statusCode! >= 200 &&
           response.statusCode! < 300) {
@@ -172,7 +196,7 @@ class AuthInterceptor extends Interceptor {
     }
   }
 
-  /// Queues the request to be retried after the token is refreshed.
+  /// Queues a request during token refresh.
   void _queueRequest(RequestOptions options, ErrorInterceptorHandler handler) {
     _logger.i("Queuing request: ${options.uri}");
     _requestQueue.add(_QueuedRequest(options, handler));
@@ -184,7 +208,6 @@ class AuthInterceptor extends Interceptor {
         .i("Retrying queued requests. Queue length: ${_requestQueue.length}");
     final queuedRequests = List.from(_requestQueue);
     _requestQueue.clear();
-
     await Future.wait(queuedRequests.map((queued) {
       _logger.i("Retrying request: ${queued.requestOptions.uri}");
       return _retryRequest(
@@ -192,26 +215,21 @@ class AuthInterceptor extends Interceptor {
     }));
   }
 
-  /// Rejects all queued requests with the original error.
+  /// Rejects all queued requests using the original error.
   Future<void> _rejectQueuedRequests(DioException originalError) async {
     _logger.e(
-        "_rejectQueuedRequests: Rejecting all queued requests. Queue length: ${_requestQueue.length}");
+        "Rejecting all queued requests. Queue length: ${_requestQueue.length}");
     final queuedRequests = List.from(_requestQueue);
     _requestQueue.clear();
-
     for (final queued in queuedRequests) {
-      _logger.e(
-          "_rejectQueuedRequests: Rejecting request: ${queued.requestOptions.uri}");
+      _logger.e("Rejecting request: ${queued.requestOptions.uri}");
       queued.handler.reject(originalError);
     }
   }
 
-  /// Retries a single request with the new access token.
-  Future<void> _retryRequest(
-    RequestOptions options,
-    String newAccessToken,
-    ErrorInterceptorHandler handler,
-  ) async {
+  /// Retries a single request with an updated Authorization header.
+  Future<void> _retryRequest(RequestOptions options, String newAccessToken,
+      ErrorInterceptorHandler handler) async {
     options.headers[_authorizationHeader] = _bearerPrefix + newAccessToken;
     try {
       final response = await _dio.fetch(options);
@@ -221,19 +239,17 @@ class AuthInterceptor extends Interceptor {
     }
   }
 
-  /// Clears authentication data and logs out the user.
+  /// Clears stored auth data and triggers logout.
   Future<void> _clearAuthDataAndLogout(DioException error) async {
     ref.read(authNotifierProvider.notifier).logout();
     _isRefreshing = false;
     _logger.e(
-        "_clearAuthDataAndLogout: Clearing auth data and logging out.  Error: ${error.response?.data ?? error.message}");
+        "_clearAuthDataAndLogout: Clearing auth data and logging out. Error: ${error.response?.data ?? error.message}");
   }
 }
 
-/// Class to hold queued requests.
 class _QueuedRequest {
   final RequestOptions requestOptions;
   final ErrorInterceptorHandler handler;
-
   _QueuedRequest(this.requestOptions, this.handler);
 }

@@ -1,3 +1,32 @@
+/*
+Documentation:
+---------------
+File: register_page.dart
+Description:
+  This file implements the RegisterPage which provides a sign-up form for new users.
+  It includes input fields such as username, email, password, confirm password, phone number, date of birth, and gender.
+  The file handles form validation, opens a date picker for the date field, and dispatches a signup request via the auth provider.
+  
+Methods:
+  • _selectDate(BuildContext context):
+      - Opens a date picker and updates the 'date' controller with the chosen date.
+  • _onSignUpPressed():
+      - Validates the form, creates a signup request, and calls the signup provider.
+  • _buildForm():
+      - Constructs the registration form widget.
+  • _buildFormField({…}):
+      - Builds a reusable form field for text inputs.
+  • _buildDateField():
+      - Constructs a date input field integrated with a date picker.
+  • _buildGenderDropdown():
+      - Builds a dropdown for selecting gender.
+  • _buildSubmitButton():
+      - Builds the submit button with a loading indicator when processing.
+  • _buildLoginLink():
+      - Provides a link to navigate to the login screen.
+*/
+
+// Code:
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/core/constants/app_strings.dart';
@@ -17,7 +46,6 @@ import 'package:frontend/shared/layouts/custom_background_widget.dart';
 import 'package:frontend/shared/loaders/loading_indicator.dart';
 
 class RegisterPage extends ConsumerStatefulWidget {
-  /// {@macro register_page}
   const RegisterPage({super.key});
 
   @override
@@ -69,10 +97,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   Future<void> _onSignUpPressed() async {
     if (_formKey.currentState!.validate()) {
       // All validation checks have passed at this point
-      if (_selectedGender == null || _selectedGender!.isEmpty) {
-        context.showErrorSnackBar("Please select a gender.");
-        return;
-      }
       final request = SignupRequest(
         username: _controllers['username']!.text,
         email: _controllers['email']!.text,

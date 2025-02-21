@@ -1,6 +1,22 @@
+/*
+Documentation:
+---------------
+File: custom_text_field.dart
+Description:
+  This file defines the CustomTextField widget, a customizable text input field.
+  It supports features such as password visibility toggling, read-only mode with a suffix icon action,
+  and custom validation. The widget uses a TextFormField and applies custom styling for different input states.
+
+Methods:
+  • build(BuildContext context):
+      - Constructs the TextFormField with optional suffix icons for password toggle or other actions.
+*/
+
+// Code:
 import 'package:flutter/material.dart';
 import 'package:frontend/core/constants/app_text_styles.dart';
 
+/// A customizable text input field.
 class CustomTextField extends StatefulWidget {
   final String hintText;
   final bool isPassword;

@@ -1,6 +1,20 @@
-// loading_indicator.dart
+/*
+Documentation:
+---------------
+File: loading_indicator.dart
+Description:
+  This file defines the LoadingIndicator widget which displays a CircularProgressIndicator.
+  It provides customizable properties for color, strokeWidth, and size, allowing it to adapt to various UI requirements.
+
+Methods:
+  • build(BuildContext context):
+      - Builds a SizedBox containing a CircularProgressIndicator with the specified customization.
+*/
+
+// Code:
 import 'package:flutter/material.dart';
 
+/// A widget that displays a CircularProgressIndicator.
 class LoadingIndicator extends StatelessWidget {
   final Color? color;
   final double strokeWidth;
@@ -19,12 +33,9 @@ class LoadingIndicator extends StatelessWidget {
       height: size,
       width: size,
       child: CircularProgressIndicator(
-          strokeWidth: strokeWidth,
-          color: color ??
-              Theme.of(context)
-                  .colorScheme
-                  .onPrimary // Default to white if not specified
-          ),
+        strokeWidth: strokeWidth,
+        color: color ?? Theme.of(context).colorScheme.onPrimary,
+      ),
     );
   }
 }

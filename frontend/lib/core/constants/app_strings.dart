@@ -1,3 +1,18 @@
+/*
+Documentation:
+---------------
+Class: AppStrings
+Description:
+  Contains constant string values used throughout the application for UI text, messages, and labels.
+  
+Examples:
+  • AppStrings.appName: Used to display the name of the application.
+  • AppStrings.welcomeTitle: Shown on the welcome screen.
+  • AppStrings.login, AppStrings.signUp, etc.: Utilized in authentication screens.
+*/
+
+// Code:
+/// Contains constant string values used throughout the application for UI text, messages, and labels.
 class AppStrings {
   // App Name
   static const String appName = 'Paper Trading App';

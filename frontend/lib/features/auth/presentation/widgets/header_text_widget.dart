@@ -1,6 +1,21 @@
+/*
+Documentation:
+---------------
+File: header_text_widget.dart
+Description:
+  This file implements the HeaderTextWidget which displays a header title and an optional subtitle.
+  It allows customization for title and subtitle text colors and provides semantic labels for accessibility.
+
+Methods:
+  • build(BuildContext context):
+      - Constructs the widget layout displaying the title and, if provided, the subtitle.
+*/
+
+// Code:
 import 'package:flutter/material.dart';
 import 'package:frontend/core/constants/app_text_styles.dart';
 
+/// A widget that displays a header title and an optional subtitle.
 class HeaderTextWidget extends StatelessWidget {
   const HeaderTextWidget({
     super.key,

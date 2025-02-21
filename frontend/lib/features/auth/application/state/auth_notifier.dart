@@ -1,3 +1,41 @@
+/*
+Documentation:
+---------------
+Class: AuthNotifier
+Description:
+  Manages authentication state and operations. Uses AuthRepository for API calls and TokenStorage for managing tokens.
+  
+Methods:
+  • signin(email, password):
+      - Signs in the user and updates auth state.
+      - Example: await authNotifier.signin('user@example.com', 'password123');
+      
+  • signup(request):
+      - Registers a new user.
+      
+  • sendVerificationCode(email):
+      - Sends a code for email verification.
+      
+  • verifyVerificationCode(email, code):
+      - Verifies the provided code.
+      
+  • sendResetPasswordCode(email):
+      - Sends a reset password code.
+      
+  • resetPassword(email, code, newPassword):
+      - Resets the user's password.
+      
+  • logout():
+      - Logs out the user by clearing tokens.
+      
+  • checkAuthState():
+      - Checks current auth state.
+      
+  • _executeAuthOperation(...):
+      - Helper for executing auth operations with error handling.
+*/
+
+// Code:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/core/utils/exceptions/app_exceptions.dart';
 import 'package:frontend/core/utils/exceptions/auth_exceptions.dart';

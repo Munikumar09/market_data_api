@@ -195,7 +195,8 @@ void main() {
 
     test('sendVerificationCode failure updates state to error', () async {
       // Arrange: Mock a VerificationFailedException.
-      final exception = VerificationFailedException('Verification failed');
+      final exception =
+          SendVerificationCodeFailedException('Verification failed');
       when(() => mockAuthRepository.sendVerificationCode(any()))
           .thenThrow(exception);
 

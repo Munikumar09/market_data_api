@@ -1,5 +1,20 @@
+/*
+Documentation:
+---------------
+Class: AppColors
+Description:
+  Defines color constants used across the application for theming.
+  
+Examples:
+  • AppColors.lightPrimary: Used as the primary color in the light theme.
+  • AppColors.darkBackground: Used as the background color in the dark theme.
+  • Additional colors (warning, success, info) for specific UI elements.
+*/
+
+// Code:
 import 'package:flutter/material.dart';
 
+/// Defines color constants used across the application for theming.
 class AppColors {
   // Light Theme Colors
   static const lightPrimary = Color(0xFF1F41BB);

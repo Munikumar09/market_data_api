@@ -1,26 +1,41 @@
+/*
+Documentation:
+---------------
+File: primary_button.dart
+Description:
+  This file defines the PrimaryButton widget which provides a styled button for primary actions.
+  It supports customizable text, colors, font size, border radius, and an optional child widget for displaying loaders.
+
+Methods:
+  • build(BuildContext context):
+      - Constructs the button using a GestureDetector and Container. If a child is provided, it is displayed instead of text.
+*/
+
+// Code:
 import 'package:flutter/material.dart';
 import 'package:frontend/core/constants/app_text_styles.dart';
 
+/// A styled button for primary actions.
 class PrimaryButton extends StatelessWidget {
   /// The text to display on the button.
   final String text;
 
-  /// The callback function when the button is pressed.  If null, the button is disabled.
+  /// The callback function when the button is pressed. If null, the button is disabled.
   final VoidCallback? onPressed;
 
-  /// The background color of the button.  Defaults to the theme's primary color.
+  /// The background color of the button. Defaults to the theme's primary color.
   final Color? backgroundColor;
 
-  /// The text color of the button.  Defaults to the theme's onPrimary color.
+  /// The text color of the button. Defaults to the theme's onPrimary color.
   final Color? textColor;
 
-  /// The font size of the button's text.  Defaults to 20.
+  /// The font size of the button's text. Defaults to 20.
   final double fontSize;
 
-  /// The border radius of the button.  Defaults to a circular radius of 10.
+  /// The border radius of the button. Defaults to a circular radius of 10.
   final BorderRadius borderRadius;
 
-  /// An optional child widget to display instead of the text.  Useful for
+  /// An optional child widget to display instead of the text. Useful for
   /// showing loading indicators or other custom content.
   final Widget? child;
 

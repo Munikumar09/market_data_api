@@ -1,3 +1,27 @@
+/*
+Documentation:
+---------------
+File: initial_page.dart
+Description:
+  This file implements the InitialPage which serves as the app's startup screen.
+  It checks the user's authentication state and navigates to the appropriate screen (home or welcome)
+  based on the result. It listens to authentication state changes via Riverpod and handles navigation accordingly.
+
+Methods:
+  • InitialPage (constructor):
+      - Initializes the InitialPage widget.
+  • createState():
+      - Creates the mutable state for this widget.
+  • initState():
+      - Invokes the authentication check after the first frame.
+  • _checkAuthenticationState():
+      - Triggers the authentication state check.
+  • build():
+      - Builds the UI with a progress indicator and listens to authentication state changes.
+  • _handleAuthStateChange(AuthState state):
+      - Navigates to different screens based on the authentication status.
+*/
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/core/constants/app_strings.dart';
@@ -30,7 +54,7 @@ class _InitialPageState extends ConsumerState<InitialPage> {
     });
   }
 
-  /// Checks the authentication state and navigates to the appropriate screen.
+  /// Triggers the authentication check via the authNotifier.
   void _checkAuthenticationState() {
     ref.read(authNotifierProvider.notifier).checkAuthState();
   }
@@ -39,7 +63,7 @@ class _InitialPageState extends ConsumerState<InitialPage> {
   Widget build(BuildContext context) {
     // Listen for changes in the authentication state.
     ref.listen<AuthState>(authNotifierProvider, (previous, next) {
-      // Debounce rapid state changes
+      // Debounce rapid state changes.
       Future.delayed(const Duration(milliseconds: 300), () {
         if (mounted) {
           _handleAuthStateChange(next);
@@ -64,7 +88,7 @@ class _InitialPageState extends ConsumerState<InitialPage> {
     );
   }
 
-  /// Handles changes in the authentication state and navigates accordingly.
+  /// Handles authentication state changes and navigates accordingly.
   void _handleAuthStateChange(AuthState state) {
     if (!mounted) return;
 

@@ -1,3 +1,27 @@
+/*
+Documentation:
+---------------
+File: verify_account.dart
+Description:
+  This file implements the VerifyAccountPage, which enables users to verify their account by entering an OTP (One-Time Password) sent to their email.
+  It extracts the email from the route arguments, triggers sending of an initial verification code, and provides functionality to verify the OTP or resend the code.
+  
+Methods:
+  • _extractEmailFromArgs():
+      - Extracts the email from route arguments and triggers initial code sending.
+  • _sendInitialVerificationCode():
+      - Sends the verification code to the extracted email.
+  • _onVerifyOtpPressed():
+      - Validates the OTP input and attempts to verify it.
+  • _onResendOtpPressed():
+      - Resends the verification code to the user's email.
+  • _buildForm():
+      - Builds the OTP entry form.
+  • _buildResendButton(ThemeData theme):
+      - Constructs the button to resend the OTP.
+*/
+
+// Code:
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/core/constants/app_strings.dart';
@@ -13,7 +37,6 @@ import 'package:frontend/shared/loaders/loading_indicator.dart';
 
 /// The verify account page of the application.
 class VerifyAccountPage extends ConsumerStatefulWidget {
-  /// {@macro verify_account_page}
   const VerifyAccountPage({super.key});
 
   @override
@@ -51,6 +74,7 @@ class _VerifyAccountPageState extends ConsumerState<VerifyAccountPage> {
     }
   }
 
+  /// Sends the initial verification code to the user's email.
   Future<void> _sendInitialVerificationCode() async {
     try {
       await ref
@@ -158,6 +182,7 @@ class _VerifyAccountPageState extends ConsumerState<VerifyAccountPage> {
     );
   }
 
+  /// Builds the OTP entry form.
   Widget _buildForm() {
     final authState = ref.watch(authNotifierProvider);
 
@@ -190,6 +215,7 @@ class _VerifyAccountPageState extends ConsumerState<VerifyAccountPage> {
     );
   }
 
+  /// Constructs the button to resend the OTP.
   Widget _buildResendButton(ThemeData theme) {
     return TextButton(
       onPressed: _onResendOtpPressed,

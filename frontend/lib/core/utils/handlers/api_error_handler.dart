@@ -1,9 +1,31 @@
+/*
+Documentation:
+---------------
+Class: ApiErrorHandler
+Description:
+  A helper class that extracts human-readable messages from DioExceptions and constructs AppExceptions for invalid responses.
+
+Methods:
+  • handleDioError(e):
+      - Extracts an error message from a DioException.
+      - Example: ApiErrorHandler.handleDioError(error) returns a string message.
+      
+  • _getDefaultMessage(e):
+      - Returns a default error message based on the type of DioException.
+      
+  • handleInvalidResponse(response):
+      - Constructs an AppException when a server response is invalid.
+      - Example: Throws an exception if response.statusCode is not as expected.
+*/
+
+// Code:
 import 'package:dio/dio.dart';
 import 'package:frontend/core/utils/exceptions/app_exceptions.dart';
 
-/// A helper class that handles Dio API errors.
+/// A helper class that extracts human-readable messages from DioExceptions
+/// and constructs AppExceptions for invalid responses.
 class ApiErrorHandler {
-  /// Returns a human-readable message from a DioException.
+  /// Extracts an error message from a DioException.
   static String handleDioError(DioException e) {
     final responseData = e.response?.data;
     return (responseData is Map<String, dynamic>
@@ -12,7 +34,7 @@ class ApiErrorHandler {
         _getDefaultMessage(e);
   }
 
-  /// Provides a default error message based on the DioException type.
+  /// Returns a default error message based on the error type.
   static String _getDefaultMessage(DioException e) {
     switch (e.type) {
       case DioExceptionType.connectionTimeout:
@@ -36,7 +58,7 @@ class ApiErrorHandler {
     }
   }
 
-  /// Constructs an AppException for invalid responses.
+  /// Constructs an AppException from an invalid response.
   static AppException handleInvalidResponse(Response response) {
     final method = response.requestOptions.method;
     final path = response.requestOptions.path;

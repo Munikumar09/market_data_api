@@ -1,5 +1,23 @@
+/*
+Documentation:
+---------------
+File: custom_background_widget.dart
+Description:
+  This file defines the CustomBackgroundWidget which provides a styled background layout for the app's screens.
+  It uses positioned elements and decorative shapes (rectangles and ovals) to create a dynamic background.
+  The widget wraps any provided child in a SafeArea and applies custom styling based on screen dimensions.
+
+Methods:
+  • build(BuildContext context):
+      - Composes the background with decorative positioned widgets and overlays the child widget.
+  • _buildRotatedRectangle(...), _buildRectangle(...), _buildOval(...), _buildFilledOval(...):
+      - Helper functions to create various decorative shapes.
+*/
+
+// Code:
 import 'package:flutter/material.dart';
 
+/// A styled background layout for the app's screens.
 class CustomBackgroundWidget extends StatelessWidget {
   final Widget? child;
 

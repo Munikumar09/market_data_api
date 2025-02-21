@@ -1,7 +1,27 @@
+/*
+Documentation:
+---------------
+Class: AppThemes
+Description:
+  Provides light and dark theme configurations for the app using Flutter's ThemeData.
+  
+Properties:
+  • lightTheme:
+      - ThemeData for light mode with custom color scheme and styling.
+  • darkTheme:
+      - ThemeData for dark mode with custom color scheme and styling.
+
+Usage:
+  Example: MaterialApp(theme: AppThemes.lightTheme, darkTheme: AppThemes.darkTheme);
+*/
+
+// Code:
 import 'package:flutter/material.dart';
 import 'package:frontend/core/constants/app_colors.dart';
 
+/// Provides light, dark and custom themes for the app.
 class AppThemes {
+  /// Theme configuration for light mode.
   static final ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,
     hintColor: AppColors.lightHint,
@@ -24,6 +44,7 @@ class AppThemes {
     fontFamily: 'Roboto',
   );
 
+  /// Theme configuration for dark mode.
   static final ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
     colorScheme: ColorScheme(

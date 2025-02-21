@@ -444,11 +444,11 @@ void main() {
         // Act and Assert
         await expectLater(
           () => authRepository.sendVerificationCode(email),
-          throwsA(isA<VerificationFailedException>()),
+          throwsA(isA<SendVerificationCodeFailedException>()),
         );
-        expect(capturedException, isA<VerificationFailedException>());
+        expect(capturedException, isA<SendVerificationCodeFailedException>());
         expect(
-            (capturedException as VerificationFailedException).message,
+            (capturedException as SendVerificationCodeFailedException).message,
             equals(dioException.message ??
                 "Sending verification code failed")); // Check message
         verify(() => mockDio.post(

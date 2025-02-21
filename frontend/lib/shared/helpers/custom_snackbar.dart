@@ -1,3 +1,25 @@
+/*
+Documentation:
+---------------
+File: custom_snackbar.dart
+Description:
+  This file provides an extension on BuildContext to show custom snackbars using AwesomeSnackbarContent.
+  It defines methods to display snackbars for different scenarios such as error, success, help, and warning messages.
+
+Methods:
+  • showCustomSnackBar({required String title, required String message, required ContentType contentType, ...}):
+      - Displays a custom snackbar with the provided title, message, and content type.
+  • showErrorSnackBar(String message):
+      - Displays an error snackbar with a default title.
+  • showSuccessSnackBar(String message):
+      - Displays a success snackbar with a default title.
+  • showHelpSnackBar(String message):
+      - Displays a help snackbar with a default title.
+  • showWarningSnackBar(String message):
+      - Displays a warning snackbar with a default title.
+*/
+
+// Code:
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 

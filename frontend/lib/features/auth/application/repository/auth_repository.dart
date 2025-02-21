@@ -1,3 +1,47 @@
+/*
+Documentation:
+---------------
+Class: AuthRepository
+Description:
+  Handles all authentication API interactions including signup, login, verification,
+  password reset, logout, and auth state checking. It uses a Dio client for HTTP requests,
+  a token storage service to manage tokens, and an ApiCallHandler for error handling.
+
+Methods:
+  • signup(SignupRequest request):
+      - Registers a new user.
+      - Example: await authRepository.signup(signupRequest);
+      
+  • sendVerificationCode(String email):
+      - Sends a verification code to the given email.
+      - Example: await authRepository.sendVerificationCode('user@example.com');
+      
+  • verifyVerificationCode(String email, String emailOtp):
+      - Verifies the provided OTP.
+      - Example: await authRepository.verifyVerificationCode('user@example.com', '123456');
+      
+  • signin(String email, String password):
+      - Signs in the user and stores tokens.
+      - Example: await authRepository.signin('user@example.com', 'password123');
+      
+  • sendResetPasswordCode(String email):
+      - Sends a reset password code.
+      - Example: await authRepository.sendResetPasswordCode('user@example.com');
+      
+  • resetPassword(String email, String emailOtp, String newPassword):
+      - Resets the user’s password.
+      - Example: await authRepository.resetPassword('user@example.com', '123456', 'newPass');
+      
+  • logout():
+      - Logs out the user by clearing tokens.
+      - Example: await authRepository.logout();
+      
+  • checkAuthState():
+      - Checks the current authentication state.
+      - Example: await authRepository.checkAuthState();
+*/
+
+/* Code: */
 import 'package:dio/dio.dart';
 import 'package:frontend/core/constants/api_endpoints.dart';
 import 'package:frontend/core/constants/app_strings.dart';
@@ -6,12 +50,13 @@ import 'package:frontend/core/utils/handlers/api_call_handler.dart';
 import 'package:frontend/features/auth/application/model/signup_request.dart';
 import 'package:frontend/features/auth/application/services/token_storage_service.dart';
 
-/// Repository responsible for handling authentication API calls.
+/// AuthRepository: Handles authentication API calls.
 class AuthRepository {
   final Dio _dio;
   final SecureStorageService _tokenStorage;
   final ApiCallHandler _apiCallHandler;
 
+  /// Constructs an AuthRepository using a Dio client, token storage service, and an API call handler.
   AuthRepository({
     required Dio dio,
     required SecureStorageService tokenStorage,
@@ -47,12 +92,12 @@ class AuthRepository {
         _apiCallHandler.validateResponse(response);
         return;
       },
-      exception: (message) => VerificationFailedException(message),
+      exception: (message) => SendVerificationCodeFailedException(message),
       operationName: 'Sending Verification Code',
     );
   }
 
-  /// Verifies the email with the provided OTP.
+  /// Verifies the email using the provided OTP.
   Future<void> verifyVerificationCode(String email, String emailOtp) async {
     await _apiCallHandler.handleApiCall<void>(
       call: () async {
@@ -68,7 +113,7 @@ class AuthRepository {
     );
   }
 
-  /// Signs in the user and stores the authentication tokens.
+  /// Signs in the user and stores tokens.
   Future<void> signin(String email, String password) async {
     return _apiCallHandler.handleApiCall<void>(
       call: () async {
@@ -142,7 +187,7 @@ class AuthRepository {
     );
   }
 
-  /// Checks if the current authentication state is valid.
+  /// Checks the current authentication state.
   Future<void> checkAuthState() async {
     await _apiCallHandler.handleApiCall<void>(
       call: () async {
