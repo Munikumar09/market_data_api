@@ -3,80 +3,46 @@ Documentation:
 ---------------
 Class: AppTextStyles
 Description:
-  Provides helper methods that return TextStyle objects for different use cases in the application.
-  
-Methods:
-  • headline1(color):
-      - Returns a TextStyle for primary headlines.
-      - Example: AppTextStyles.headline1(Colors.black);
-  • headline2(color):
-      - Returns a TextStyle for secondary headlines.
-  • headline3(color):
-      - Returns a TextStyle for tertiary headlines.
-  • bodyText1(color):
-      - Returns a TextStyle for primary body text.
-  • bodyText2(color):
-      - Returns a TextStyle for secondary body text.
-  • caption(color):
-      - Returns a TextStyle for caption texts.
+  Provides text styles for various text elements in the app.
+  Contains constants for font sizes, font weights, and a method to generate text styles.
 */
 
 // Code:
 import 'package:flutter/material.dart';
 
-/// Provides helper methods that return TextStyle objects for different use cases in the application.
+// Font sizes
+const double heading1FontSize = 30;
+const double heading2FontSize = 20;
+const double heading3FontSize = 18;
+const double bodyText1FontSize = 16;
+const double bodyText2FontSize = 14;
+const double captionFontSize = 12;
+
+// Font weights
+const FontWeight heading1FontWeight = FontWeight.w700;
+const FontWeight heading2FontWeight = FontWeight.w600;
+const FontWeight heading3FontWeight = FontWeight.w600;
+const FontWeight bodyText1FontWeight = FontWeight.w500;
+const FontWeight bodyText2FontWeight = FontWeight.normal;
+const FontWeight captionFontWeight = FontWeight.normal;
+
+/// Provides text styles for various text elements in the app.
 class AppTextStyles {
   /// Returns a TextStyle for primary headlines.
-  static TextStyle headline1(Color color) {
+  static TextStyle customTextStyle(
+      {required color,
+      required double fontSize,
+      required FontWeight fontWeight,
+      double? letterSpacing,
+      double? height,
+      TextDecoration? decoration}) {
     return TextStyle(
       color: color,
-      fontSize: 30,
-      fontWeight: FontWeight.w700,
-    );
-  }
-
-  /// Returns a TextStyle for secondary headlines.
-  static TextStyle headline2(Color color) {
-    return TextStyle(
-      color: color,
-      fontSize: 20,
-      fontWeight: FontWeight.w600,
-    );
-  }
-
-  /// Returns a TextStyle for tertiary headlines.
-  static TextStyle headline3(Color color) {
-    return TextStyle(
-      fontSize: 18.0,
-      fontWeight: FontWeight.w600,
-      color: color,
-    );
-  }
-
-  /// Returns a TextStyle for primary body text.
-  static TextStyle bodyText1(Color color) {
-    return TextStyle(
-      fontSize: 16.0,
-      fontWeight: FontWeight.w500,
-      color: color,
-    );
-  }
-
-  /// Returns a TextStyle for secondary body text.
-  static TextStyle bodyText2(Color color) {
-    return TextStyle(
-      fontSize: 14.0,
-      fontWeight: FontWeight.normal,
-      color: color,
-    );
-  }
-
-  /// Returns a TextStyle for captions.
-  static TextStyle caption(Color color) {
-    return TextStyle(
-      fontSize: 12.0,
-      fontWeight: FontWeight.normal,
-      color: color,
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      letterSpacing: letterSpacing,
+      height: height,
+      decoration: decoration,
     );
   }
 }

@@ -98,7 +98,10 @@ class _CustomTextFieldState extends State<CustomTextField> {
       decoration: InputDecoration(
         labelText: widget.labelText,
         hintText: widget.hintText,
-        hintStyle: AppTextStyles.bodyText1(theme.hintColor),
+        hintStyle: AppTextStyles.customTextStyle(
+            color: theme.hintColor,
+            fontSize: bodyText1FontSize,
+            fontWeight: bodyText1FontWeight),
         filled: true,
         fillColor: theme.primaryColorLight,
         contentPadding:
@@ -121,7 +124,10 @@ class _CustomTextFieldState extends State<CustomTextField> {
         ),
         suffixIcon: suffix,
       ),
-      style: AppTextStyles.bodyText1(theme.primaryColor),
+      style: AppTextStyles.customTextStyle(
+          color: theme.primaryColor,
+          fontSize: bodyText1FontSize,
+          fontWeight: bodyText1FontWeight),
     );
   }
 }

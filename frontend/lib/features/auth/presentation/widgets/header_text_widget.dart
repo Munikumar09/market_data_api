@@ -39,8 +39,10 @@ class HeaderTextWidget extends StatelessWidget {
       children: [
         Text(
           title,
-          style: AppTextStyles.headline1(
-            titleColor ?? theme.primaryColor,
+          style: AppTextStyles.customTextStyle(
+            color: titleColor ?? theme.primaryColor,
+            fontSize: heading1FontSize,
+            fontWeight: heading1FontWeight,
           ),
           // Add semantic properties for accessibility
           semanticsLabel: title,
@@ -51,8 +53,10 @@ class HeaderTextWidget extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               subtitle!,
-              style: AppTextStyles.headline2(
-                subtitleColor ?? theme.colorScheme.onSurface,
+              style: AppTextStyles.customTextStyle(
+                color: subtitleColor ?? theme.colorScheme.onSurface,
+                fontSize: heading2FontSize,
+                fontWeight: heading2FontWeight,
               ),
               semanticsLabel: subtitle,
             ),

@@ -30,8 +30,10 @@ class AuthFooterWidget extends StatelessWidget {
         children: <Widget>[
           Text(
             AppStrings.continueWith,
-            style: AppTextStyles.bodyText1(
-              Theme.of(context).primaryColor,
+            style: AppTextStyles.customTextStyle(
+              color: Theme.of(context).primaryColor,
+              fontSize: bodyText1FontSize,
+              fontWeight: bodyText1FontWeight,
             ),
           ),
           const SizedBox(height: 10),

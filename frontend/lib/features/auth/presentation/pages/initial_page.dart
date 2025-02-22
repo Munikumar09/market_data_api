@@ -80,7 +80,10 @@ class _InitialPageState extends ConsumerState<InitialPage> {
             const SizedBox(height: 24),
             Text(
               AppStrings.appName,
-              style: AppTextStyles.headline1(Theme.of(context).primaryColor),
+              style: AppTextStyles.customTextStyle(
+                  color: Theme.of(context).primaryColor,
+                  fontSize: heading1FontSize,
+                  fontWeight: heading1FontWeight),
             ),
           ],
         ),

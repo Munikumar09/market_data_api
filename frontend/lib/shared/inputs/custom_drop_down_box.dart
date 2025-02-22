@@ -95,7 +95,10 @@ class _CustomDropdownState extends State<CustomDropdown> {
               value: option,
               child: Text(
                 option,
-                style: AppTextStyles.bodyText1(theme.primaryColor),
+                style: AppTextStyles.customTextStyle(
+                    color: theme.primaryColor,
+                    fontSize: bodyText1FontSize,
+                    fontWeight: bodyText1FontWeight),
               ),
             ),
           )

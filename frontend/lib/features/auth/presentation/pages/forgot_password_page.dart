@@ -64,13 +64,20 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               children: [
                 Text(
                   AppStrings.resetPassword,
-                  style: AppTextStyles.headline1(theme.colorScheme.primary),
+                  style: AppTextStyles.customTextStyle(
+                      color: theme.colorScheme.primary,
+                      fontSize: heading1FontSize,
+                      fontWeight: heading1FontWeight),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
                 Text(
                   AppStrings.resetPasswordSubtitle,
-                  style: AppTextStyles.bodyText1(theme.colorScheme.onSurface),
+                  style: AppTextStyles.customTextStyle(
+                    color: theme.colorScheme.onSurface,
+                    fontSize: bodyText1FontSize,
+                    fontWeight: bodyText1FontWeight,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),

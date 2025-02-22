@@ -41,7 +41,6 @@ class TradingApp extends ConsumerWidget {
     return MaterialApp(
       title: AppStrings.appName,
       theme: AppThemes.lightTheme,
-      darkTheme: AppThemes.darkTheme,
       themeMode: ThemeMode.system,
       navigatorKey: navigatorKey,
       initialRoute: AppRoutes.initial,

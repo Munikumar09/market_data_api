@@ -60,7 +60,6 @@ class AuthInterceptor extends Interceptor {
   final Logger _logger = Logger();
 
   bool _isRefreshing = false;
-  Completer<String>? _refreshCompleter;
   static const _maxQueueSize = 50;
   final List<_QueuedRequest> _requestQueue = [];
 
@@ -71,13 +70,10 @@ class AuthInterceptor extends Interceptor {
   Future<void> onRequest(
       RequestOptions options, RequestInterceptorHandler handler) async {
     final tokens = await _secureStorage.getTokens();
-    final accessToken = tokens.accessToken;
-    if (accessToken != null && !options.path.contains(refreshTokenEndpoint)) {
-      options.headers[_authorizationHeader] = _bearerPrefix + accessToken;
+    if (tokens.accessToken != null) {
+      options.headers[_authorizationHeader] =
+          _bearerPrefix + tokens.accessToken!;
       _logger.i("onRequest: Adding Authorization header");
-    } else {
-      _logger.i(
-          "onRequest: Skipping Authorization header for refresh token request.");
     }
     _logger.d("onRequest: URL: ${options.uri}, Headers: ${options.headers}");
     return handler.next(options);
@@ -105,10 +101,8 @@ class AuthInterceptor extends Interceptor {
     _isRefreshing = true;
     _logger
         .i("onError: Attempting token refresh. Setting _isRefreshing to true.");
-    _refreshCompleter = Completer<String>();
     try {
       final newAccessToken = await _attemptTokenRefresh(err);
-      _refreshCompleter!.complete(newAccessToken);
       await _retryQueuedRequests(newAccessToken!);
       _retryRequest(err.requestOptions, newAccessToken, handler);
     } catch (e) {
@@ -119,7 +113,6 @@ class AuthInterceptor extends Interceptor {
       _isRefreshing = false;
       _logger.i(
           "onError: Refresh attempt complete. Resetting _isRefreshing to false.");
-      _refreshCompleter = null;
     }
   }
 
@@ -127,8 +120,7 @@ class AuthInterceptor extends Interceptor {
   Future<String?> _attemptTokenRefresh(DioException err) async {
     _logger.i("_attemptTokenRefresh: Called");
     final tokens = await _secureStorage.getTokens();
-    final refreshToken = tokens.refreshToken;
-    if (refreshToken == null) {
+    if (tokens.refreshToken == null) {
       _logger.e('_attemptTokenRefresh: No refresh token. Clearing data.');
       await _clearAuthDataAndLogout(err);
       throw DioException(
@@ -139,7 +131,7 @@ class AuthInterceptor extends Interceptor {
       );
     }
     _logger.i("_attemptTokenRefresh: Retrieved refresh token");
-    final newAccessToken = await _refreshAccessToken(refreshToken);
+    final newAccessToken = await _refreshAccessToken(tokens.refreshToken!);
     if (newAccessToken == null) {
       _logger.e(
           '_attemptTokenRefresh: New Access Token is null. Throwing exception.');
@@ -158,6 +150,7 @@ class AuthInterceptor extends Interceptor {
   Future<String?> _refreshAccessToken(String refreshToken) async {
     _logger.i("_refreshAccessToken: Attempting to refresh token.");
     try {
+      final String errorMessage;
       final response = await _dio.post(
         refreshTokenEndpoint,
         queryParameters: {StorageKeys.refreshToken: refreshToken},
@@ -174,22 +167,17 @@ class AuthInterceptor extends Interceptor {
               accessToken: newAccessToken, refreshToken: refreshToken);
           return newAccessToken;
         }
-        final errorMessage =
+        errorMessage =
             response.data?['detail'] as String? ?? 'Access Token is null';
-        throw DioException(
-            requestOptions: RequestOptions(),
-            response: response,
-            type: DioExceptionType.badResponse,
-            error: errorMessage);
       } else {
-        final errorMessage =
+        errorMessage =
             response.data?['detail'] as String? ?? 'Refresh token failed';
-        throw DioException(
-            requestOptions: RequestOptions(),
-            response: response,
-            type: DioExceptionType.badResponse,
-            error: errorMessage);
       }
+      throw DioException(
+          requestOptions: RequestOptions(),
+          response: response,
+          type: DioExceptionType.badResponse,
+          error: errorMessage);
     } on DioException catch (e) {
       _logger.e("_refreshAccessToken: DioException: ${e.message}", e);
       await _clearAuthDataAndLogout(e);
@@ -216,25 +204,23 @@ class AuthInterceptor extends Interceptor {
   Future<void> _retryQueuedRequests(String newAccessToken) async {
     _logger
         .i("Retrying queued requests. Queue length: ${_requestQueue.length}");
-    final queuedRequests = List.from(_requestQueue);
-    _requestQueue.clear();
-    await Future.wait(queuedRequests.map((queued) {
+    for (final queued in _requestQueue) {
       _logger.i("Retrying request: ${queued.requestOptions.uri}");
-      return _retryRequest(
+      await _retryRequest(
           queued.requestOptions, newAccessToken, queued.handler);
-    }));
+    }
+    _requestQueue.clear();
   }
 
   /// Rejects all queued requests using the original error.
   Future<void> _rejectQueuedRequests(DioException originalError) async {
     _logger.e(
         "Rejecting all queued requests. Queue length: ${_requestQueue.length}");
-    final queuedRequests = List.from(_requestQueue);
-    _requestQueue.clear();
-    for (final queued in queuedRequests) {
+    for (final queued in _requestQueue) {
       _logger.e("Rejecting request: ${queued.requestOptions.uri}");
       queued.handler.reject(originalError);
     }
+    _requestQueue.clear();
   }
 
   /// Retries a single request with an updated Authorization header.

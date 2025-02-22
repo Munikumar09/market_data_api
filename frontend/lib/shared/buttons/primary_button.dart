@@ -76,8 +76,10 @@ class PrimaryButton extends StatelessWidget {
           child: child ??
               Text(
                 text,
-                style: AppTextStyles.headline2(
-                        textColor ?? theme.colorScheme.onPrimary)
+                style: AppTextStyles.customTextStyle(
+                        color: textColor ?? theme.colorScheme.onPrimary,
+                        fontSize: heading2FontSize,
+                        fontWeight: heading2FontWeight)
                     .copyWith(fontSize: fontSize),
               ),
         ),

@@ -282,7 +282,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       onPressed: () => Navigator.pushReplacementNamed(context, AppRoutes.login),
       child: Text(
         AppStrings.haveAccount,
-        style: AppTextStyles.headline3(const Color(0xFF494949)),
+        style: AppTextStyles.customTextStyle(
+            color: Color(0xFF494949),
+            fontSize: heading3FontSize,
+            fontWeight: FontWeight.w500),
       ),
     );
   }
