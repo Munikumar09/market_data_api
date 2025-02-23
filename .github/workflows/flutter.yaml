@@ -3,9 +3,6 @@ name: Flutter CI
 on:
   pull_request:
     branches: [ "master" ]
-  push:  #  Good practice:  Run on push to master as well.  Catches issues introduced directly to master.
-    branches: [ "master" ]
-
 jobs:
   build_and_test:  # Renamed the job to reflect both building and testing.
     runs-on: ubuntu-latest
