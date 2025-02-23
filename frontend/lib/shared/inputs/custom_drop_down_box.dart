@@ -1,6 +1,21 @@
+/*
+Documentation:
+---------------
+File: custom_drop_down_box.dart
+Description:
+  This file defines the CustomDropdown widget, a customizable dropdown form field.
+  It allows selection from a given list of options, supports validation, and triggers callbacks on changes.
+
+Methods:
+  • build(BuildContext context):
+      - Constructs a DropdownButtonFormField with custom styling and validation.
+*/
+
+// Code:
 import 'package:flutter/material.dart';
 import 'package:frontend/core/constants/app_text_styles.dart';
 
+/// A customizable dropdown form field.
 class CustomDropdown extends StatefulWidget {
   final String labelText;
   final List<String> options;
@@ -80,7 +95,10 @@ class _CustomDropdownState extends State<CustomDropdown> {
               value: option,
               child: Text(
                 option,
-                style: AppTextStyles.bodyText1(theme.primaryColor),
+                style: AppTextStyles.customTextStyle(
+                    color: theme.primaryColor,
+                    fontSize: bodyText1FontSize,
+                    fontWeight: bodyText1FontWeight),
               ),
             ),
           )

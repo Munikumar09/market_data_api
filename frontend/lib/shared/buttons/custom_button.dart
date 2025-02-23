@@ -1,6 +1,22 @@
+/*
+Documentation:
+---------------
+File: custom_button.dart
+Description:
+  This file defines the CustomButton widget which is a customizable button.
+  It allows configuration of text, background color, text color, font size, and border radius.
+  The widget displays the provided text or an optional child widget for content such as a loading indicator.
+
+Methods:
+  • build(BuildContext context):
+      - Builds the button using a GestureDetector and Container with custom styling.
+*/
+
+// Code:
 import 'package:flutter/material.dart';
 import 'package:frontend/core/constants/app_text_styles.dart';
 
+/// A customizable button widget.
 class CustomButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
@@ -41,9 +57,13 @@ class CustomButton extends StatelessWidget {
           ],
         ),
         child: Center(
-          child: Text(text,
-              style: AppTextStyles.headline2(
-                  textColor ?? theme.colorScheme.onPrimary)),
+          child: Text(
+            text,
+            style: AppTextStyles.customTextStyle(
+                color: textColor ?? theme.colorScheme.onPrimary,
+                fontSize: heading2FontSize,
+                fontWeight: heading2FontWeight),
+          ),
         ),
       ),
     );
