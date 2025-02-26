@@ -31,6 +31,7 @@ def get_smartapi_token_data() -> list[Instrument]:
         df = df[df["instrumenttype"] == ""]
         df["instrumenttype"] = df["symbol"].apply(lambda x: x.split("-")[-1])
         df = df[df["instrumenttype"].isin(["EQ", "SM", "BE", "ST"])]
+        df["symbol"] = df["symbol"].apply(lambda x: x.split("-")[0])
 
         return [
             Instrument(
@@ -52,7 +53,7 @@ def get_smartapi_token_data() -> list[Instrument]:
         return []
 
 
-def process_upstox_token_data() -> list[Instrument]:
+def get_uplink_token_data() -> list[Instrument]:
     """
     Fetches the token data from the UPSTOX_TOKEN_URL and processes it to return the processed data.
     It filters the data based on the segment and instrument type and returns the processed data.
@@ -75,7 +76,7 @@ def process_upstox_token_data() -> list[Instrument]:
             Instrument(
                 token=token["instrument_key"],
                 exchange_id=ExchangeType.BSE.value,
-                data_provider_id=DataProviderType.UPSTOX.value,
+                data_provider_id=DataProviderType.UPLINK.value,
                 symbol=token["trading_symbol"],
                 name=token["name"],
                 instrument_type=token["instrument_type"],
@@ -105,7 +106,7 @@ def get_token_data(provider: DataProviderType) -> list[Instrument]:
     """
     provider_map = {
         DataProviderType.SMARTAPI: get_smartapi_token_data,
-        DataProviderType.UPSTOX: process_upstox_token_data,
+        DataProviderType.UPLINK: get_uplink_token_data,
     }
 
     fetch_func = provider_map.get(provider, lambda: [])

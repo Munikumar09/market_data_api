@@ -26,10 +26,9 @@ class WebsocketConnection(ABC, Registrable):
     def __init__(self, websocket: MarketDataTwistedSocket):
         self.websocket = websocket
 
+    @classmethod
     @abstractmethod
-    def get_tokens(
-        self, exchange_segment: str, symbols: str | list[str] | None = None
-    ) -> Dict[str, str]:
+    def _get_tokens(cls, symbols: str | list[str] | None = None) -> Dict[str, str]:
         """
         This method returns the tokens for the equity stocks based on the exchange
         and instrument type.

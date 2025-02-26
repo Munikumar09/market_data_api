@@ -137,8 +137,8 @@ class Instrument(SQLModel, table=True):  # type: ignore
         """
         return {
             "symbol": self.symbol,
-            "exchange": self.exchange_id,
-            "data_provider": self.data_provider_id,
+            "exchange_id": self.exchange_id,
+            "data_provider_id": self.data_provider_id,
             "token": self.token,
             "name": self.name,
             "instrument_type": self.instrument_type,

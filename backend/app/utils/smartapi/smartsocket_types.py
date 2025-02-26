@@ -128,3 +128,4 @@ SMARTAPI_EXCHANGETYPE_MAP = {
     SmartAPIExchangeSegment.NSE_CM: ExchangeType.NSE,
     SmartAPIExchangeSegment.BSE_CM: ExchangeType.BSE,
 }
+EXCHANGETYPE_SMARTAPI_MAP = {v: k for k, v in SMARTAPI_EXCHANGETYPE_MAP.items()}

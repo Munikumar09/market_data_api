@@ -104,7 +104,7 @@ class SmartSocket(MarketDataTwistedSocket):
 
     def set_tokens(
         self,
-        tokens_with_exchanges: (
+        token_data: (
             dict[str, int | dict[str, str]] | list[dict[str, int | dict[str, str]]]
         ),
     ):
@@ -118,10 +118,10 @@ class SmartSocket(MarketDataTwistedSocket):
             e.g., [{"exchangeType": 1, "tokens": {"token1": "name1", "token2": "name2"}}]
                 or {"exchangeType": 1, "tokens": {"token1": "name1", "token2": "name2"}}
         """
-        if isinstance(tokens_with_exchanges, dict):
-            tokens_with_exchanges = [tokens_with_exchanges]
+        if isinstance(token_data, dict):
+            token_data = [token_data]
 
-        for token_exchange_info in tokens_with_exchanges:
+        for token_exchange_info in token_data:
             # Check if the token exchange info is in the correct format
             if (
                 "exchangeType" not in token_exchange_info
@@ -443,11 +443,13 @@ class SmartSocket(MarketDataTwistedSocket):
         """
         Initialize the SmartSocket connection with the specified configuration.
         """
+        print("calling this method...")
         smartapi_connection = SmartApiConnection.get_connection()
         auth_token = smartapi_connection.get_auth_token()
         feed_token = smartapi_connection.api.getfeedToken()
         api_key = smartapi_connection.credentials.api_key
         client_code = smartapi_connection.credentials.client_id
+        print(f"credentials: {smartapi_connection.credentials}")
 
         return SmartSocket(
             auth_token,
