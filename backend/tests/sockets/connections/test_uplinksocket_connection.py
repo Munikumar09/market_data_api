@@ -148,7 +148,7 @@ def test_get_tokens(
     connection: UplinkSocketConnection, websocket_instrument_data, expected_tokens
 ):
     """
-    Test the get_tokens method of the SmartSocketConnection class with all
+    Test the get_tokens method of the UplinkSocketConnection class with all
     the possible scenarios.
     """
     # Test: 3.1 ( Test with exchange type as None and symbols as None )

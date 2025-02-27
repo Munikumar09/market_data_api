@@ -38,12 +38,24 @@ def init_redis_client(is_async: bool = True) -> redis.Redis | async_redis.Redis:
         pool: redis.ConnectionPool | async_redis.ConnectionPool
         if is_async:
             pool = async_redis.ConnectionPool(
-                host=redis_host, port=redis_port, db=redis_db, decode_responses=True
+                host=redis_host,
+                port=redis_port,
+                db=redis_db,
+                decode_responses=True,
+                socket_timeout=5,
+                socket_connect_timeout=5,
+                retry_on_timeout=True,
             )
             return async_redis.Redis(connection_pool=pool)
 
         pool = redis.ConnectionPool(
-            host=redis_host, port=redis_port, db=redis_db, decode_responses=True
+            host=redis_host,
+            port=redis_port,
+            db=redis_db,
+            decode_responses=True,
+            socket_timeout=5,
+            socket_connect_timeout=5,
+            retry_on_timeout=True,
         )
         return redis.Redis(connection_pool=pool)
     except redis.ConnectionError as e:

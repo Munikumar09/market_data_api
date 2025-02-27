@@ -443,13 +443,11 @@ class SmartSocket(MarketDataTwistedSocket):
         """
         Initialize the SmartSocket connection with the specified configuration.
         """
-        print("calling this method...")
         smartapi_connection = SmartApiConnection.get_connection()
         auth_token = smartapi_connection.get_auth_token()
         feed_token = smartapi_connection.api.getfeedToken()
         api_key = smartapi_connection.credentials.api_key
         client_code = smartapi_connection.credentials.client_id
-        print(f"credentials: {smartapi_connection.credentials}")
 
         return SmartSocket(
             auth_token,

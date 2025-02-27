@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Optional
+from typing import Optional
 
 from omegaconf import DictConfig
 from registrable import Registrable
 
 from app.sockets.twisted_socket import MarketDataTwistedSocket
+from app.utils.common.types.financial_types import ExchangeType
 
 
 class WebsocketConnection(ABC, Registrable):
@@ -28,12 +29,15 @@ class WebsocketConnection(ABC, Registrable):
 
     @classmethod
     @abstractmethod
-    def _get_tokens(cls, symbols: str | list[str] | None = None) -> Dict[str, str]:
+    def _get_tokens(
+        cls,
+        symbols: str | list[str] | None = None,
+        exchange: ExchangeType = ExchangeType.NSE,
+    ) -> dict[str, str]:
         """
-        This method returns the tokens for the equity stocks based on the exchange
-        and instrument type.
-
-        Refer to the subclasses for the implementation of this method
+        This method should be implemented by the subclasses to get the tokens for the
+        respective exchange and given symbols. This method should return a dictionary
+        containing the token and symbol mappings.
         """
         raise NotImplementedError
 

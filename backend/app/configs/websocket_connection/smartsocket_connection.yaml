@@ -7,7 +7,7 @@ provider:
   name: smartsocket
   correlation_id: smart0000_
   subscription_mode: snap_quote
-  debug: true
+  debug: false
   ping_interval: 25
   ping_message: ping
 streaming: ${kafka}
@@ -20,6 +20,6 @@ num_tokens_per_instance: 10
 
 ################################ NOTE ################################
 # If you specify the stock_symbols, then the data will be streamed only for those symbols.
-# Do not enter the futures and options symbols here as it is not supported. If you do not 
-# specify the stock_symbols, then the data will be streamed for all the symbols that are 
+# Do not enter the futures and options symbols here as it is not supported. If you do not
+# specify the stock_symbols, then the data will be streamed for all the symbols that are
 # available in the NSE exchange.
