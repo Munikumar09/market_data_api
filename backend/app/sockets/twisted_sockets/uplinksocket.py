@@ -282,11 +282,7 @@ class UplinkSocket(MarketDataTwistedSocket):
             return
 
         for token, token_data in data["feeds"].items():
-            if token_data.get("ltpc") is None or token_data["ltpc"].keys() != {
-                "ltp",
-                "ltt",
-                "cp",
-            }:
+            if token_data.get("ltpc") is None:
                 continue
 
             exchange_id = ExchangeType.get_exchange(token.split("|")[0].split("_")[0])
@@ -298,12 +294,11 @@ class UplinkSocket(MarketDataTwistedSocket):
                 "symbol": self.token_map[token],
                 "exchange_id": exchange_id.value,
                 "data_provider_id": DataProviderType.UPLINK.value,
-                "last_traded_price": token_data["ltpc"]["ltp"],
-                "last_traded_timestamp": token_data["ltpc"]["ltt"],
-                "last_traded_quantity": token_data["ltpc"].get("ltq", 0),
-                "close_price": token_data["ltpc"]["cp"],
+                "last_traded_price": token_data["ltpc"].get("ltp", -1),
+                "last_traded_timestamp": token_data["ltpc"].get("ltt", -1),
+                "last_traded_quantity": token_data["ltpc"].get("ltq", -1),
+                "close_price": token_data["ltpc"].get("cp", -1),
             }
-
             if self.on_data_save_callback:
                 self.on_data_save_callback(json.dumps(data_to_save))
 

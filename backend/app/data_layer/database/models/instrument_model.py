@@ -195,12 +195,14 @@ class InstrumentPrice(SQLModel, table=True):  # type: ignore
     exchange_id: int
     data_provider_id: int
     last_traded_timestamp: datetime
-    last_traded_price: float = Field(ge=0)
-    last_traded_quantity: int | None = Field(default=None, ge=0)
-    average_traded_price: float | None = Field(default=None, ge=0)
-    volume_trade_for_the_day: int | None = Field(default=None, ge=0)
-    total_buy_quantity: int | None = Field(default=None, ge=0)
-    total_sell_quantity: int | None = Field(default=None, ge=0)
+    last_traded_price: float = Field(
+        ge=-1
+    )  # -1 indicates the value is missing in the data
+    last_traded_quantity: int | None = Field(default=None, ge=-1)
+    average_traded_price: float | None = Field(default=None, ge=-1)
+    volume_trade_for_the_day: int | None = Field(default=None, ge=-1)
+    total_buy_quantity: int | None = Field(default=None, ge=-1)
+    total_sell_quantity: int | None = Field(default=None, ge=-1)
 
     # Add foreign key constraint referencing the composite primary key of Instrument
     __table_args__ = (

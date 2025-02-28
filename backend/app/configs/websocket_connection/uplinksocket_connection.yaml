@@ -12,6 +12,7 @@ provider:
 streaming: ${kafka}
 symbols: null # List of stock symbols
 num_connections: 1
-num_tokens_per_instance: 1
+exchange_type: BSE
+num_tokens_per_instance: 5000
 current_connection_number: 0
 use_thread: true

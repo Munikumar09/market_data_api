@@ -341,7 +341,17 @@ def test_on_message(
         is_binary=True,
     )
     assert uplink_socket_instance.on_data_save_callback is not None
-    uplink_socket_instance.on_data_save_callback.assert_not_called()  # type: ignore
+    data_save_args = json.loads(
+        uplink_socket_instance.on_data_save_callback.call_args_list[0].args[0]  # type: ignore
+    )
+    expected_save_data = {
+        **uplink_binary_and_decoded_data[1],
+        "last_traded_timestamp": -1,
+    }
+    expected_save_data["last_traded_quantity"] = -1
+    for key in expected_save_data:
+        assert data_save_args[key] == expected_save_data[key]
+    uplink_socket_instance.on_data_save_callback.reset_mock()  # type: ignore
 
     # Test: 8.3 ( Handling valid binary message )
     uplink_socket_instance.set_tokens(sample_token_map)
@@ -353,9 +363,10 @@ def test_on_message(
     data_save_args = json.loads(
         uplink_socket_instance.on_data_save_callback.call_args_list[0].args[0]  # type: ignore
     )
+
+    uplink_binary_and_decoded_data[1]["last_traded_quantity"] = -1
     for key in uplink_binary_and_decoded_data[1]:
         assert data_save_args[key] == uplink_binary_and_decoded_data[1][key]
-    ws.reset_mock()
 
     # Test: 8.4 ( Handling JSON message )
     uplink_socket_instance.set_tokens(sample_token_map)
