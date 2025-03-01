@@ -95,19 +95,20 @@ def create_tokens_db(remove_existing: bool = True):
             processed_data = get_token_data(provider)
             with get_session() as session:
                 insert_data(
-                    Instrument,
-                    processed_data,
-                    session=session,
-                    update_existing=remove_existing,
-                )
-                insert_data(
                     DataProvider,
                     DataProvider(
                         id=provider.value,
                         name=provider.name,
                         last_updated=datetime.now(),
                     ),
+                    session=session,
                     update_existing=True,
+                )
+                insert_data(
+                    Instrument,
+                    processed_data,
+                    session=session,
+                    update_existing=remove_existing,
                 )
         else:
             logger.info(
