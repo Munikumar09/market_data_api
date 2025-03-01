@@ -17,15 +17,7 @@ class Credentials(Registrable, ABC):
     Base class for credentials used in the market data API. Subclasses of
     `Credentials` should implement the `get_credentials` method to provide
     the actual credentials.
-
-    Attributes:
-    -----------
-    api_key: ``str``
-        The API key used to authenticate the connection
     """
-
-    def __init__(self, api_key: str):
-        self.api_key = api_key
 
     @staticmethod
     def get_credentials():

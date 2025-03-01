@@ -25,3 +25,7 @@ except ValueError as e:
 # Rate Limiter Constants
 TIMES = 1
 SECONDS = 120
+
+
+# UPLINK CONSTANTS
+UPLINK_ACCESS_TOKEN = "uplink_access_token"

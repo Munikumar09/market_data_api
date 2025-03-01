@@ -33,7 +33,7 @@ def setup_env_vars():
     with open(deactivate_dir / "project_env_vars.sh", "w") as f:
         f.write("#!/bin/bash\n")
         f.write("unset ROOT_PATH\n")
-    
+
     # Create .env file if it doesn't exist or update it with ROOT_PATH
     env_path = BACKEND_ROOT_PATH / ".env"
     env_data = [f"ROOT_PATH={BACKEND_ROOT_PATH}\n"]
@@ -53,6 +53,29 @@ def setup_env_vars():
     )
 
 
+def ensure_playwright_browsers_installed():
+    """
+    Ensure Playwright browsers (Chromium) are installed.
+    Assumes Playwright Python bindings are already installed.
+    """
+    # Install Chromium with dependencies
+    try:
+        # Check if playwright is installed
+        subprocess.run(
+            ["python", "-c", "import playwright"],
+            check=True,
+            stderr=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+        )
+        logger.info("🔄 Installing Playwright Chromium dependencies...")
+        subprocess.run(["playwright", "install", "--with-deps", "chromium"], check=True)
+        logger.info("✅ Playwright Chromium installed successfully.")
+    except (subprocess.CalledProcessError, ImportError):
+        logger.error("Playwright Python bindings not found. Please install them first.")
+    except Exception as e:
+        logger.error(f"Error installing Playwright Chromium: {e}")
+
+
 def install_dependencies():
     """Installs dependencies using Poetry."""
     try:
@@ -67,6 +90,7 @@ def install_dependencies():
 def main():
     setup_env_vars()
     install_dependencies()
+    ensure_playwright_browsers_installed()
 
 
 if __name__ == "__main__":
