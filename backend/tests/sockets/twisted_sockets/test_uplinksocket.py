@@ -179,7 +179,7 @@ def test_on_open_with_no_tokens(
     uplink_socket_instance._on_open(ws)
     assert ws.send.call_count == 0
     assert uplink_socket_instance._is_first_connect is False
-    mock_logger.error.assert_any_call("No tokens to subscribe")
+    mock_logger.error.assert_any_call("No valid tokens to subscribe")
 
 
 # Test: 5
@@ -213,7 +213,7 @@ def test_subscribe(
     # Test: 6.1 ( Subscribing with no tokens )
     ws = mocker.MagicMock()
     assert uplink_socket_instance.subscribe([]) is False
-    mock_logger.error.assert_called_once_with("No tokens to subscribe")
+    mock_logger.error.assert_called_once_with("No valid tokens to subscribe")
     mock_logger.reset_mock()
 
     # Test: 6.2 ( Subscribing with valid tokens and no WebSocket connection )
@@ -223,8 +223,22 @@ def test_subscribe(
     assert uplink_socket_instance.subscribed_tokens == {}
     mock_logger.reset_mock()
 
-    # Test: 6.3 ( Subscribing with valid tokens and WebSocket connection )
+    # Test: 6.2 ( Subscribing with valid tokens and invalid tokens)
     uplink_socket_instance.ws = ws
+    limited_tokens = dict(tuple(token_symbol_map.items())[:2])
+    uplink_socket_instance.set_tokens(limited_tokens)
+    assert uplink_socket_instance.subscribe(list(token_symbol_map.keys())) is True
+    assert uplink_socket_instance.subscribed_tokens == limited_tokens
+    mock_logger.error.assert_called_once_with(
+        "Tokens not found in token map: %s. Please set tokens using set_tokens method",
+        list(token_symbol_map.keys())[2:],
+    )
+    ws.reset_mock()
+    mock_logger.reset_mock()
+
+    # Test: 6.3 ( Subscribing with valid tokens and WebSocket connection )
+
+    uplink_socket_instance.set_tokens(token_symbol_map)
     assert uplink_socket_instance.subscribe(list(token_symbol_map.keys())) is True
     assert uplink_socket_instance.subscribed_tokens == token_symbol_map
 

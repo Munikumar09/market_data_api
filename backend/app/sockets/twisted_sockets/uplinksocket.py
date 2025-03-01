@@ -1,4 +1,4 @@
-# pylint: disable=too-many-arguments, too-many-instance-attributes no-member
+# pylint: disable=too-many-arguments, too-many-instance-attributes, no-member
 import json
 import time
 from pathlib import Path
@@ -128,12 +128,25 @@ class UplinkSocket(MarketDataTwistedSocket):
             A list of dictionaries containing the exchange type and the tokens to subscribe
             e.g., ["token1", "token2", ...]
         """
+        valid_tokens, invalid_tokens = [], []
+
+        for token in subscription_data:
+            if token in self.token_map:
+                valid_tokens.append(token)
+            else:
+                invalid_tokens.append(token)
+
+        if invalid_tokens:
+            logger.error(
+                "Tokens not found in token map: %s. Please set tokens using set_tokens method",
+                invalid_tokens,
+            )
 
         if self.debug:
-            logger.debug("Subscribing to tokens: %s", subscription_data)
+            logger.debug("Subscribing to tokens: %s", valid_tokens)
 
-        if not subscription_data:
-            logger.error("No tokens to subscribe")
+        if not valid_tokens:
+            logger.error("No valid tokens to subscribe")
             return False
 
         request_data = {
@@ -141,16 +154,17 @@ class UplinkSocket(MarketDataTwistedSocket):
             "method": "sub",
             "data": {
                 "mode": self.subscription_mode,
-                "instrumentKeys": subscription_data,
+                "instrumentKeys": valid_tokens,
             },
         }
+
         try:
             if self.ws:
                 self.ws.sendMessage(
                     json.dumps(request_data).encode("utf-8"), isBinary=True
                 )
                 self.subscribed_tokens.update(
-                    {token: self.token_map[token] for token in subscription_data}
+                    {token: self.token_map[token] for token in valid_tokens}
                 )
                 return True
 
@@ -230,6 +244,10 @@ class UplinkSocket(MarketDataTwistedSocket):
         if self.debug:
             logger.debug("Resubscribing to tokens: %s", self.subscribed_tokens)
 
+        if not self.subscribed_tokens:
+            logger.debug("No tokens to resubscribe")
+            return False
+
         return self.subscribe(self.subscribed_tokens)
 
     def decode_data(self, data: bytes) -> dict[str, Any]:
@@ -287,11 +305,13 @@ class UplinkSocket(MarketDataTwistedSocket):
 
             exchange_id = ExchangeType.get_exchange(token.split("|")[0].split("_")[0])
             if exchange_id is None:
+                if self.debug:
+                    logger.error("Exchange not found for token: %s", token)
                 continue
 
             data_to_save = {
                 "retrieval_timestamp": str(time.time()),
-                "symbol": self.token_map[token],
+                "symbol": self.token_map.get(token, "unknown"),
                 "exchange_id": exchange_id.value,
                 "data_provider_id": DataProviderType.UPLINK.value,
                 "last_traded_price": token_data["ltpc"].get("ltp", -1),
