@@ -66,7 +66,7 @@ class TestWebSocket(MarketDataTwistedSocket):
         super().__init__()
         self.headers = None
 
-    def set_tokens(self, tokens_with_exchanges):
+    def set_tokens(self, token_data):
         pass
 
     def _on_message(self, ws, payload, is_binary):

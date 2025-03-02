@@ -1,6 +1,10 @@
+# pylint: disable=no-value-for-parameter
 from datetime import datetime, timedelta
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+from app import ROOT_DIR
 from app.data_layer.database.crud.crud_utils import (
     get_data_by_any_condition,
     insert_data,
@@ -15,6 +19,7 @@ from app.utils.common.types.financial_types import DataProviderType, ExchangeTyp
 from app.utils.token_data import get_token_data
 
 logger = get_logger(Path(__file__).name)
+load_dotenv(dotenv_path=ROOT_DIR.parent / ".env")
 
 
 def is_update_required(dataprovider_type: DataProviderType) -> bool:
@@ -89,6 +94,16 @@ def create_tokens_db(remove_existing: bool = True):
         if is_update_required(provider):
             processed_data = get_token_data(provider)
             with get_session() as session:
+                insert_data(
+                    DataProvider,
+                    DataProvider(
+                        id=provider.value,
+                        name=provider.name,
+                        last_updated=datetime.now(),
+                    ),
+                    session=session,
+                    update_existing=True,
+                )
                 insert_data(
                     Instrument,
                     processed_data,

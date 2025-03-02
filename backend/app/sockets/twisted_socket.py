@@ -79,7 +79,7 @@ class MarketDataTwistedSocket(ABC):
         self.websocket_thread = None
 
     @abstractmethod
-    def set_tokens(self, tokens_with_exchanges: list[dict[str, int | dict[str, str]]]):
+    def set_tokens(self, token_data: Any):
         """
         Set the tokens to subscribe to the WebSocket connection
         """

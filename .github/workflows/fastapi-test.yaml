@@ -69,7 +69,7 @@ jobs:
       - name: Install poetry
         run: |
           curl -sSL https://install.python-poetry.org | python3 - --version ${{ env.POETRY_VERSION }} -y
-          ./backend/scripts/setup
+          ./backend/scripts/setup --cli
 
       - name: Python Format Check
         run: ./dev_tools/code_analysis/backend/format.sh --check
@@ -120,7 +120,7 @@ jobs:
       - name: Install Poetry and Dependencies
         run: |
           curl -sSL https://install.python-poetry.org | python3 - --version ${{ env.POETRY_VERSION }} -y
-          ./scripts/setup
+          ./scripts/setup --cli
 
       - name: Verify PostgreSQL Connection
         run: |

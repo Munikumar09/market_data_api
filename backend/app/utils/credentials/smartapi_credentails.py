@@ -29,7 +29,7 @@ class SmartapiCredentials(Credentials):
 
     def __init__(self, api_key: str, client_id: str, pwd: str, token: str) -> None:
 
-        super().__init__(api_key)
+        self.api_key = api_key
         self.client_id = client_id
         self.pwd = pwd
         self.token = token
@@ -39,14 +39,9 @@ class SmartapiCredentials(Credentials):
         """
         Create a Credentials object from the credentials file.
 
-        Raises:
-        -------
-        ``CredentialsException``
-            If the credentials file path is not set in the environment variable
-
         Returns:
         --------
-        ``Credentials``
+        ``SmartapiCredentials``
             The credentials object with the API key, client id, password, token and correlation id
         """
         api_key = get_required_env_var("SMARTAPI_API_KEY")

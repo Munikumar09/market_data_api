@@ -4,6 +4,7 @@ from typing import Generator
 
 import pytest
 from sqlalchemy.engine import Engine
+from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, create_engine
 
 from app.data_layer.database.db_connections.sqlite import (
@@ -58,13 +59,17 @@ def token_data(test_user) -> dict[str, str]:
 
 
 @pytest.fixture(scope="function")
-def engine() -> Generator[Engine, None, None]:
+def test_engine() -> Generator[Engine, None, None]:
     """
     Using sqlite in-memory database instead of PostgreSQL for testing.
     Because it is faster and does not require a separate database server.
     Also, the operations are similar to PostgreSQL.
     """
-    engine = create_engine("sqlite:///:memory:")
+    engine = create_engine(
+        "sqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
     create_db_and_tables(engine)
 
     yield engine
@@ -73,10 +78,10 @@ def engine() -> Generator[Engine, None, None]:
 
 
 @pytest.fixture(scope="function")
-def session(engine) -> Generator[Session, None, None]:
+def session(test_engine) -> Generator[Session, None, None]:
     """
     Fixture to provide a new database session for each test function.
     Ensures each test runs in isolation with a clean database state.
     """
-    with get_session(engine) as session:
+    with get_session(test_engine) as session:
         yield session

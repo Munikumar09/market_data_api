@@ -3,6 +3,7 @@ name: Flutter CI
 on:
   pull_request:
     branches: [ "master" ]
+
 jobs:
   build_and_test:  # Renamed the job to reflect both building and testing.
     runs-on: ubuntu-latest
