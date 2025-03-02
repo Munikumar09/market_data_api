@@ -31,6 +31,7 @@ import 'package:frontend/shared/helpers/custom_snackbar.dart';
 import 'package:frontend/shared/inputs/custom_text_field.dart';
 import 'package:frontend/shared/layouts/custom_background_widget.dart';
 import 'package:frontend/shared/loaders/loading_indicator.dart';
+import 'dart:async';
 
 /// A page that allows users to verify their password reset request.
 ///
@@ -52,12 +53,23 @@ class _ResetPasswordVerificationPageState
 
   late String _email;
   bool _didAttemptReset = false;
-  final bool _isCodeSent =
-      true; // Initialize to true since the code is sent before this page
+  // Timer related variables
+  Timer? _resendTimer;
+  int _resendCoolDown = 60; // Initial cooldown in seconds
+  bool _canResend = true;
+  AuthState? _previousAuthState; // Store the previous state
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).pop();
+        context.showErrorSnackBar("Navigation error. Please try again.");
+      });
+      return;
+    }
     final args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
     _email = args?['email'] as String? ?? '';
@@ -75,7 +87,32 @@ class _ResetPasswordVerificationPageState
     _otpController.dispose();
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
+    _resendTimer?.cancel();
     super.dispose();
+  }
+
+  void _startResendCoolDown() {
+    setState(() {
+      _canResend = false;
+    });
+
+    _resendTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (_resendCoolDown > 0) {
+        if (mounted) {
+          setState(() {
+            _resendCoolDown--;
+          });
+        }
+      } else {
+        timer.cancel();
+        if (mounted) {
+          setState(() {
+            _canResend = true;
+            _resendCoolDown = 60;
+          });
+        }
+      }
+    });
   }
 
   /// Resets the user's password.
@@ -90,11 +127,14 @@ class _ResetPasswordVerificationPageState
     }
   }
 
-  /// Resends the verification code.
   Future<void> _onResendOtpPressed() async {
-    // Directly call the provider to resend.  No extra flags needed.
-    await ref.read(authNotifierProvider.notifier).sendResetPasswordCode(_email);
-    // Success snackbar handled in ref.listen
+    if (_canResend) {
+      _previousAuthState =
+          ref.read(authNotifierProvider); // Store *before* the call
+      await ref
+          .read(authNotifierProvider.notifier)
+          .sendResetPasswordCode(_email);
+    }
   }
 
   @override
@@ -114,12 +154,17 @@ class _ResetPasswordVerificationPageState
         }
       }
 
-      // Handle successful code resends.
-      if (previous?.status != AuthStatus.verificationSent &&
-          next.status == AuthStatus.verificationSent &&
-          _isCodeSent) {
+      // Check for successful resend *AFTER* the call to sendResetPasswordCode.
+      if (_previousAuthState?.status != AuthStatus.verificationSent &&
+          next.status == AuthStatus.verificationSent) {
+        _startResendCoolDown(); // Start the timer ONLY on success
         context.showSuccessSnackBar('Verification code resent to $_email');
+      } else if (_previousAuthState?.status == AuthStatus.loading &&
+          next.status == AuthStatus.error) {
+        //if it was in loading state and now in error that means our sendResetPasswordCode is failed
+        context.showErrorSnackBar(next.error ?? "Failed to send OTP");
       }
+      _previousAuthState = next; // Always update the previous state
     });
 
     return Scaffold(
@@ -206,13 +251,22 @@ class _ResetPasswordVerificationPageState
   /// Builds the "Resend OTP" button.
   Widget _buildResendButton(ThemeData theme) {
     return TextButton(
-      onPressed: _onResendOtpPressed,
-      child: Text(
-        "Resend OTP",
-        style: theme.textTheme.labelLarge!.copyWith(
-          color: theme.colorScheme.primary,
-        ),
-      ),
+      onPressed:
+          _canResend ? _onResendOtpPressed : null, // Disable if on cooldown
+      child: _canResend
+          ? Text(
+              "Resend OTP",
+              style: theme.textTheme.labelLarge!.copyWith(
+                color: theme.colorScheme.primary,
+              ),
+            )
+          : Text(
+              "Resend OTP ($_resendCoolDown s)", // Show countdown
+              style: theme.textTheme.labelLarge!.copyWith(
+                color: theme.colorScheme.onSurface
+                    .withValues(alpha: 0.5), // Gray out text
+              ),
+            ),
     );
   }
 }

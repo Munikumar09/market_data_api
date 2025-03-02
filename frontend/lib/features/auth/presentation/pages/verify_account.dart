@@ -34,8 +34,9 @@ import 'package:frontend/shared/helpers/custom_snackbar.dart';
 import 'package:frontend/shared/inputs/custom_text_field.dart';
 import 'package:frontend/shared/layouts/custom_background_widget.dart';
 import 'package:frontend/shared/loaders/loading_indicator.dart';
+import 'dart:async';
 
-/// The verify account page of the application.
+/// The verify account page of the application. Allows users to verify their account by entering an OTP.
 class VerifyAccountPage extends ConsumerStatefulWidget {
   const VerifyAccountPage({super.key});
 
@@ -48,7 +49,13 @@ class _VerifyAccountPageState extends ConsumerState<VerifyAccountPage> {
   final _emailOtpController = TextEditingController();
   late String _email;
   bool _didAttemptVerification = false;
-  bool _isCodeSent = false; // Tracks if the initial code has been sent.
+  final bool _isCodeSent = false; // Tracks if the initial code has been sent.
+
+  // Timer related variables
+  Timer? _resendTimer;
+  int _resendCoolDown = 60;
+  bool _canResend = true; // Initially allow resending
+  AuthState? _previousAuthState;
 
   @override
   void initState() {
@@ -56,6 +63,19 @@ class _VerifyAccountPageState extends ConsumerState<VerifyAccountPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _extractEmailFromArgs();
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).pop();
+        context.showErrorSnackBar("Navigation error. Please try again.");
+      });
+      return;
+    }
   }
 
   /// Extracts the email from the route arguments and sends the verification code (only once).
@@ -76,29 +96,41 @@ class _VerifyAccountPageState extends ConsumerState<VerifyAccountPage> {
 
   /// Sends the initial verification code to the user's email.
   Future<void> _sendInitialVerificationCode() async {
-    try {
-      await ref
-          .read(authNotifierProvider.notifier)
-          .sendVerificationCode(_email);
-      if (mounted) {
-        setState(() {
-          _isCodeSent =
-              true; // Mark the code as sent *after* successful API call
-        });
-      }
-    } catch (e) {
-      // Handle errors during initial code sending.
-      if (mounted) {
-        context
-            .showErrorSnackBar("Failed to send initial verification code: $e");
-      }
-    }
+    _previousAuthState = ref.read(authNotifierProvider);
+    await ref.read(authNotifierProvider.notifier).sendVerificationCode(_email);
   }
 
   @override
   void dispose() {
     _emailOtpController.dispose();
+    _resendTimer?.cancel();
     super.dispose();
+  }
+
+  /// Starts the cooldown timer for resending the OTP.
+  void _startResendCoolDown() {
+    if (!mounted) return;
+    setState(() {
+      _canResend = false;
+    });
+
+    _resendTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (_resendCoolDown > 0) {
+        if (mounted) {
+          setState(() {
+            _resendCoolDown--;
+          });
+        }
+      } else {
+        timer.cancel();
+        if (mounted) {
+          setState(() {
+            _canResend = true;
+            _resendCoolDown = 60; // Reset cooldown
+          });
+        }
+      }
+    });
   }
 
   /// Attempts to verify the OTP.
@@ -113,15 +145,12 @@ class _VerifyAccountPageState extends ConsumerState<VerifyAccountPage> {
 
   /// Resends the verification code.
   Future<void> _onResendOtpPressed() async {
-    try {
+    if (_canResend) {
+      _previousAuthState =
+          ref.read(authNotifierProvider); // Store *before* the call
       await ref
           .read(authNotifierProvider.notifier)
           .sendVerificationCode(_email);
-    } catch (e) {
-      //Handle errors during resend
-      if (mounted) {
-        context.showErrorSnackBar("Failed to resend verification code: $e");
-      }
     }
   }
 
@@ -149,6 +178,17 @@ class _VerifyAccountPageState extends ConsumerState<VerifyAccountPage> {
           context.showErrorSnackBar(next.error!);
         }
       }
+      // Check for successful resend *AFTER* the call to sendResetPasswordCode.
+      if (_previousAuthState?.status != AuthStatus.verificationSent &&
+          next.status == AuthStatus.verificationSent) {
+        _startResendCoolDown(); // Start the timer ONLY on success
+        context.showSuccessSnackBar('Verification code resent to $_email');
+      } else if (_previousAuthState?.status == AuthStatus.loading &&
+          next.status == AuthStatus.error) {
+        //if it was in loading state and now in error that means our sendResetPasswordCode is failed
+        context.showErrorSnackBar(next.error ?? "Failed to send OTP");
+      }
+      _previousAuthState = next;
     });
 
     return Scaffold(
@@ -218,13 +258,22 @@ class _VerifyAccountPageState extends ConsumerState<VerifyAccountPage> {
   /// Constructs the button to resend the OTP.
   Widget _buildResendButton(ThemeData theme) {
     return TextButton(
-      onPressed: _onResendOtpPressed,
-      child: Text(
-        "Resend OTP",
-        style: theme.textTheme.labelLarge!.copyWith(
-          color: theme.colorScheme.primary,
-        ),
-      ),
+      onPressed:
+          _canResend ? _onResendOtpPressed : null, // Disable if on cooldown
+      child: _canResend
+          ? Text(
+              "Resend OTP",
+              style: theme.textTheme.labelLarge!.copyWith(
+                color: theme.colorScheme.primary,
+              ),
+            )
+          : Text(
+              "Resend OTP ($_resendCoolDown s)", // Show countdown
+              style: theme.textTheme.labelLarge!.copyWith(
+                color: theme.colorScheme.onSurface
+                    .withValues(alpha: 0.5), // Gray out text
+              ),
+            ),
     );
   }
 }

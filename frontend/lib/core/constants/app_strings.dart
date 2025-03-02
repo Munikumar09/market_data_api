@@ -29,7 +29,7 @@ class AppStrings {
   static const String loginTitle = 'Login here';
   static const String loginSubtitle = "Welcome back you've been missed!";
   static const String loginSuccessMessage = 'Login successful!';
-  static const String forgotPassword = 'Forgot your password?';
+  static const String forgotPassword = 'Forgot password?';
 
   // Registration Screen Strings
   static const String createAccount = 'Create an account';
