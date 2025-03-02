@@ -1,34 +1,31 @@
 /*
 Documentation:
 ---------------
-File: verify_account.dart
+File: reset_password_verification_page.dart
 Description:
-  This file implements the VerifyAccountPage, which enables users to verify their account by entering an OTP (One-Time Password) sent to their email.
-  It extracts the email from the route arguments, triggers sending of an initial verification code, and provides functionality to verify the OTP or resend the code.
+  Implements the ResetPasswordVerificationPage which allows users to complete a password reset.
+  On this page, users enter the OTP (sent to their email) along with their new password and password confirmation.
+  The page validates the input, triggers the password reset via the AuthNotifier, and listens for response to 
+  navigate the user accordingly or display error messages.
   
 Methods:
-  • _extractEmailFromArgs():
-      - Extracts the email from route arguments and triggers initial code sending.
-  • _sendInitialVerificationCode():
-      - Sends the verification code to the extracted email.
-  • _onVerifyOtpPressed():
-      - Validates the OTP input and attempts to verify it.
+  • _onResetPasswordPressed():
+      - Validates the form and triggers the reset password process.
   • _onResendOtpPressed():
-      - Resends the verification code to the user's email.
+      - Requests a resend of the OTP.
   • _buildForm():
-      - Builds the OTP entry form.
+      - Constructs the form with OTP, new password, and confirm password fields.
   • _buildResendButton(ThemeData theme):
-      - Constructs the button to resend the OTP.
+      - Creates the button to resend the OTP.
 */
 
-// Code:
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/core/constants/app_strings.dart';
 import 'package:frontend/core/routes/app_routes.dart';
+import 'package:frontend/core/utils/validators.dart';
 import 'package:frontend/features/auth/application/providers/auth_providers.dart';
 import 'package:frontend/features/auth/application/state/auth_state.dart';
-import 'package:frontend/features/auth/presentation/widgets/header_text_widget.dart';
 import 'package:frontend/shared/buttons/primary_button.dart';
 import 'package:frontend/shared/helpers/custom_snackbar.dart';
 import 'package:frontend/shared/inputs/custom_text_field.dart';
@@ -36,34 +33,31 @@ import 'package:frontend/shared/layouts/custom_background_widget.dart';
 import 'package:frontend/shared/loaders/loading_indicator.dart';
 import 'dart:async';
 
-/// The verify account page of the application. Allows users to verify their account by entering an OTP.
-class VerifyAccountPage extends ConsumerStatefulWidget {
-  const VerifyAccountPage({super.key});
+/// A page that allows users to verify their password reset request.
+///
+/// Users enter the OTP sent to their email, their new password, and confirm the password.
+class ResetPasswordVerificationPage extends ConsumerStatefulWidget {
+  const ResetPasswordVerificationPage({super.key});
 
   @override
-  ConsumerState<VerifyAccountPage> createState() => _VerifyAccountPageState();
+  ConsumerState<ResetPasswordVerificationPage> createState() =>
+      _ResetPasswordVerificationPageState();
 }
 
-class _VerifyAccountPageState extends ConsumerState<VerifyAccountPage> {
+class _ResetPasswordVerificationPageState
+    extends ConsumerState<ResetPasswordVerificationPage> {
   final _formKey = GlobalKey<FormState>();
-  final _emailOtpController = TextEditingController();
-  late String _email;
-  bool _didAttemptVerification = false;
-  final bool _isCodeSent = false; // Tracks if the initial code has been sent.
+  final _otpController = TextEditingController();
+  final _newPasswordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
+  late String _email;
+  bool _didAttemptReset = false;
   // Timer related variables
   Timer? _resendTimer;
-  int _resendCoolDown = 60;
-  bool _canResend = true; // Initially allow resending
-  AuthState? _previousAuthState;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _extractEmailFromArgs();
-    });
-  }
+  int _resendCoolDown = 60; // Initial cooldown in seconds
+  bool _canResend = true;
+  AuthState? _previousAuthState; // Store the previous state
 
   @override
   void didChangeDependencies() {
@@ -76,40 +70,28 @@ class _VerifyAccountPageState extends ConsumerState<VerifyAccountPage> {
       });
       return;
     }
-  }
-
-  /// Extracts the email from the route arguments and sends the verification code (only once).
-  void _extractEmailFromArgs() {
     final args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
     _email = args?['email'] as String? ?? '';
-
-    if (_email.isNotEmpty && !_isCodeSent) {
-      _sendInitialVerificationCode();
-    } else if (_email.isEmpty) {
+    if (_email.isEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.of(context).pop();
-        context.showErrorSnackBar("Error: Email address is missing.");
+        context.showErrorSnackBar(
+            "Error: Email address is missing.  Please try again.");
       });
     }
   }
 
-  /// Sends the initial verification code to the user's email.
-  Future<void> _sendInitialVerificationCode() async {
-    _previousAuthState = ref.read(authNotifierProvider);
-    await ref.read(authNotifierProvider.notifier).sendVerificationCode(_email);
-  }
-
   @override
   void dispose() {
-    _emailOtpController.dispose();
+    _otpController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
     _resendTimer?.cancel();
     super.dispose();
   }
 
-  /// Starts the cooldown timer for resending the OTP.
   void _startResendCoolDown() {
-    if (!mounted) return;
     setState(() {
       _canResend = false;
     });
@@ -126,31 +108,32 @@ class _VerifyAccountPageState extends ConsumerState<VerifyAccountPage> {
         if (mounted) {
           setState(() {
             _canResend = true;
-            _resendCoolDown = 60; // Reset cooldown
+            _resendCoolDown = 60;
           });
         }
       }
     });
   }
 
-  /// Attempts to verify the OTP.
-  Future<void> _onVerifyOtpPressed() async {
+  /// Resets the user's password.
+  Future<void> _onResetPasswordPressed() async {
     if (_formKey.currentState!.validate()) {
-      _didAttemptVerification = true; // Set flag BEFORE the async operation
-      await ref
-          .read(authNotifierProvider.notifier)
-          .verifyVerificationCode(_email, _emailOtpController.text);
+      _didAttemptReset = true;
+      await ref.read(authNotifierProvider.notifier).resetPassword(
+            _email,
+            _otpController.text.trim(),
+            _newPasswordController.text.trim(),
+          );
     }
   }
 
-  /// Resends the verification code.
   Future<void> _onResendOtpPressed() async {
     if (_canResend) {
       _previousAuthState =
           ref.read(authNotifierProvider); // Store *before* the call
       await ref
           .read(authNotifierProvider.notifier)
-          .sendVerificationCode(_email);
+          .sendResetPasswordCode(_email);
     }
   }
 
@@ -159,25 +142,18 @@ class _VerifyAccountPageState extends ConsumerState<VerifyAccountPage> {
     final theme = Theme.of(context);
 
     ref.listen<AuthState>(authNotifierProvider, (previous, next) {
-      // 1. Handle *SUCCESSFUL* initial code sending (moved to listen).  More reliable.
-      if (previous?.status != AuthStatus.verificationSent &&
-          next.status == AuthStatus.verificationSent &&
-          _isCodeSent) {
-        context.showSuccessSnackBar('Verification code sent to $_email');
-      }
-
-      // 2. Handle OTP verification attempts (success and error).
-      if (_didAttemptVerification && next.status != AuthStatus.loading) {
-        _didAttemptVerification = false;
-
+      // Handle password reset attempts (success/failure).
+      if (_didAttemptReset && next.status != AuthStatus.loading) {
+        _didAttemptReset = false;
         if (next.status == AuthStatus.initial) {
           Navigator.pushNamedAndRemoveUntil(
               context, AppRoutes.login, (route) => false);
-          context.showSuccessSnackBar('Account verified successfully.');
+          context.showSuccessSnackBar("Password reset successful.");
         } else if (next.error != null) {
           context.showErrorSnackBar(next.error!);
         }
       }
+
       // Check for successful resend *AFTER* the call to sendResetPasswordCode.
       if (_previousAuthState?.status != AuthStatus.verificationSent &&
           next.status == AuthStatus.verificationSent) {
@@ -188,7 +164,7 @@ class _VerifyAccountPageState extends ConsumerState<VerifyAccountPage> {
         //if it was in loading state and now in error that means our sendResetPasswordCode is failed
         context.showErrorSnackBar(next.error ?? "Failed to send OTP");
       }
-      _previousAuthState = next;
+      _previousAuthState = next; // Always update the previous state
     });
 
     return Scaffold(
@@ -204,15 +180,11 @@ class _VerifyAccountPageState extends ConsumerState<VerifyAccountPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const SizedBox(height: 30),
-                  const HeaderTextWidget(
-                    title: AppStrings.verifyAccount,
-                    subtitle: AppStrings.verifyAccountSubtitle,
-                  ),
-                  const SizedBox(height: 50),
+                  const SizedBox(height: 35),
                   _buildForm(),
-                  const SizedBox(height: 20),
-                  _buildResendButton(theme),
+                  const SizedBox(height: 24), // Space above the resend button
+                  _buildResendButton(theme), // Resend button
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
@@ -222,7 +194,7 @@ class _VerifyAccountPageState extends ConsumerState<VerifyAccountPage> {
     );
   }
 
-  /// Builds the OTP entry form.
+  /// Builds the form for OTP and password input.
   Widget _buildForm() {
     final authState = ref.watch(authNotifierProvider);
 
@@ -234,20 +206,41 @@ class _VerifyAccountPageState extends ConsumerState<VerifyAccountPage> {
             hintText: AppStrings.emailOtp,
             labelText: AppStrings.emailOtp,
             keyboardType: TextInputType.number,
-            controller: _emailOtpController,
-            validator: (value) => (value == null || value.isEmpty)
-                ? 'Please enter the OTP'
-                : null,
+            controller: _otpController,
+            validator: (value) =>
+                (value == null || value.isEmpty) ? "Please enter OTP" : null,
           ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 16),
+          CustomTextField(
+            hintText: AppStrings.newPassword,
+            labelText: AppStrings.newPassword,
+            isPassword: true,
+            controller: _newPasswordController,
+            validator: Validators.password,
+            autocorrect: false,
+            enableSuggestions: false,
+          ),
+          const SizedBox(height: 16),
+          CustomTextField(
+            hintText: AppStrings.confirmNewPassword,
+            labelText: AppStrings.confirmNewPassword,
+            isPassword: true,
+            controller: _confirmPasswordController,
+            validator: (value) => Validators.confirmPassword(
+              _newPasswordController.text,
+              value,
+            ),
+            autocorrect: false,
+            enableSuggestions: false,
+          ),
+          const SizedBox(height: 24),
           PrimaryButton(
-            text: AppStrings.verify,
+            text: AppStrings.resetPassword,
             onPressed: authState.status == AuthStatus.loading
                 ? null
-                : _onVerifyOtpPressed,
-            child: authState.status == AuthStatus.loading &&
-                    _didAttemptVerification
-                ? LoadingIndicator()
+                : _onResetPasswordPressed,
+            child: authState.status == AuthStatus.loading && _didAttemptReset
+                ? const LoadingIndicator()
                 : null,
           ),
         ],
@@ -255,7 +248,7 @@ class _VerifyAccountPageState extends ConsumerState<VerifyAccountPage> {
     );
   }
 
-  /// Constructs the button to resend the OTP.
+  /// Builds the "Resend OTP" button.
   Widget _buildResendButton(ThemeData theme) {
     return TextButton(
       onPressed:
