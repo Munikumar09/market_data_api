@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import cast
 
 import hydra
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi_limiter.depends import RateLimiter
 
 from app import ROOT_DIR
@@ -95,13 +95,14 @@ async def signin(user: UserSignIn) -> dict:
         )
     ],
 )
-async def send_verification_code(email: str) -> dict:
+async def send_verification_code(email: str, response: Response) -> dict:
     """
     Send a verification code to the user's email.
 
     Parameters:
     -----------
     - **email** (str): The email to send the verification code to.
+    - **response** (Response): The response object to set headers.
 
     Returns:
     --------
@@ -122,6 +123,8 @@ async def send_verification_code(email: str) -> dict:
             detail="Email is already verified.",
         )
     send_and_save_code(email, user.username, email_notification_provider)
+    response.headers["retry-after"] = str(SECONDS)
+
     return {"message": f"Verification code sent to {email}. Valid for 10 minutes."}
 
 
@@ -167,18 +170,20 @@ async def verify_user(request: EmailVerificationRequest) -> dict:
         )
     ],
 )
-async def send_reset_password_code(email: str):
+async def send_reset_password_code(email: str, response: Response) -> dict:
     """
     Send a reset password code to the user's email.
 
     Parameters:
     -----------
     - **email** (str): The email to send the reset password code to.
+    - **response** (Response): The response object to set headers.
 
     Returns:
     --------
     - JSON response indicating whether the code was sent successfully.
     """
+
     logger.info(
         "Sending reset password code to %s using %s", email, email_notification_provider
     )
@@ -187,6 +192,8 @@ async def send_reset_password_code(email: str):
     user = get_user_by_attr(EMAIL, email)
 
     send_and_save_code(email, user.username, email_notification_provider)
+    response.headers["retry-after"] = str(SECONDS)
+
     return {"message": f"Reset password code sent to {email}. Valid for 10 minutes."}
 
 
